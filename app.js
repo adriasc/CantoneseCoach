@@ -2,7 +2,8 @@ const STORAGE_KEYS = {
   content: "cancoach_content_v1",
   known: "cancoach_known_v1",
   streak: "cancoach_streak_v1",
-  reviewed: "cancoach_reviewed_v1"
+  reviewed: "cancoach_reviewed_v1",
+  prefs: "cancoach_prefs_v1"
 };
 
 const USER_CORE_WORDS = [
@@ -892,12 +893,48 @@ const DEFAULT_DATA = {
   ]
 };
 
+const SENTENCE_BANK = [
+  { id: "s1", level: 1, tense: "present", theme: "daily", hanzi: "我食飯。", jyutping: "ngo5 sik6 faan6", english: "I eat a meal." },
+  { id: "s2", level: 1, tense: "present", theme: "daily", hanzi: "你飲水。", jyutping: "nei5 jam2 seoi2", english: "You drink water." },
+  { id: "s3", level: 1, tense: "present", theme: "home", hanzi: "佢喺屋企。", jyutping: "keoi5 hai2 uk1 kei2", english: "He/She is at home." },
+  { id: "s4", level: 1, tense: "present", theme: "friends", hanzi: "我哋講廣東話。", jyutping: "ngo5 dei6 gong2 gwong2 dung1 waa2", english: "We speak Cantonese." },
+  { id: "s5", level: 1, tense: "present", theme: "daily", hanzi: "今日我好開心。", jyutping: "gam1 jat6 ngo5 hou2 hoi1 sam1", english: "Today I am happy." },
+  { id: "s6", level: 2, tense: "present", theme: "travel", hanzi: "而家我去餐廳食飯。", jyutping: "ji4 gaa1 ngo5 heoi3 caan1 teng1 sik6 faan6", english: "Now I go to a restaurant to eat." },
+  { id: "s7", level: 2, tense: "present", theme: "friends", hanzi: "你想唔想飲茶呀？", jyutping: "nei5 soeng2 m4 soeng2 jam2 caa4 aa3", english: "Do you want to drink tea?" },
+  { id: "s8", level: 2, tense: "present", theme: "home", hanzi: "我喺客廳睇書。", jyutping: "ngo5 hai2 haak3 teng1 tai2 syu1", english: "I read in the living room." },
+  { id: "s9", level: 2, tense: "present", theme: "daily", hanzi: "佢經常搭車返工。", jyutping: "keoi5 ging1 soeng4 daap3 ce1 faan1 gung1", english: "He/She often takes transport to work." },
+  { id: "s10", level: 2, tense: "present", theme: "friends", hanzi: "我同朋友喺街度傾偈。", jyutping: "ngo5 tung4 pang4 jau5 hai2 gaai1 dou6 king1 gai2", english: "I chat with friends on the street." },
+  { id: "s11", level: 3, tense: "past", theme: "daily", hanzi: "尋日我買咗好多嘢。", jyutping: "cam4 jat6 ngo5 maai5 zo2 hou2 do1 je5", english: "Yesterday I bought many things." },
+  { id: "s12", level: 3, tense: "past", theme: "travel", hanzi: "上次我哋去過香港。", jyutping: "soeng6 ci3 ngo5 dei6 heoi3 gwo3 hoeng1 gong2", english: "Last time we went to Hong Kong." },
+  { id: "s13", level: 3, tense: "past", theme: "home", hanzi: "頭先我喺廚房煮完飯。", jyutping: "tau4 sin1 ngo5 hai2 cyu4 fong2 zyu2 jyun4 faan6", english: "Just now I finished cooking in the kitchen." },
+  { id: "s14", level: 3, tense: "future", theme: "travel", hanzi: "聽日我會去巿場買菜。", jyutping: "ting1 jat6 ngo5 wui5 heoi3 si5 coeng4 maai5 coi3", english: "Tomorrow I will go to the market to buy vegetables." },
+  { id: "s15", level: 3, tense: "future", theme: "holiday", hanzi: "下次假期我想去日本旅行。", jyutping: "haa6 ci3 gaa3 kei4 ngo5 soeng2 heoi3 jat6 bun2 leoi5 hang4", english: "Next holiday I want to travel to Japan." },
+  { id: "s16", level: 3, tense: "future", theme: "friends", hanzi: "今晚我哋會同朋友食飯。", jyutping: "gam1 maan5 ngo5 dei6 wui5 tung4 pang4 jau5 sik6 faan6", english: "Tonight we will eat with friends." },
+  { id: "s17", level: 3, tense: "present", theme: "home", hanzi: "我阿媽而家喺廚房整晚餐。", jyutping: "ngo5 aa3 maa1 ji4 gaa1 hai2 cyu4 fong2 zing2 maan5 caan1", english: "My mom is preparing dinner in the kitchen now." },
+  { id: "s18", level: 3, tense: "present", theme: "daily", hanzi: "你可唔可以再講多次？", jyutping: "nei5 ho2 m4 ho2 ji5 zoi3 gong2 do1 ci3", english: "Can you say it one more time?" },
+  { id: "s19", level: 4, tense: "past", theme: "friends", hanzi: "上星期我同朋友喺餐廳傾咗兩個鐘。", jyutping: "soeng6 sing1 kei4 ngo5 tung4 pang4 jau5 hai2 caan1 teng1 king1 zo2 loeng5 go3 zung1", english: "Last week I chatted with friends at a restaurant for two hours." },
+  { id: "s20", level: 4, tense: "future", theme: "travel", hanzi: "遲啲我會帶屋企人去機場接朋友。", jyutping: "ci4 di1 ngo5 wui5 daai3 uk1 kei2 jan4 heoi3 gei1 coeng4 zip3 pang4 jau5", english: "Later I will take my family to the airport to pick up a friend." },
+  { id: "s21", level: 4, tense: "present", theme: "home", hanzi: "如果你攰，我可以幫你做家務。", jyutping: "jyu4 gwo2 nei5 gui6, ngo5 ho2 ji5 bong1 nei5 zou6 gaa1 mou6", english: "If you are tired, I can help you do housework." },
+  { id: "s22", level: 4, tense: "present", theme: "daily", hanzi: "雖然今日落雨，不過我仲係要返工。", jyutping: "seoi1 jin4 gam1 jat6 lok6 jyu5, bat1 gwo3 ngo5 zung6 hai6 jiu3 faan1 gung1", english: "Although it's raining today, I still need to go to work." },
+  { id: "s23", level: 4, tense: "future", theme: "holiday", hanzi: "如果平啲，我哋下個月就訂酒店。", jyutping: "jyu4 gwo2 peng4 di1, ngo5 dei6 haa6 go3 jyut6 zau6 deng3 zau2 dim3", english: "If it's cheaper, we'll book the hotel next month." },
+  { id: "s24", level: 4, tense: "past", theme: "home", hanzi: "尋晚我細佬做完功課先打機。", jyutping: "cam4 maan5 ngo5 sai3 lou2 zou6 jyun4 gung1 fo3 sin1 daa2 gei1", english: "Last night my younger brother played games only after finishing homework." },
+  { id: "s25", level: 5, tense: "conditional", theme: "travel", hanzi: "如果聽日天氣好，我哋就會去海邊行下再食海鮮。", jyutping: "jyu4 gwo2 ting1 jat6 tin1 hei3 hou2, ngo5 dei6 zau6 wui5 heoi3 hoi2 bin1 haang4 haa5 zoi3 sik6 hoi2 sin1", english: "If the weather is good tomorrow, we'll walk by the sea and then eat seafood." },
+  { id: "s26", level: 5, tense: "conditional", theme: "home", hanzi: "如果你早啲返到屋企，我就同你一齊煮飯。", jyutping: "jyu4 gwo2 nei5 zou2 di1 faan1 dou3 uk1 kei2, ngo5 zau6 tung4 nei5 jat1 cai4 zyu2 faan6", english: "If you get home earlier, I'll cook with you." },
+  { id: "s27", level: 5, tense: "conditional", theme: "friends", hanzi: "只要你肯練習，每日講十分鐘廣東話，你一定會進步。", jyutping: "zi2 jiu3 nei5 hang2 lin6 zaap6, mui5 jat6 gong2 sap6 fan1 zung1 gwong2 dung1 waa2, nei5 jat1 ding6 wui5 zeon3 bou6", english: "As long as you practice and speak Cantonese for ten minutes every day, you will improve." },
+  { id: "s28", level: 5, tense: "conditional", theme: "holiday", hanzi: "就算機票貴，我都想同屋企人去旅行，因為大家好耐冇一齊放假。", jyutping: "zau6 syun3 gei1 piu3 gwai3, ngo5 dou1 soeng2 tung4 uk1 kei2 jan4 heoi3 leoi5 hang4, jan1 wai6 daai6 gaa1 hou2 noi6 mou5 jat1 cai4 fong3 gaa3", english: "Even if flights are expensive, I still want to travel with my family because we haven't had a holiday together for a long time." },
+  { id: "s29", level: 5, tense: "future", theme: "daily", hanzi: "如果公司之後改咗時間，我會早啲出門，避免塞車。", jyutping: "jyu4 gwo2 gung1 si1 zi1 hau6 goi2 zo2 si4 gaan3, ngo5 wui5 zou2 di1 ceot1 mun4, bei6 min5 sak1 ce1", english: "If the company changes the schedule later, I will leave earlier to avoid traffic." },
+  { id: "s30", level: 5, tense: "past", theme: "friends", hanzi: "頭先朋友打畀我，話佢喺醫院等緊我，所以我即刻離開公司。", jyutping: "tau4 sin1 pang4 jau5 daa2 bei2 ngo5, waa6 keoi5 hai2 ji1 jyun2 dang2 gan2 ngo5, so2 ji5 ngo5 zik1 hak1 lei4 hoi1 gung1 si1", english: "A friend called me just now and said they were waiting at the hospital, so I left the office immediately." }
+];
+
 const state = {
   content: loadContent(),
   known: new Set(loadJson(STORAGE_KEYS.known, [])),
   reviewed: loadJson(STORAGE_KEYS.reviewed, { date: todayString(), count: 0 }),
   streak: loadJson(STORAGE_KEYS.streak, { lastDate: null, days: 0 }),
+  prefs: loadJson(STORAGE_KEYS.prefs, { level: 2, tense: "mixed", theme: "mixed", showJyutping: true, showEnglish: true }),
+  rotation: { words: [], patternSentences: [], quizSentences: [] },
   currentWord: null,
+  currentSentence: null,
   currentPattern: null,
   patternSelections: {},
   currentQuiz: null
@@ -911,6 +948,16 @@ const els = {
   wordJyutping: byId("wordJyutping"),
   wordEnglish: byId("wordEnglish"),
   wordExample: byId("wordExample"),
+  revealExample: byId("revealExample"),
+  globalLevel: byId("globalLevel"),
+  globalTense: byId("globalTense"),
+  globalTheme: byId("globalTheme"),
+  toggleWordJyutping: byId("toggleWordJyutping"),
+  toggleWordEnglish: byId("toggleWordEnglish"),
+  togglePatternJyutping: byId("togglePatternJyutping"),
+  togglePatternEnglish: byId("togglePatternEnglish"),
+  toggleQuizJyutping: byId("toggleQuizJyutping"),
+  toggleQuizEnglish: byId("toggleQuizEnglish"),
   knownWords: byId("knownWords"),
   reviewedWords: byId("reviewedWords"),
   streakBadge: byId("streakBadge"),
@@ -920,12 +967,16 @@ const els = {
   patternJyutping: byId("patternJyutping"),
   patternEnglish: byId("patternEnglish"),
   quizHanzi: byId("quizHanzi"),
+  quizJyutping: byId("quizJyutping"),
+  quizEnglish: byId("quizEnglish"),
   quizChoices: byId("quizChoices"),
   quizFeedback: byId("quizFeedback"),
   contentMessage: byId("contentMessage")
 };
 
 bindUI();
+syncControlValues();
+applyVisibilityPrefs();
 rollWord();
 rollPattern();
 rollQuiz();
@@ -946,8 +997,14 @@ function bindUI() {
     if (state.currentWord) speak(state.currentWord.hanzi);
   });
 
-  byId("revealExample").addEventListener("click", () => {
-    els.wordExample.textContent = state.currentWord?.example || "";
+  els.revealExample.addEventListener("click", () => {
+    if (els.wordExample.textContent) {
+      els.wordExample.textContent = "";
+      els.revealExample.textContent = "Show example";
+      return;
+    }
+    els.wordExample.textContent = buildWordExample(state.currentWord);
+    els.revealExample.textContent = "Hide example";
   });
 
   byId("markKnown").addEventListener("click", () => {
@@ -971,10 +1028,46 @@ function bindUI() {
   });
 
   byId("showQuizText").addEventListener("click", () => {
-    els.quizHanzi.classList.remove("hidden");
+    const isHidden = els.quizHanzi.classList.contains("hidden");
+    els.quizHanzi.classList.toggle("hidden", !isHidden);
+    byId("showQuizText").textContent = isHidden ? "Hide Chinese" : "Show Chinese";
   });
 
+  els.toggleWordJyutping.addEventListener("click", () => togglePref("showJyutping"));
+  els.toggleWordEnglish.addEventListener("click", () => togglePref("showEnglish"));
+  els.togglePatternJyutping.addEventListener("click", () => togglePref("showJyutping"));
+  els.togglePatternEnglish.addEventListener("click", () => togglePref("showEnglish"));
+  els.toggleQuizJyutping.addEventListener("click", () => togglePref("showJyutping"));
+  els.toggleQuizEnglish.addEventListener("click", () => togglePref("showEnglish"));
+
   byId("nextQuiz").addEventListener("click", rollQuiz);
+
+  els.globalLevel.addEventListener("change", () => {
+    state.prefs.level = Number(els.globalLevel.value) || 2;
+    saveJson(STORAGE_KEYS.prefs, state.prefs);
+    resetRotations();
+    rollWord();
+    rollPattern();
+    rollQuiz();
+  });
+
+  els.globalTense.addEventListener("change", () => {
+    state.prefs.tense = els.globalTense.value;
+    saveJson(STORAGE_KEYS.prefs, state.prefs);
+    resetRotations();
+    rollWord();
+    rollPattern();
+    rollQuiz();
+  });
+
+  els.globalTheme.addEventListener("change", () => {
+    state.prefs.theme = els.globalTheme.value;
+    saveJson(STORAGE_KEYS.prefs, state.prefs);
+    resetRotations();
+    rollWord();
+    rollPattern();
+    rollQuiz();
+  });
 
   byId("importFile").addEventListener("change", importDataFile);
 
@@ -991,6 +1084,7 @@ function bindUI() {
     localStorage.removeItem(STORAGE_KEYS.content);
     state.content = normalizeContent(deepClone(DEFAULT_DATA));
     els.contentMessage.textContent = "Reset complete. Built-in words loaded.";
+    resetRotations();
     rollWord();
     rollPattern();
     rollQuiz();
@@ -1004,65 +1098,37 @@ function switchTab(tabName) {
 }
 
 function rollWord() {
-  const words = state.content.words || [];
+  const words = (state.content.words || []).filter((w) => wordLevel(w) <= state.prefs.level);
   if (!words.length) return;
 
   const unknown = words.filter((w) => !state.known.has(w.id));
   const coreUnknown = unknown.filter((w) => CORE_WORD_SET.has(normalizeHanzi(w.hanzi)));
   const coreAll = words.filter((w) => CORE_WORD_SET.has(normalizeHanzi(w.hanzi)));
   const pool = coreUnknown.length ? coreUnknown : (unknown.length ? unknown : (coreAll.length ? coreAll : words));
-  state.currentWord = pool[Math.floor(Math.random() * pool.length)];
+  state.currentWord = takeFromRotation("words", pool, (w) => w.id);
 
   els.wordCategory.textContent = state.currentWord.category || "word";
   els.wordHanzi.textContent = state.currentWord.hanzi || "-";
   els.wordJyutping.textContent = state.currentWord.jyutping || "-";
   els.wordEnglish.textContent = state.currentWord.english || "-";
   els.wordExample.textContent = "";
+  els.revealExample.textContent = "Show example";
+  applyVisibilityPrefs();
   refreshStats();
 }
 
 function rollPattern() {
-  const patterns = state.content.patterns || [];
-  if (!patterns.length) return;
-
-  state.currentPattern = patterns[Math.floor(Math.random() * patterns.length)];
-  state.patternSelections = {};
+  const pool = getFilteredSentences();
+  if (!pool.length) return;
+  state.currentSentence = takeFromRotation("patternSentences", pool, (s) => s.id);
   renderPatternControls();
   renderPatternSentence();
 }
 
 function renderPatternControls() {
-  const pattern = state.currentPattern;
-  els.patternFormula.textContent = pattern.formula || "";
+  const sentence = state.currentSentence;
+  els.patternFormula.textContent = `Level ${sentence.level} · ${sentence.tense} · ${sentence.theme}`;
   els.slotGrid.innerHTML = "";
-
-  pattern.slots.forEach((slot) => {
-    const options = wordsByCategories(slot.categories);
-    const first = options[0] || state.content.words[0];
-    state.patternSelections[slot.key] = first?.id || "";
-
-    const wrap = document.createElement("div");
-    const label = document.createElement("label");
-    label.textContent = slot.label;
-    const select = document.createElement("select");
-    select.dataset.slot = slot.key;
-
-    options.forEach((word) => {
-      const opt = document.createElement("option");
-      opt.value = word.id;
-      opt.textContent = `${word.hanzi} (${word.jyutping})`;
-      select.appendChild(opt);
-    });
-
-    select.addEventListener("change", (e) => {
-      state.patternSelections[slot.key] = e.target.value;
-      renderPatternSentence();
-    });
-
-    wrap.appendChild(label);
-    wrap.appendChild(select);
-    els.slotGrid.appendChild(wrap);
-  });
 }
 
 function renderPatternSentence() {
@@ -1070,41 +1136,32 @@ function renderPatternSentence() {
   els.patternHanzi.textContent = built.hanzi;
   els.patternJyutping.textContent = built.jyutping;
   els.patternEnglish.textContent = built.english;
+  applyVisibilityPrefs();
 }
 
 function buildPatternSentence() {
-  if (!state.currentPattern) return { hanzi: "", jyutping: "", english: "" };
-  const parts = [];
-
-  state.currentPattern.slots.forEach((slot, idx) => {
-    const selected = wordById(state.patternSelections[slot.key]) || wordsByCategories(slot.categories)[0];
-    if (selected) {
-      parts.push(selected);
-    }
-    if (state.currentPattern.fixed && state.currentPattern.fixed[idx]) {
-      const fixedHanzi = state.currentPattern.fixed[idx];
-      const fixedWord = state.content.words.find((w) => w.hanzi === fixedHanzi);
-      parts.push(fixedWord || { hanzi: fixedHanzi, jyutping: fixedHanzi, english: fixedHanzi });
-    }
-  });
-
+  if (!state.currentSentence) return { hanzi: "", jyutping: "", english: "" };
   return {
-    hanzi: `${parts.map((p) => p.hanzi).join("")}。`,
-    jyutping: parts.map((p) => p.jyutping).join(" "),
-    english: parts.map((p) => p.english).join(" ")
+    hanzi: state.currentSentence.hanzi,
+    jyutping: state.currentSentence.jyutping,
+    english: state.currentSentence.english
   };
 }
 
 function rollQuiz() {
-  const quiz = state.content.quiz || [];
+  const quiz = getFilteredSentences();
   if (!quiz.length) return;
-  state.currentQuiz = quiz[Math.floor(Math.random() * quiz.length)];
+  state.currentQuiz = takeFromRotation("quizSentences", quiz, (q) => q.id);
   els.quizFeedback.textContent = "";
   els.quizFeedback.className = "feedback";
   els.quizHanzi.textContent = state.currentQuiz.hanzi;
+  els.quizJyutping.textContent = state.currentQuiz.jyutping;
+  els.quizEnglish.textContent = state.currentQuiz.english;
   els.quizHanzi.classList.add("hidden");
+  byId("showQuizText").textContent = "Show Chinese";
+  applyVisibilityPrefs();
 
-  const answers = [state.currentQuiz.english, ...pickDistractors(state.currentQuiz.english, 2)];
+  const answers = [state.currentQuiz.english, ...pickDistractors(state.currentQuiz.id, state.currentQuiz.english, 3)];
   shuffle(answers);
   els.quizChoices.innerHTML = "";
   answers.forEach((text) => {
@@ -1131,10 +1188,11 @@ function wordById(id) {
   return (state.content.words || []).find((w) => w.id === id);
 }
 
-function pickDistractors(correct, amount) {
-  const pool = (state.content.quiz || [])
+function pickDistractors(correctId, correctEnglish, amount) {
+  const pool = getFilteredSentences()
+    .filter((q) => q.id !== correctId)
     .map((q) => q.english)
-    .filter((en) => en !== correct);
+    .filter((en) => en !== correctEnglish);
   shuffle(pool);
   return pool.slice(0, amount);
 }
@@ -1190,6 +1248,7 @@ function importDataFile(event) {
       state.content = checked;
       saveJson(STORAGE_KEYS.content, checked);
       els.contentMessage.textContent = "Import successful. New learning set loaded.";
+      resetRotations();
       rollWord();
       rollPattern();
       rollQuiz();
@@ -1269,6 +1328,102 @@ function isMissingJyutping(jyutping) {
 function jyutpingForWord(hanzi) {
   const key = normalizeHanzi(hanzi);
   return CORE_WORD_JYUTPING[key] || "to-confirm";
+}
+
+function syncControlValues() {
+  els.globalLevel.value = String(state.prefs.level || 2);
+  els.globalTense.value = state.prefs.tense || "mixed";
+  els.globalTheme.value = state.prefs.theme || "mixed";
+}
+
+function applyVisibilityPrefs() {
+  const showJp = !!state.prefs.showJyutping;
+  const showEn = !!state.prefs.showEnglish;
+
+  els.wordJyutping.classList.toggle("hidden", !showJp);
+  els.patternJyutping.classList.toggle("hidden", !showJp);
+  els.quizJyutping.classList.toggle("hidden", !showJp);
+
+  els.wordEnglish.classList.toggle("hidden", !showEn);
+  els.patternEnglish.classList.toggle("hidden", !showEn);
+  els.quizEnglish.classList.toggle("hidden", !showEn);
+
+  els.toggleWordJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
+  els.togglePatternJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
+  els.toggleQuizJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
+  els.toggleWordEnglish.textContent = showEn ? "Hide English" : "Show English";
+  els.togglePatternEnglish.textContent = showEn ? "Hide English" : "Show English";
+  els.toggleQuizEnglish.textContent = showEn ? "Hide English" : "Show English";
+}
+
+function togglePref(prefKey) {
+  state.prefs[prefKey] = !state.prefs[prefKey];
+  saveJson(STORAGE_KEYS.prefs, state.prefs);
+  applyVisibilityPrefs();
+}
+
+function resetRotations() {
+  state.rotation = { words: [], patternSentences: [], quizSentences: [] };
+}
+
+function takeFromRotation(key, pool, getId) {
+  if (!pool.length) return null;
+  let queue = state.rotation[key] || [];
+  const ids = pool.map(getId);
+  queue = queue.filter((id) => ids.includes(id));
+  if (!queue.length) queue = shuffle(ids.slice());
+  const id = queue.shift();
+  state.rotation[key] = queue;
+  return pool.find((item) => getId(item) === id) || pool[Math.floor(Math.random() * pool.length)];
+}
+
+function getFilteredSentences() {
+  const level = Number(state.prefs.level) || 2;
+  const tense = state.prefs.tense || "mixed";
+  const theme = state.prefs.theme || "mixed";
+  let pool = SENTENCE_BANK.filter((s) => (
+    s.level <= level
+    && (tense === "mixed" || s.tense === tense)
+    && (theme === "mixed" || s.theme === theme)
+  ));
+  if (!pool.length) {
+    pool = SENTENCE_BANK.filter((s) => s.level <= level && (tense === "mixed" || s.tense === tense));
+  }
+  if (!pool.length) {
+    pool = SENTENCE_BANK.filter((s) => s.level <= level);
+  }
+  if (!pool.length) {
+    pool = SENTENCE_BANK.slice();
+  }
+  return pool;
+}
+
+function buildWordExample(word) {
+  if (!word) return "";
+  if (word.example) return word.example;
+  const key = normalizeHanzi(word.hanzi);
+  const fromSentence = SENTENCE_BANK.find((s) => normalizeHanzi(s.hanzi).includes(key));
+  if (fromSentence) return fromSentence.hanzi;
+  if (word.category === "time") return `${word.hanzi}我學廣東話。`;
+  if (word.category === "verb") return `我${word.hanzi}。`;
+  if (word.category === "adjective") return `呢個好${word.hanzi}。`;
+  if (word.category === "place") return `我喺${word.hanzi}。`;
+  return `${word.hanzi}。`;
+}
+
+function wordLevel(word) {
+  const category = String(word?.category || "").toLowerCase();
+  const low = new Set(["pronoun", "time", "grammar", "courtesy", "question", "number"]);
+  const mid = new Set(["verb", "noun", "adjective", "place", "food", "drink", "language"]);
+  const high = new Set(["aspect", "measure", "preposition", "conjunction", "adverb", "particle"]);
+  let level = 3;
+  if (low.has(category)) level = 1;
+  if (mid.has(category)) level = 2;
+  if (high.has(category)) level = 3;
+  const len = normalizeHanzi(word?.hanzi).length;
+  if (len >= 4) level += 2;
+  else if (len >= 3) level += 1;
+  return Math.min(level, 5);
 }
 
 function registerServiceWorker() {

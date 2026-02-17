@@ -120,6 +120,14 @@ h1 {
   box-shadow: var(--shadow);
 }
 
+.controls-card {
+  margin-top: 12px;
+}
+
+.controls-grid {
+  margin-top: 0;
+}
+
 .chip {
   margin: 0;
   background: #dff8f4;
@@ -181,6 +189,15 @@ button:hover,
 #nextQuiz,
 #newPattern {
   background: var(--accent);
+}
+
+#toggleWordJyutping,
+#toggleWordEnglish,
+#togglePatternJyutping,
+#togglePatternEnglish,
+#toggleQuizJyutping,
+#toggleQuizEnglish {
+  background: #365173;
 }
 
 .example {

@@ -32,6 +32,43 @@
       <button class="tab" data-tab="settings">Content</button>
     </nav>
 
+    <section class="card controls-card">
+      <h2>Practice Controls</h2>
+      <div class="slot-grid controls-grid">
+        <div>
+          <label for="globalLevel">Level (all exercises)</label>
+          <select id="globalLevel">
+            <option value="1">Level 1 - very short</option>
+            <option value="2">Level 2 - short</option>
+            <option value="3">Level 3 - medium</option>
+            <option value="4">Level 4 - advanced</option>
+            <option value="5">Level 5 - long/conditional</option>
+          </select>
+        </div>
+        <div>
+          <label for="globalTense">Verb Time</label>
+          <select id="globalTense">
+            <option value="mixed">Mixed</option>
+            <option value="present">Present</option>
+            <option value="past">Past</option>
+            <option value="future">Future</option>
+            <option value="conditional">Conditional</option>
+          </select>
+        </div>
+        <div>
+          <label for="globalTheme">Theme</label>
+          <select id="globalTheme">
+            <option value="mixed">Mixed</option>
+            <option value="home">Home/Family</option>
+            <option value="friends">Friends</option>
+            <option value="travel">Travel/Going out</option>
+            <option value="daily">Daily routines</option>
+            <option value="holiday">Holiday plans</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
     <section class="panel is-active" id="panel-words">
       <div class="card" id="wordCard">
         <p class="chip" id="wordCategory">Category</p>
@@ -40,7 +77,9 @@
         <p class="english" id="wordEnglish">I / me</p>
         <div class="actions">
           <button id="playWordAudio">Play audio</button>
-          <button id="revealExample">Example</button>
+          <button id="revealExample">Show example</button>
+          <button id="toggleWordJyutping">Hide Jyutping</button>
+          <button id="toggleWordEnglish">Hide English</button>
           <button id="markKnown">I know this</button>
           <button id="nextWord">Next</button>
         </div>
@@ -54,7 +93,7 @@
 
     <section class="panel" id="panel-patterns">
       <div class="card">
-        <h2>Sentence Structure Drill</h2>
+        <h2>Sentence Practice</h2>
         <p class="formula" id="patternFormula"></p>
         <div class="slot-grid" id="slotGrid"></div>
         <div class="result-box">
@@ -64,6 +103,8 @@
         </div>
         <div class="actions">
           <button id="playPatternAudio">Play sentence</button>
+          <button id="togglePatternJyutping">Hide Jyutping</button>
+          <button id="togglePatternEnglish">Hide English</button>
           <button id="newPattern">Next pattern</button>
         </div>
       </div>
@@ -74,9 +115,13 @@
         <h2>Listening Quiz</h2>
         <p>Tap play, listen, then choose the correct English meaning.</p>
         <p class="hanzi hidden" id="quizHanzi"></p>
+        <p class="jyutping hidden" id="quizJyutping"></p>
+        <p class="english hidden" id="quizEnglish"></p>
         <div class="actions">
           <button id="playQuizAudio">Play clip</button>
           <button id="showQuizText">Show Chinese</button>
+          <button id="toggleQuizJyutping">Show/Hide Jyutping</button>
+          <button id="toggleQuizEnglish">Show/Hide English</button>
           <button id="nextQuiz">Next quiz</button>
         </div>
         <div class="choices" id="quizChoices"></div>
