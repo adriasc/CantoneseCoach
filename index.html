@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Cantonese Coach</title>
+  <meta name="theme-color" content="#112d4e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CanCoach">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="bg-shape shape-a"></div>
+  <div class="bg-shape shape-b"></div>
+
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Daily Cantonese</p>
+        <h1>Cantonese Coach</h1>
+      </div>
+      <div class="streak" id="streakBadge">Streak: 0 days</div>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab is-active" data-tab="words">Words</button>
+      <button class="tab" data-tab="patterns">Patterns</button>
+      <button class="tab" data-tab="listening">Listening</button>
+      <button class="tab" data-tab="settings">Content</button>
+    </nav>
+
+    <section class="panel is-active" id="panel-words">
+      <div class="card" id="wordCard">
+        <p class="chip" id="wordCategory">Category</p>
+        <h2 class="hanzi" id="wordHanzi">我</h2>
+        <p class="jyutping" id="wordJyutping">ngo5</p>
+        <p class="english" id="wordEnglish">I / me</p>
+        <div class="actions">
+          <button id="playWordAudio">Play audio</button>
+          <button id="revealExample">Example</button>
+          <button id="markKnown">I know this</button>
+          <button id="nextWord">Next</button>
+        </div>
+        <p class="example" id="wordExample"></p>
+      </div>
+      <div class="mini-stats">
+        <p id="knownWords">Known words: 0</p>
+        <p id="reviewedWords">Reviewed today: 0</p>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-patterns">
+      <div class="card">
+        <h2>Sentence Structure Drill</h2>
+        <p class="formula" id="patternFormula"></p>
+        <div class="slot-grid" id="slotGrid"></div>
+        <div class="result-box">
+          <p class="hanzi" id="patternHanzi"></p>
+          <p class="jyutping" id="patternJyutping"></p>
+          <p class="english" id="patternEnglish"></p>
+        </div>
+        <div class="actions">
+          <button id="playPatternAudio">Play sentence</button>
+          <button id="newPattern">Next pattern</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-listening">
+      <div class="card">
+        <h2>Listening Quiz</h2>
+        <p>Tap play, listen, then choose the correct English meaning.</p>
+        <p class="hanzi hidden" id="quizHanzi"></p>
+        <div class="actions">
+          <button id="playQuizAudio">Play clip</button>
+          <button id="showQuizText">Show Chinese</button>
+          <button id="nextQuiz">Next quiz</button>
+        </div>
+        <div class="choices" id="quizChoices"></div>
+        <p class="feedback" id="quizFeedback"></p>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-settings">
+      <div class="card">
+        <h2>Content Manager</h2>
+        <p>Your app uses built-in basic words now. Import your own JSON to match your exact PDF list.</p>
+        <div class="actions">
+          <label class="file-btn" for="importFile">Import JSON</label>
+          <input id="importFile" type="file" accept="application/json">
+          <button id="exportData">Export current JSON</button>
+          <button id="resetData">Reset built-in words</button>
+        </div>
+        <details>
+          <summary>Expected JSON format</summary>
+          <pre>{
+  "words": [
+    {
+      "id": "w1",
+      "hanzi": "我",
+      "jyutping": "ngo5",
+      "english": "I / me",
+      "category": "pronoun",
+      "example": "我學廣東話。"
+    }
+  ],
+  "patterns": [...],
+  "quiz": [...]
+}</pre>
+        </details>
+        <p id="contentMessage"></p>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
