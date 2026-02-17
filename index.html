@@ -67,6 +67,11 @@
           </select>
         </div>
       </div>
+      <div class="actions">
+        <button id="applyControls">Apply Settings</button>
+        <button id="toggleGrammarLens">Grammar Lens: Off</button>
+      </div>
+      <p class="example" id="controlsMessage"></p>
     </section>
 
     <section class="panel is-active" id="panel-words">
@@ -100,6 +105,8 @@
           <p class="hanzi" id="patternHanzi"></p>
           <p class="jyutping" id="patternJyutping"></p>
           <p class="english" id="patternEnglish"></p>
+          <p class="literal" id="patternLiteral"></p>
+          <div class="grammar-notes" id="patternGrammarNotes"></div>
         </div>
         <div class="actions">
           <button id="playPatternAudio">Play sentence</button>
@@ -117,6 +124,8 @@
         <p class="hanzi hidden" id="quizHanzi"></p>
         <p class="jyutping hidden" id="quizJyutping"></p>
         <p class="english hidden" id="quizEnglish"></p>
+        <p class="literal" id="quizLiteral"></p>
+        <div class="grammar-notes" id="quizGrammarNotes"></div>
         <div class="actions">
           <button id="playQuizAudio">Play clip</button>
           <button id="showQuizText">Show Chinese</button>

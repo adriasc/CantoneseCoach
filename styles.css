@@ -200,6 +200,60 @@ button:hover,
   background: #365173;
 }
 
+#applyControls {
+  background: #0f9d8b;
+}
+
+.literal {
+  margin: 8px 0 0;
+  color: #2f5b7a;
+  font-style: italic;
+  font-size: 0.95rem;
+}
+
+.grammar-notes {
+  margin-top: 8px;
+  display: grid;
+  gap: 6px;
+}
+
+.grammar-note {
+  background: #edf8ff;
+  border-left: 4px solid #4f8fc5;
+  border-radius: 8px;
+  padding: 7px 9px;
+  color: #26435b;
+  font-size: 0.88rem;
+}
+
+.tok {
+  display: inline-block;
+  margin-right: 4px;
+  margin-bottom: 4px;
+  padding: 0 4px;
+  border-radius: 6px;
+}
+
+.tok-verb {
+  border: 2px solid #0f9d8b;
+  background: #e9fbf8;
+}
+
+.tok-past {
+  border: 2px solid #ff6b35;
+  background: #fff1ea;
+}
+
+.tok-prog {
+  border: 2px solid #2f7ec2;
+  background: #ebf4fd;
+}
+
+.tok-future {
+  border: 2px solid #d09821;
+  background: #fff6e2;
+}
+
 .example {
   min-height: 26px;
   margin-bottom: 0;

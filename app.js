@@ -923,15 +923,65 @@ const SENTENCE_BANK = [
   { id: "s27", level: 5, tense: "conditional", theme: "friends", hanzi: "只要你肯練習，每日講十分鐘廣東話，你一定會進步。", jyutping: "zi2 jiu3 nei5 hang2 lin6 zaap6, mui5 jat6 gong2 sap6 fan1 zung1 gwong2 dung1 waa2, nei5 jat1 ding6 wui5 zeon3 bou6", english: "As long as you practice and speak Cantonese for ten minutes every day, you will improve." },
   { id: "s28", level: 5, tense: "conditional", theme: "holiday", hanzi: "就算機票貴，我都想同屋企人去旅行，因為大家好耐冇一齊放假。", jyutping: "zau6 syun3 gei1 piu3 gwai3, ngo5 dou1 soeng2 tung4 uk1 kei2 jan4 heoi3 leoi5 hang4, jan1 wai6 daai6 gaa1 hou2 noi6 mou5 jat1 cai4 fong3 gaa3", english: "Even if flights are expensive, I still want to travel with my family because we haven't had a holiday together for a long time." },
   { id: "s29", level: 5, tense: "future", theme: "daily", hanzi: "如果公司之後改咗時間，我會早啲出門，避免塞車。", jyutping: "jyu4 gwo2 gung1 si1 zi1 hau6 goi2 zo2 si4 gaan3, ngo5 wui5 zou2 di1 ceot1 mun4, bei6 min5 sak1 ce1", english: "If the company changes the schedule later, I will leave earlier to avoid traffic." },
-  { id: "s30", level: 5, tense: "past", theme: "friends", hanzi: "頭先朋友打畀我，話佢喺醫院等緊我，所以我即刻離開公司。", jyutping: "tau4 sin1 pang4 jau5 daa2 bei2 ngo5, waa6 keoi5 hai2 ji1 jyun2 dang2 gan2 ngo5, so2 ji5 ngo5 zik1 hak1 lei4 hoi1 gung1 si1", english: "A friend called me just now and said they were waiting at the hospital, so I left the office immediately." }
+  { id: "s30", level: 5, tense: "past", theme: "friends", hanzi: "頭先朋友打畀我，話佢喺醫院等緊我，所以我即刻離開公司。", jyutping: "tau4 sin1 pang4 jau5 daa2 bei2 ngo5, waa6 keoi5 hai2 ji1 jyun2 dang2 gan2 ngo5, so2 ji5 ngo5 zik1 hak1 lei4 hoi1 gung1 si1", english: "A friend called me just now and said they were waiting at the hospital, so I left the office immediately." },
+  { id: "s31", level: 1, tense: "past", theme: "daily", hanzi: "我食咗飯。", jyutping: "ngo5 sik6 zo2 faan6", english: "I ate a meal." },
+  { id: "s32", level: 1, tense: "past", theme: "home", hanzi: "你返咗屋企。", jyutping: "nei5 faan1 zo2 uk1 kei2", english: "You went back home." },
+  { id: "s33", level: 1, tense: "future", theme: "daily", hanzi: "我會飲水。", jyutping: "ngo5 wui5 jam2 seoi2", english: "I will drink water." },
+  { id: "s34", level: 1, tense: "future", theme: "travel", hanzi: "我會去學校。", jyutping: "ngo5 wui5 heoi3 hok6 haau6", english: "I will go to school." },
+  { id: "s35", level: 1, tense: "present", theme: "home", hanzi: "我喺廚房。", jyutping: "ngo5 hai2 cyu4 fong2", english: "I am in the kitchen." },
+  { id: "s36", level: 1, tense: "present", theme: "friends", hanzi: "佢係我朋友。", jyutping: "keoi5 hai6 ngo5 pang4 jau5", english: "He/She is my friend." },
+  { id: "s37", level: 2, tense: "past", theme: "friends", hanzi: "尋日我見咗朋友。", jyutping: "cam4 jat6 ngo5 gin3 zo2 pang4 jau5", english: "Yesterday I met a friend." },
+  { id: "s38", level: 2, tense: "past", theme: "home", hanzi: "我啱啱寫完功課。", jyutping: "ngo5 ngaam1 ngaam1 se2 jyun4 gung1 fo3", english: "I just finished homework." },
+  { id: "s39", level: 2, tense: "future", theme: "home", hanzi: "今晚我會喺屋企煮飯。", jyutping: "gam1 maan5 ngo5 wui5 hai2 uk1 kei2 zyu2 faan6", english: "Tonight I will cook at home." },
+  { id: "s40", level: 2, tense: "future", theme: "friends", hanzi: "下次我會同你飲茶。", jyutping: "haa6 ci3 ngo5 wui5 tung4 nei5 jam2 caa4", english: "Next time I will drink tea with you." },
+  { id: "s41", level: 2, tense: "present", theme: "travel", hanzi: "我而家喺商店買嘢。", jyutping: "ngo5 ji4 gaa1 hai2 soeng1 dim3 maai5 je5", english: "I am buying things at the shop now." },
+  { id: "s42", level: 2, tense: "present", theme: "daily", hanzi: "你今日做咩呀？", jyutping: "nei5 gam1 jat6 zou6 me1 aa3", english: "What are you doing today?" },
+  { id: "s43", level: 3, tense: "past", theme: "travel", hanzi: "上次去旅行，我哋住咗三晚酒店。", jyutping: "soeng6 ci3 heoi3 leoi5 hang4, ngo5 dei6 zyu6 zo2 saam1 maan5 zau2 dim3", english: "Last trip, we stayed in a hotel for three nights." },
+  { id: "s44", level: 3, tense: "future", theme: "daily", hanzi: "聽日早上我會早啲出門返工。", jyutping: "ting1 jat6 zou2 soeng6 ngo5 wui5 zou2 di1 ceot1 mun4 faan1 gung1", english: "Tomorrow morning I will leave earlier for work." },
+  { id: "s45", level: 3, tense: "conditional", theme: "friends", hanzi: "如果你得閒，我哋就一齊食飯。", jyutping: "jyu4 gwo2 nei5 dak1 haan4, ngo5 dei6 zau6 jat1 cai4 sik6 faan6", english: "If you are free, we'll eat together." },
+  { id: "s46", level: 4, tense: "past", theme: "holiday", hanzi: "上個月我哋去咗海邊，不過天氣太凍，所以早啲返酒店。", jyutping: "soeng6 go3 jyut6 ngo5 dei6 heoi3 zo2 hoi2 bin1, bat1 gwo3 tin1 hei3 taai3 dung3, so2 ji5 zou2 di1 faan1 zau2 dim3", english: "Last month we went to the beach, but it was too cold, so we returned to the hotel early." },
+  { id: "s47", level: 4, tense: "future", theme: "home", hanzi: "如果之後你要搬屋，我可以同你一齊執嘢。", jyutping: "jyu4 gwo2 zi1 hau6 nei5 jiu3 bun1 uk1, ngo5 ho2 ji5 tung4 nei5 jat1 cai4 zap1 je5", english: "If you need to move later, I can help you pack." },
+  { id: "s48", level: 5, tense: "conditional", theme: "daily", hanzi: "如果我今個星期做完所有工作，我就會同朋友計劃下次旅行。", jyutping: "jyu4 gwo2 ngo5 gam1 go3 sing1 kei4 zou6 jyun4 so2 jau5 gung1 zok3, ngo5 zau6 wui5 tung4 pang4 jau5 gai3 waak6 haa6 ci3 leoi5 hang4", english: "If I finish all my work this week, I will plan the next trip with friends." },
+  { id: "s49", level: 1, tense: "past", theme: "daily", hanzi: "我買咗水。", jyutping: "ngo5 maai5 zo2 seoi2", english: "I bought water." },
+  { id: "s50", level: 1, tense: "past", theme: "home", hanzi: "佢返咗屋企。", jyutping: "keoi5 faan1 zo2 uk1 kei2", english: "He/She went back home." },
+  { id: "s51", level: 2, tense: "past", theme: "travel", hanzi: "我去過香港。", jyutping: "ngo5 heoi3 gwo3 hoeng1 gong2", english: "I have been to Hong Kong." },
+  { id: "s52", level: 2, tense: "past", theme: "friends", hanzi: "你見過佢未？", jyutping: "nei5 gin3 gwo3 keoi5 mei6", english: "Have you met him/her before?" },
+  { id: "s53", level: 2, tense: "past", theme: "daily", hanzi: "我做完功課。", jyutping: "ngo5 zou6 jyun4 gung1 fo3", english: "I finished homework." },
+  { id: "s54", level: 2, tense: "past", theme: "home", hanzi: "我哋食完飯喇。", jyutping: "ngo5 dei6 sik6 jyun4 faan6 laa3", english: "We finished eating." },
+  { id: "s55", level: 1, tense: "present", theme: "daily", hanzi: "我食緊飯。", jyutping: "ngo5 sik6 gan2 faan6", english: "I am eating." },
+  { id: "s56", level: 1, tense: "present", theme: "friends", hanzi: "佢講緊電話。", jyutping: "keoi5 gong2 gan2 din6 waa2", english: "He/She is talking on the phone." },
+  { id: "s57", level: 2, tense: "present", theme: "travel", hanzi: "我哋等緊巴士。", jyutping: "ngo5 dei6 dang2 gan2 baa1 si2", english: "We are waiting for the bus." },
+  { id: "s58", level: 2, tense: "present", theme: "home", hanzi: "門開住。", jyutping: "mun4 hoi1 zyu6", english: "The door is left open." },
+  { id: "s59", level: 2, tense: "present", theme: "home", hanzi: "阿哥住喺香港。", jyutping: "aa3 go1 zyu6 hai2 hoeng1 gong2", english: "My older brother lives in Hong Kong." },
+  { id: "s60", level: 3, tense: "past", theme: "daily", hanzi: "我已經食咗早餐。", jyutping: "ngo5 ji5 ging1 sik6 zo2 zou2 caan1", english: "I already ate breakfast." },
+  { id: "s61", level: 3, tense: "past", theme: "friends", hanzi: "我以前聽過呢首歌。", jyutping: "ngo5 ji5 cin4 teng1 gwo3 ni1 sau2 go1", english: "I have heard this song before." },
+  { id: "s62", level: 3, tense: "past", theme: "home", hanzi: "我啱啱飲完茶。", jyutping: "ngo5 ngaam1 ngaam1 jam2 jyun4 caa4", english: "I just finished drinking tea." },
+  { id: "s63", level: 3, tense: "future", theme: "daily", hanzi: "我將會再試一次。", jyutping: "ngo5 zoeng1 wui5 zoi3 si3 jat1 ci3", english: "I will try one more time." },
+  { id: "s64", level: 4, tense: "conditional", theme: "home", hanzi: "如果你仲做緊嘢，我就等你食飯。", jyutping: "jyu4 gwo2 nei5 zung6 zou6 gan2 je5, ngo5 zau6 dang2 nei5 sik6 faan6", english: "If you are still working, I will wait for you to eat." },
+  { id: "s65", level: 4, tense: "past", theme: "travel", hanzi: "我哋去完巿場之後，就返酒店休息。", jyutping: "ngo5 dei6 heoi3 jyun4 si5 coeng4 zi1 hau6, zau6 faan1 zau2 dim3 jau1 sik1", english: "After we finished going to the market, we returned to the hotel to rest." },
+  { id: "s66", level: 5, tense: "conditional", theme: "friends", hanzi: "如果你之前去過嗰間餐廳，不如今晚帶我去試下。", jyutping: "jyu4 gwo2 nei5 zi1 cin4 heoi3 gwo3 go2 gaan1 caan1 teng1, bat1 jyu4 gam1 maan5 daai3 ngo5 heoi3 si3 haa5", english: "If you've been to that restaurant before, why not take me there tonight to try it." }
 ];
+
+const ASPECT_MARKERS = {
+  "咗": { role: "past", label: "completed action (past)" },
+  "過": { role: "past", label: "experience in the past" },
+  "完": { role: "past", label: "finished/completed" },
+  "緊": { role: "prog", label: "ongoing action (-ing)" },
+  "住": { role: "prog", label: "continuous state" },
+  "會": { role: "future", label: "future marker (will)" },
+  "將會": { role: "future", label: "future marker (going to/will)" },
+  "已經": { role: "past", label: "already" }
+};
+
+const GENERATED_SENTENCES = buildGeneratedAspectSentences();
+const ALL_SENTENCES = SENTENCE_BANK.concat(GENERATED_SENTENCES);
 
 const state = {
   content: loadContent(),
   known: new Set(loadJson(STORAGE_KEYS.known, [])),
   reviewed: loadJson(STORAGE_KEYS.reviewed, { date: todayString(), count: 0 }),
   streak: loadJson(STORAGE_KEYS.streak, { lastDate: null, days: 0 }),
-  prefs: loadJson(STORAGE_KEYS.prefs, { level: 2, tense: "mixed", theme: "mixed", showJyutping: true, showEnglish: true }),
+  prefs: loadJson(STORAGE_KEYS.prefs, { level: 2, tense: "mixed", theme: "mixed", showJyutping: true, showEnglish: true, showGrammarLens: false }),
   rotation: { words: [], patternSentences: [], quizSentences: [] },
   currentWord: null,
   currentSentence: null,
@@ -952,6 +1002,9 @@ const els = {
   globalLevel: byId("globalLevel"),
   globalTense: byId("globalTense"),
   globalTheme: byId("globalTheme"),
+  applyControls: byId("applyControls"),
+  toggleGrammarLens: byId("toggleGrammarLens"),
+  controlsMessage: byId("controlsMessage"),
   toggleWordJyutping: byId("toggleWordJyutping"),
   toggleWordEnglish: byId("toggleWordEnglish"),
   togglePatternJyutping: byId("togglePatternJyutping"),
@@ -966,9 +1019,13 @@ const els = {
   patternHanzi: byId("patternHanzi"),
   patternJyutping: byId("patternJyutping"),
   patternEnglish: byId("patternEnglish"),
+  patternLiteral: byId("patternLiteral"),
+  patternGrammarNotes: byId("patternGrammarNotes"),
   quizHanzi: byId("quizHanzi"),
   quizJyutping: byId("quizJyutping"),
   quizEnglish: byId("quizEnglish"),
+  quizLiteral: byId("quizLiteral"),
+  quizGrammarNotes: byId("quizGrammarNotes"),
   quizChoices: byId("quizChoices"),
   quizFeedback: byId("quizFeedback"),
   contentMessage: byId("contentMessage")
@@ -1042,31 +1099,16 @@ function bindUI() {
 
   byId("nextQuiz").addEventListener("click", rollQuiz);
 
-  els.globalLevel.addEventListener("change", () => {
-    state.prefs.level = Number(els.globalLevel.value) || 2;
+  els.globalLevel.addEventListener("change", markControlsDirty);
+  els.globalTense.addEventListener("change", markControlsDirty);
+  els.globalTheme.addEventListener("change", markControlsDirty);
+  els.applyControls.addEventListener("click", applyGlobalControls);
+  els.toggleGrammarLens.addEventListener("click", () => {
+    state.prefs.showGrammarLens = !state.prefs.showGrammarLens;
     saveJson(STORAGE_KEYS.prefs, state.prefs);
-    resetRotations();
-    rollWord();
-    rollPattern();
-    rollQuiz();
-  });
-
-  els.globalTense.addEventListener("change", () => {
-    state.prefs.tense = els.globalTense.value;
-    saveJson(STORAGE_KEYS.prefs, state.prefs);
-    resetRotations();
-    rollWord();
-    rollPattern();
-    rollQuiz();
-  });
-
-  els.globalTheme.addEventListener("change", () => {
-    state.prefs.theme = els.globalTheme.value;
-    saveJson(STORAGE_KEYS.prefs, state.prefs);
-    resetRotations();
-    rollWord();
-    rollPattern();
-    rollQuiz();
+    applyVisibilityPrefs();
+    renderPatternSentence();
+    renderQuizGrammar();
   });
 
   byId("importFile").addEventListener("change", importDataFile);
@@ -1090,6 +1132,22 @@ function bindUI() {
     rollQuiz();
     refreshStats();
   });
+}
+
+function markControlsDirty() {
+  els.controlsMessage.textContent = "Pending changes. Press Apply Settings.";
+}
+
+function applyGlobalControls() {
+  state.prefs.level = Number(els.globalLevel.value) || 2;
+  state.prefs.tense = els.globalTense.value;
+  state.prefs.theme = els.globalTheme.value;
+  saveJson(STORAGE_KEYS.prefs, state.prefs);
+  resetRotations();
+  rollWord();
+  rollPattern();
+  rollQuiz();
+  els.controlsMessage.textContent = "Settings applied.";
 }
 
 function switchTab(tabName) {
@@ -1133,9 +1191,19 @@ function renderPatternControls() {
 
 function renderPatternSentence() {
   const built = buildPatternSentence();
-  els.patternHanzi.textContent = built.hanzi;
+  const analysis = analyzeSentence(built.hanzi);
+  if (state.prefs.showGrammarLens) {
+    els.patternHanzi.innerHTML = analysis.annotatedHanzi;
+    els.patternGrammarNotes.innerHTML = analysis.notes.length
+      ? analysis.notes.map((note) => `<div class="grammar-note">${note}</div>`).join("")
+      : `<div class="grammar-note">No tense/aspect marker detected in this sentence.</div>`;
+  } else {
+    els.patternHanzi.textContent = built.hanzi;
+    els.patternGrammarNotes.innerHTML = "";
+  }
   els.patternJyutping.textContent = built.jyutping;
   els.patternEnglish.textContent = built.english;
+  els.patternLiteral.textContent = `Literal: ${analysis.literal}`;
   applyVisibilityPrefs();
 }
 
@@ -1160,6 +1228,7 @@ function rollQuiz() {
   els.quizHanzi.classList.add("hidden");
   byId("showQuizText").textContent = "Show Chinese";
   applyVisibilityPrefs();
+  renderQuizGrammar();
 
   const answers = [state.currentQuiz.english, ...pickDistractors(state.currentQuiz.id, state.currentQuiz.english, 3)];
   shuffle(answers);
@@ -1176,6 +1245,21 @@ function rollQuiz() {
     });
     els.quizChoices.appendChild(btn);
   });
+}
+
+function renderQuizGrammar() {
+  if (!state.currentQuiz) return;
+  const analysis = analyzeSentence(state.currentQuiz.hanzi);
+  if (state.prefs.showGrammarLens) {
+    els.quizHanzi.innerHTML = analysis.annotatedHanzi;
+    els.quizGrammarNotes.innerHTML = analysis.notes.length
+      ? analysis.notes.map((note) => `<div class="grammar-note">${note}</div>`).join("")
+      : `<div class="grammar-note">No tense/aspect marker detected in this sentence.</div>`;
+  } else {
+    els.quizHanzi.textContent = state.currentQuiz.hanzi;
+    els.quizGrammarNotes.innerHTML = "";
+  }
+  els.quizLiteral.textContent = `Literal: ${analysis.literal}`;
 }
 
 function wordsByCategories(categories) {
@@ -1354,6 +1438,7 @@ function applyVisibilityPrefs() {
   els.toggleWordEnglish.textContent = showEn ? "Hide English" : "Show English";
   els.togglePatternEnglish.textContent = showEn ? "Hide English" : "Show English";
   els.toggleQuizEnglish.textContent = showEn ? "Hide English" : "Show English";
+  els.toggleGrammarLens.textContent = state.prefs.showGrammarLens ? "Grammar Lens: On" : "Grammar Lens: Off";
 }
 
 function togglePref(prefKey) {
@@ -1381,19 +1466,16 @@ function getFilteredSentences() {
   const level = Number(state.prefs.level) || 2;
   const tense = state.prefs.tense || "mixed";
   const theme = state.prefs.theme || "mixed";
-  let pool = SENTENCE_BANK.filter((s) => (
+  let pool = ALL_SENTENCES.filter((s) => (
     s.level <= level
     && (tense === "mixed" || s.tense === tense)
     && (theme === "mixed" || s.theme === theme)
   ));
   if (!pool.length) {
-    pool = SENTENCE_BANK.filter((s) => s.level <= level && (tense === "mixed" || s.tense === tense));
+    pool = ALL_SENTENCES.filter((s) => s.level <= level && (tense === "mixed" || s.tense === tense));
   }
   if (!pool.length) {
-    pool = SENTENCE_BANK.filter((s) => s.level <= level);
-  }
-  if (!pool.length) {
-    pool = SENTENCE_BANK.slice();
+    pool = ALL_SENTENCES.filter((s) => s.level <= level);
   }
   return pool;
 }
@@ -1402,7 +1484,7 @@ function buildWordExample(word) {
   if (!word) return "";
   if (word.example) return word.example;
   const key = normalizeHanzi(word.hanzi);
-  const fromSentence = SENTENCE_BANK.find((s) => normalizeHanzi(s.hanzi).includes(key));
+  const fromSentence = ALL_SENTENCES.find((s) => normalizeHanzi(s.hanzi).includes(key));
   if (fromSentence) return fromSentence.hanzi;
   if (word.category === "time") return `${word.hanzi}我學廣東話。`;
   if (word.category === "verb") return `我${word.hanzi}。`;
@@ -1424,6 +1506,272 @@ function wordLevel(word) {
   if (len >= 4) level += 2;
   else if (len >= 3) level += 1;
   return Math.min(level, 5);
+}
+
+function buildGeneratedAspectSentences() {
+  const subjects = [
+    { h: "我", j: "ngo5", e: "I" },
+    { h: "你", j: "nei5", e: "You" },
+    { h: "佢", j: "keoi5", e: "He/She" },
+    { h: "我哋", j: "ngo5 dei6", e: "We" },
+    { h: "你哋", j: "nei5 dei6", e: "You all" }
+  ];
+
+  const levelsByTemplate = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5];
+
+  const zo2Templates = [
+    { vH: "食", vJ: "sik6", past: "ate", oH: "飯", oJ: "faan6", oE: "a meal", theme: "daily" },
+    { vH: "飲", vJ: "jam2", past: "drank", oH: "水", oJ: "seoi2", oE: "water", theme: "daily" },
+    { vH: "買", vJ: "maai5", past: "bought", oH: "嘢", oJ: "je5", oE: "things", theme: "travel" },
+    { vH: "睇", vJ: "tai2", past: "read", oH: "書", oJ: "syu1", oE: "a book", theme: "home" },
+    { vH: "寫", vJ: "se2", past: "wrote", oH: "功課", oJ: "gung1 fo3", oE: "homework", theme: "home" },
+    { vH: "聽", vJ: "teng1", past: "listened to", oH: "廣東話", oJ: "gwong2 dung1 waa2", oE: "Cantonese", theme: "daily" },
+    { vH: "見", vJ: "gin3", past: "met", oH: "朋友", oJ: "pang4 jau5", oE: "a friend", theme: "friends" },
+    { vH: "去", vJ: "heoi3", past: "went to", oH: "餐廳", oJ: "caan1 teng1", oE: "a restaurant", theme: "travel" },
+    { vH: "返", vJ: "faan1", past: "returned to", oH: "屋企", oJ: "uk1 kei2", oE: "home", theme: "home" },
+    { vH: "搭", vJ: "daap3", past: "took", oH: "巴士", oJ: "baa1 si2", oE: "the bus", theme: "travel" }
+  ];
+
+  const gwo3Templates = [
+    { vH: "去", vJ: "heoi3", exp: "been to", oH: "香港", oJ: "hoeng1 gong2", oE: "Hong Kong", theme: "travel" },
+    { vH: "食", vJ: "sik6", exp: "tried", oH: "辣嘢", oJ: "laat6 je5", oE: "spicy food", theme: "daily" },
+    { vH: "飲", vJ: "jam2", exp: "tried", oH: "咖啡", oJ: "gaa3 fe1", oE: "coffee", theme: "daily" },
+    { vH: "見", vJ: "gin3", exp: "met", oH: "佢", oJ: "keoi5", oE: "him/her", theme: "friends" },
+    { vH: "讀", vJ: "duk6", exp: "read", oH: "呢本書", oJ: "ni1 bun2 syu1", oE: "this book", theme: "home" },
+    { vH: "聽", vJ: "teng1", exp: "heard", oH: "呢首歌", oJ: "ni1 sau2 go1", oE: "this song", theme: "friends" },
+    { vH: "搭", vJ: "daap3", exp: "taken", oH: "飛機", oJ: "fei1 gei1", oE: "a plane", theme: "travel" },
+    { vH: "住", vJ: "zyu6", exp: "stayed at", oH: "酒店", oJ: "zau2 dim3", oE: "a hotel", theme: "holiday" },
+    { vH: "行", vJ: "haang4", exp: "walked around", oH: "巿場", oJ: "si5 coeng4", oE: "the market", theme: "travel" },
+    { vH: "試", vJ: "si3", exp: "tried", oH: "新菜", oJ: "san1 coi3", oE: "new dishes", theme: "holiday" }
+  ];
+
+  const jyunTemplates = [
+    { vH: "食", vJ: "sik6", fin: "finished eating", oH: "飯", oJ: "faan6", oE: "", theme: "daily" },
+    { vH: "飲", vJ: "jam2", fin: "finished drinking", oH: "茶", oJ: "caa4", oE: "", theme: "daily" },
+    { vH: "寫", vJ: "se2", fin: "finished writing", oH: "功課", oJ: "gung1 fo3", oE: "", theme: "home" },
+    { vH: "睇", vJ: "tai2", fin: "finished reading", oH: "呢本書", oJ: "ni1 bun2 syu1", oE: "", theme: "home" },
+    { vH: "收", vJ: "sau1", fin: "finished packing", oH: "啲嘢", oJ: "di1 je5", oE: "", theme: "travel" },
+    { vH: "做", vJ: "zou6", fin: "finished doing", oH: "家務", oJ: "gaa1 mou6", oE: "", theme: "home" },
+    { vH: "買", vJ: "maai5", fin: "finished buying", oH: "菜", oJ: "coi3", oE: "", theme: "daily" },
+    { vH: "聽", vJ: "teng1", fin: "finished listening to", oH: "呢課", oJ: "ni1 fo3", oE: "", theme: "daily" },
+    { vH: "講", vJ: "gong2", fin: "finished speaking on", oH: "電話", oJ: "din6 waa2", oE: "", theme: "friends" },
+    { vH: "試", vJ: "si3", fin: "finished trying", oH: "呢樣嘢", oJ: "ni1 joeng6 je5", oE: "", theme: "holiday" }
+  ];
+
+  const ganTemplates = [
+    { vH: "食", vJ: "sik6", ing: "eating", oH: "飯", oJ: "faan6", oE: "a meal", theme: "daily" },
+    { vH: "飲", vJ: "jam2", ing: "drinking", oH: "茶", oJ: "caa4", oE: "tea", theme: "daily" },
+    { vH: "睇", vJ: "tai2", ing: "reading", oH: "書", oJ: "syu1", oE: "a book", theme: "home" },
+    { vH: "聽", vJ: "teng1", ing: "listening to", oH: "音樂", oJ: "jam1 ngok6", oE: "music", theme: "friends" },
+    { vH: "講", vJ: "gong2", ing: "talking on", oH: "電話", oJ: "din6 waa2", oE: "the phone", theme: "friends" },
+    { vH: "行", vJ: "haang4", ing: "walking on", oH: "街", oJ: "gaai1", oE: "the street", theme: "travel" },
+    { vH: "等", vJ: "dang2", ing: "waiting for", oH: "巴士", oJ: "baa1 si2", oE: "the bus", theme: "travel" },
+    { vH: "做", vJ: "zou6", ing: "doing", oH: "功課", oJ: "gung1 fo3", oE: "homework", theme: "home" },
+    { vH: "煮", vJ: "zyu2", ing: "cooking", oH: "飯", oJ: "faan6", oE: "food", theme: "home" },
+    { vH: "搵", vJ: "wan2", ing: "looking for", oH: "朋友", oJ: "pang4 jau5", oE: "a friend", theme: "friends" }
+  ];
+
+  const out = [];
+  let idCounter = 1000;
+
+  function addZo2Examples() {
+    zo2Templates.forEach((tpl, tplIndex) => {
+      subjects.forEach((sub, subIndex) => {
+        out.push({
+          id: `g${idCounter++}`,
+          level: levelsByTemplate[tplIndex],
+          tense: "past",
+          theme: tpl.theme,
+          hanzi: `${sub.h}${tpl.vH}咗${tpl.oH}。`,
+          jyutping: `${sub.j} ${tpl.vJ} zo2 ${tpl.oJ}`,
+          english: `${sub.e} ${tpl.past} ${tpl.oE}.`
+        });
+      });
+    });
+  }
+
+  function addGwo3Examples() {
+    gwo3Templates.forEach((tpl, tplIndex) => {
+      subjects.forEach((sub) => {
+        out.push({
+          id: `g${idCounter++}`,
+          level: levelsByTemplate[tplIndex],
+          tense: "past",
+          theme: tpl.theme,
+          hanzi: `${sub.h}${tpl.vH}過${tpl.oH}。`,
+          jyutping: `${sub.j} ${tpl.vJ} gwo3 ${tpl.oJ}`,
+          english: `${sub.e} have ${tpl.exp} ${tpl.oE} before.`
+        });
+      });
+    });
+  }
+
+  function addJyunExamples() {
+    jyunTemplates.forEach((tpl, tplIndex) => {
+      subjects.forEach((sub) => {
+        out.push({
+          id: `g${idCounter++}`,
+          level: levelsByTemplate[tplIndex],
+          tense: "past",
+          theme: tpl.theme,
+          hanzi: `${sub.h}${tpl.vH}完${tpl.oH}。`,
+          jyutping: `${sub.j} ${tpl.vJ} jyun4 ${tpl.oJ}`,
+          english: `${sub.e} ${tpl.fin} ${tpl.oE}`.trim() + "."
+        });
+      });
+    });
+  }
+
+  function addGanExamples() {
+    ganTemplates.forEach((tpl, tplIndex) => {
+      subjects.forEach((sub) => {
+        out.push({
+          id: `g${idCounter++}`,
+          level: levelsByTemplate[tplIndex],
+          tense: "present",
+          theme: tpl.theme,
+          hanzi: `${sub.h}${tpl.vH}緊${tpl.oH}。`,
+          jyutping: `${sub.j} ${tpl.vJ} gan2 ${tpl.oJ}`,
+          english: `${sub.e} ${beVerb(sub.e)} ${tpl.ing} ${tpl.oE}.`
+        });
+      });
+    });
+  }
+
+  addZo2Examples();
+  addGwo3Examples();
+  addJyunExamples();
+  addGanExamples();
+  return out;
+}
+
+function beVerb(subjectEnglish) {
+  if (subjectEnglish === "I") return "am";
+  if (subjectEnglish === "He/She") return "is";
+  return "are";
+}
+
+function analyzeSentence(hanzi) {
+  const tokens = tokenizeSentence(hanzi);
+  const notes = [];
+  const literalParts = [];
+  const annotated = tokens.map((token, idx) => {
+    if (isPunctuation(token)) {
+      literalParts.push(token);
+      return escapeHtml(token);
+    }
+
+    const marker = ASPECT_MARKERS[token];
+    const isVerb = isVerbToken(token);
+    let cls = "tok";
+    if (marker?.role === "past") cls += " tok-past";
+    if (marker?.role === "prog") cls += " tok-prog";
+    if (marker?.role === "future") cls += " tok-future";
+    if (isVerb) cls += " tok-verb";
+
+    if (marker) {
+      const linkedVerb = findPreviousVerb(tokens, idx);
+      notes.push(linkedVerb
+        ? `Marker <strong>${token}</strong> = ${marker.label}, linked to verb <strong>${linkedVerb}</strong>.`
+        : `Marker <strong>${token}</strong> = ${marker.label}.`);
+    }
+
+    literalParts.push(literalForToken(token));
+    return `<span class="${cls}">${escapeHtml(token)}</span>`;
+  });
+
+  return {
+    annotatedHanzi: annotated.join(""),
+    literal: cleanLiteral(literalParts.join(" ")),
+    notes
+  };
+}
+
+function tokenizeSentence(hanzi) {
+  const input = String(hanzi || "");
+  const vocabulary = getTokenizerVocabulary();
+  const tokens = [];
+  let i = 0;
+  while (i < input.length) {
+    const char = input[i];
+    if (/\s/.test(char)) {
+      i += 1;
+      continue;
+    }
+    if (isPunctuation(char)) {
+      tokens.push(char);
+      i += 1;
+      continue;
+    }
+    let match = "";
+    for (let j = 0; j < vocabulary.length; j += 1) {
+      const candidate = vocabulary[j];
+      if (candidate && input.startsWith(candidate, i)) {
+        match = candidate;
+        break;
+      }
+    }
+    if (match) {
+      tokens.push(match);
+      i += match.length;
+    } else {
+      tokens.push(char);
+      i += 1;
+    }
+  }
+  return tokens;
+}
+
+function getTokenizerVocabulary() {
+  const words = (state.content?.words || []).map((w) => normalizeHanzi(w.hanzi)).filter(Boolean);
+  const extras = Object.keys(ASPECT_MARKERS).concat([
+    "已經", "將會", "唔係", "一齊", "啱啱", "之前", "之後", "不過", "因為", "所以"
+  ]);
+  const vocab = Array.from(new Set(words.concat(extras))).sort((a, b) => b.length - a.length);
+  return vocab;
+}
+
+function isPunctuation(token) {
+  return /^[，。！？、,.!?]$/.test(token);
+}
+
+function isVerbToken(token) {
+  const normalized = normalizeHanzi(token);
+  const directVerb = (state.content?.words || []).find((w) => normalizeHanzi(w.hanzi) === normalized && w.category === "verb");
+  if (directVerb) return true;
+  return new Set(["係", "喺", "要", "想", "會", "將會", "有", "冇"]).has(normalized);
+}
+
+function findPreviousVerb(tokens, markerIndex) {
+  for (let i = markerIndex - 1; i >= 0; i -= 1) {
+    if (isVerbToken(tokens[i])) return tokens[i];
+  }
+  return "";
+}
+
+function literalForToken(token) {
+  const normalized = normalizeHanzi(token);
+  if (ASPECT_MARKERS[normalized]) return `[${ASPECT_MARKERS[normalized].label}]`;
+  const byWord = (state.content?.words || []).find((w) => normalizeHanzi(w.hanzi) === normalized);
+  if (byWord?.english) {
+    return String(byWord.english).split("/")[0].trim();
+  }
+  if (CORE_WORD_MEANINGS[normalized]) return CORE_WORD_MEANINGS[normalized];
+  return normalized;
+}
+
+function cleanLiteral(text) {
+  return text
+    .replace(/\s+([，。！？,.!?])/g, "$1")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 function registerServiceWorker() {
