@@ -276,6 +276,8 @@ const USER_CORE_WORDS = [
   { hanzi: "嘞", category: "particle" }
 ];
 
+const CORE_WORD_SET = new Set(USER_CORE_WORDS.map((w) => normalizeHanzi(w.hanzi)));
+
 const DEFAULT_DATA = {
   words: [
     { id: "w1", hanzi: "我", jyutping: "ngo5", english: "I / me", category: "pronoun", example: "我學廣東話。" },
@@ -477,7 +479,7 @@ function bindUI() {
 
   byId("resetData").addEventListener("click", () => {
     localStorage.removeItem(STORAGE_KEYS.content);
-    state.content = deepClone(DEFAULT_DATA);
+    state.content = normalizeContent(deepClone(DEFAULT_DATA));
     els.contentMessage.textContent = "Reset complete. Built-in words loaded.";
     rollWord();
     rollPattern();
@@ -496,7 +498,9 @@ function rollWord() {
   if (!words.length) return;
 
   const unknown = words.filter((w) => !state.known.has(w.id));
-  const pool = unknown.length ? unknown : words;
+  const coreUnknown = unknown.filter((w) => CORE_WORD_SET.has(normalizeHanzi(w.hanzi)));
+  const coreAll = words.filter((w) => CORE_WORD_SET.has(normalizeHanzi(w.hanzi)));
+  const pool = coreUnknown.length ? coreUnknown : (unknown.length ? unknown : (coreAll.length ? coreAll : words));
   state.currentWord = pool[Math.floor(Math.random() * pool.length)];
 
   els.wordCategory.textContent = state.currentWord.category || "word";
@@ -688,7 +692,7 @@ function importDataFile(event) {
 
 function loadContent() {
   const stored = loadJson(STORAGE_KEYS.content, null);
-  return stored ? normalizeContent(stored) : deepClone(DEFAULT_DATA);
+  return stored ? normalizeContent(stored) : normalizeContent(deepClone(DEFAULT_DATA));
 }
 
 function normalizeContent(input) {
