@@ -37,7 +37,7 @@ const USER_CORE_WORDS = [
   { hanzi: "餐廳", category: "place" },
   { hanzi: "學校", category: "place" },
   { hanzi: "街", category: "place" },
-  { hanzi: "巿場", category: "place" },
+  { hanzi: "市場", category: "place" },
   { hanzi: "公司", category: "place" },
   { hanzi: "酒店", category: "place" },
   { hanzi: "醫院", category: "place" },
@@ -72,7 +72,7 @@ const USER_CORE_WORDS = [
   { hanzi: "將會", category: "grammar" },
   { hanzi: "有", category: "verb" },
   { hanzi: "冇", category: "verb" },
-  { hanzi: "有去過會", category: "grammar" },
+  { hanzi: "有去過", category: "grammar" },
   // Adverbs
   { hanzi: "可以", category: "adverb" },
   { hanzi: "可能", category: "adverb" },
@@ -307,7 +307,7 @@ const CORE_WORD_MEANINGS = {
   "餐廳": "restaurant",
   "學校": "school",
   "街": "street",
-  "巿場": "market",
+  "市場": "market",
   "公司": "company / office",
   "酒店": "hotel",
   "醫院": "hospital",
@@ -339,7 +339,7 @@ const CORE_WORD_MEANINGS = {
   "將會": "will (future)",
   "有": "to have / there is",
   "冇": "to not have / there is not",
-  "有去過會": "(compound phrase from your notes)",
+  "有去過": "have gone / have been",
   "可以": "can / may",
   "可能": "maybe / possible",
   "或者": "or / maybe",
@@ -565,7 +565,7 @@ const CORE_WORD_JYUTPING = {
   "餐廳": "caan1 teng1",
   "學校": "hok6 haau6",
   "街": "gaai1",
-  "巿場": "si5 coeng4",
+  "市場": "si5 coeng4",
   "公司": "gung1 si1",
   "酒店": "zau2 dim3",
   "醫院": "ji1 jyun2",
@@ -611,6 +611,7 @@ const CORE_WORD_JYUTPING = {
   "咁": "gam3",
   "仲": "zung6",
   "已經": "ji5 ging1",
+  "有去過": "jau5 heoi3 gwo3",
   "再": "zoi3",
   "多次": "do1 ci3",
   "夠": "gau3",
@@ -907,7 +908,7 @@ const SENTENCE_BANK = [
   { id: "s11", level: 3, tense: "past", theme: "daily", hanzi: "尋日我買咗好多嘢。", jyutping: "cam4 jat6 ngo5 maai5 zo2 hou2 do1 je5", english: "Yesterday I bought many things." },
   { id: "s12", level: 3, tense: "past", theme: "travel", hanzi: "上次我哋去過香港。", jyutping: "soeng6 ci3 ngo5 dei6 heoi3 gwo3 hoeng1 gong2", english: "Last time we went to Hong Kong." },
   { id: "s13", level: 3, tense: "past", theme: "home", hanzi: "頭先我喺廚房煮完飯。", jyutping: "tau4 sin1 ngo5 hai2 cyu4 fong2 zyu2 jyun4 faan6", english: "Just now I finished cooking in the kitchen." },
-  { id: "s14", level: 3, tense: "future", theme: "travel", hanzi: "聽日我會去巿場買菜。", jyutping: "ting1 jat6 ngo5 wui5 heoi3 si5 coeng4 maai5 coi3", english: "Tomorrow I will go to the market to buy vegetables." },
+  { id: "s14", level: 3, tense: "future", theme: "travel", hanzi: "聽日我會去市場買菜。", jyutping: "ting1 jat6 ngo5 wui5 heoi3 si5 coeng4 maai5 coi3", english: "Tomorrow I will go to the market to buy vegetables." },
   { id: "s15", level: 3, tense: "future", theme: "holiday", hanzi: "下次假期我想去日本旅行。", jyutping: "haa6 ci3 gaa3 kei4 ngo5 soeng2 heoi3 jat6 bun2 leoi5 hang4", english: "Next holiday I want to travel to Japan." },
   { id: "s16", level: 3, tense: "future", theme: "friends", hanzi: "今晚我哋會同朋友食飯。", jyutping: "gam1 maan5 ngo5 dei6 wui5 tung4 pang4 jau5 sik6 faan6", english: "Tonight we will eat with friends." },
   { id: "s17", level: 3, tense: "present", theme: "home", hanzi: "我阿媽而家喺廚房整晚餐。", jyutping: "ngo5 aa3 maa1 ji4 gaa1 hai2 cyu4 fong2 zing2 maan5 caan1", english: "My mom is preparing dinner in the kitchen now." },
@@ -916,7 +917,7 @@ const SENTENCE_BANK = [
   { id: "s20", level: 4, tense: "future", theme: "travel", hanzi: "遲啲我會帶屋企人去機場接朋友。", jyutping: "ci4 di1 ngo5 wui5 daai3 uk1 kei2 jan4 heoi3 gei1 coeng4 zip3 pang4 jau5", english: "Later I will take my family to the airport to pick up a friend." },
   { id: "s21", level: 4, tense: "present", theme: "home", hanzi: "如果你攰，我可以幫你做家務。", jyutping: "jyu4 gwo2 nei5 gui6, ngo5 ho2 ji5 bong1 nei5 zou6 gaa1 mou6", english: "If you are tired, I can help you do housework." },
   { id: "s22", level: 4, tense: "present", theme: "daily", hanzi: "雖然今日落雨，不過我仲係要返工。", jyutping: "seoi1 jin4 gam1 jat6 lok6 jyu5, bat1 gwo3 ngo5 zung6 hai6 jiu3 faan1 gung1", english: "Although it's raining today, I still need to go to work." },
-  { id: "s23", level: 4, tense: "future", theme: "holiday", hanzi: "如果平啲，我哋下個月就訂酒店。", jyutping: "jyu4 gwo2 peng4 di1, ngo5 dei6 haa6 go3 jyut6 zau6 deng3 zau2 dim3", english: "If it's cheaper, we'll book the hotel next month." },
+  { id: "s23", level: 4, tense: "future", theme: "holiday", hanzi: "如果平啲，我哋下個月就訂酒店。", jyutping: "jyu4 gwo2 peng4 di1, ngo5 dei6 haa6 go3 jyut6 zau6 ding3 zau2 dim3", english: "If it's cheaper, we'll book the hotel next month." },
   { id: "s24", level: 4, tense: "past", theme: "home", hanzi: "尋晚我細佬做完功課先打機。", jyutping: "cam4 maan5 ngo5 sai3 lou2 zou6 jyun4 gung1 fo3 sin1 daa2 gei1", english: "Last night my younger brother played games only after finishing homework." },
   { id: "s25", level: 5, tense: "conditional", theme: "travel", hanzi: "如果聽日天氣好，我哋就會去海邊行下再食海鮮。", jyutping: "jyu4 gwo2 ting1 jat6 tin1 hei3 hou2, ngo5 dei6 zau6 wui5 heoi3 hoi2 bin1 haang4 haa5 zoi3 sik6 hoi2 sin1", english: "If the weather is good tomorrow, we'll walk by the sea and then eat seafood." },
   { id: "s26", level: 5, tense: "conditional", theme: "home", hanzi: "如果你早啲返到屋企，我就同你一齊煮飯。", jyutping: "jyu4 gwo2 nei5 zou2 di1 faan1 dou3 uk1 kei2, ngo5 zau6 tung4 nei5 jat1 cai4 zyu2 faan6", english: "If you get home earlier, I'll cook with you." },
@@ -958,7 +959,7 @@ const SENTENCE_BANK = [
   { id: "s62", level: 3, tense: "past", theme: "home", hanzi: "我啱啱飲完茶。", jyutping: "ngo5 ngaam1 ngaam1 jam2 jyun4 caa4", english: "I just finished drinking tea." },
   { id: "s63", level: 3, tense: "future", theme: "daily", hanzi: "我將會再試一次。", jyutping: "ngo5 zoeng1 wui5 zoi3 si3 jat1 ci3", english: "I will try one more time." },
   { id: "s64", level: 4, tense: "conditional", theme: "home", hanzi: "如果你仲做緊嘢，我就等你食飯。", jyutping: "jyu4 gwo2 nei5 zung6 zou6 gan2 je5, ngo5 zau6 dang2 nei5 sik6 faan6", english: "If you are still working, I will wait for you to eat." },
-  { id: "s65", level: 4, tense: "past", theme: "travel", hanzi: "我哋去完巿場之後，就返酒店休息。", jyutping: "ngo5 dei6 heoi3 jyun4 si5 coeng4 zi1 hau6, zau6 faan1 zau2 dim3 jau1 sik1", english: "After we finished going to the market, we returned to the hotel to rest." },
+  { id: "s65", level: 4, tense: "past", theme: "travel", hanzi: "我哋去完市場之後，就返酒店休息。", jyutping: "ngo5 dei6 heoi3 jyun4 si5 coeng4 zi1 hau6, zau6 faan1 zau2 dim3 jau1 sik1", english: "After we finished going to the market, we returned to the hotel to rest." },
   { id: "s66", level: 5, tense: "conditional", theme: "friends", hanzi: "如果你之前去過嗰間餐廳，不如今晚帶我去試下。", jyutping: "jyu4 gwo2 nei5 zi1 cin4 heoi3 gwo3 go2 gaan1 caan1 teng1, bat1 jyu4 gam1 maan5 daai3 ngo5 heoi3 si3 haa5", english: "If you've been to that restaurant before, why not take me there tonight to try it." }
 ];
 
@@ -1541,7 +1542,7 @@ function buildGeneratedAspectSentences() {
     { vH: "聽", vJ: "teng1", exp: "heard", oH: "呢首歌", oJ: "ni1 sau2 go1", oE: "this song", theme: "friends" },
     { vH: "搭", vJ: "daap3", exp: "taken", oH: "飛機", oJ: "fei1 gei1", oE: "a plane", theme: "travel" },
     { vH: "住", vJ: "zyu6", exp: "stayed at", oH: "酒店", oJ: "zau2 dim3", oE: "a hotel", theme: "holiday" },
-    { vH: "行", vJ: "haang4", exp: "walked around", oH: "巿場", oJ: "si5 coeng4", oE: "the market", theme: "travel" },
+    { vH: "行", vJ: "haang4", exp: "walked around", oH: "市場", oJ: "si5 coeng4", oE: "the market", theme: "travel" },
     { vH: "試", vJ: "si3", exp: "tried", oH: "新菜", oJ: "san1 coi3", oE: "new dishes", theme: "holiday" }
   ];
 
@@ -1600,7 +1601,7 @@ function buildGeneratedAspectSentences() {
           theme: tpl.theme,
           hanzi: `${sub.h}${tpl.vH}過${tpl.oH}。`,
           jyutping: `${sub.j} ${tpl.vJ} gwo3 ${tpl.oJ}`,
-          english: `${sub.e} have ${tpl.exp} ${tpl.oE} before.`
+          english: `${sub.e} ${haveVerb(sub.e)} ${tpl.exp} ${tpl.oE} before.`
         });
       });
     });
@@ -1649,6 +1650,11 @@ function beVerb(subjectEnglish) {
   if (subjectEnglish === "I") return "am";
   if (subjectEnglish === "He/She") return "is";
   return "are";
+}
+
+function haveVerb(subjectEnglish) {
+  if (subjectEnglish === "He/She") return "has";
+  return "have";
 }
 
 function analyzeSentence(hanzi) {
