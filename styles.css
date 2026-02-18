@@ -326,6 +326,11 @@ button:hover,
   background: #fff;
 }
 
+.slot-grid input[type="range"] {
+  margin-top: 8px;
+  width: 100%;
+}
+
 .result-box {
   margin-top: 12px;
   background: #fff;

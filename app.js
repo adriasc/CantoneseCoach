@@ -987,7 +987,17 @@ const state = {
   known: new Set(loadJson(STORAGE_KEYS.known, [])),
   reviewed: loadJson(STORAGE_KEYS.reviewed, { date: todayString(), count: 0 }),
   streak: loadJson(STORAGE_KEYS.streak, { lastDate: null, days: 0 }),
-  prefs: loadJson(STORAGE_KEYS.prefs, { level: 2, tense: "mixed", theme: "mixed", showJyutping: true, showEnglish: true, showGrammarLens: false }),
+  prefs: loadJson(STORAGE_KEYS.prefs, {
+    level: 2,
+    tense: "mixed",
+    theme: "mixed",
+    showJyutping: true,
+    showEnglish: true,
+    showGrammarLens: false,
+    voiceURI: "auto",
+    voiceRate: 0.9
+  }),
+  availableVoices: [],
   rotation: { words: [], patternSentences: [], quizSentences: [] },
   currentWord: null,
   currentSentence: null,
@@ -1008,6 +1018,10 @@ const els = {
   globalLevel: byId("globalLevel"),
   globalTense: byId("globalTense"),
   globalTheme: byId("globalTheme"),
+  audioVoice: byId("audioVoice"),
+  audioRate: byId("audioRate"),
+  audioRateValue: byId("audioRateValue"),
+  testVoice: byId("testVoice"),
   applyControls: byId("applyControls"),
   toggleGrammarLens: byId("toggleGrammarLens"),
   controlsMessage: byId("controlsMessage"),
@@ -1039,6 +1053,7 @@ const els = {
 
 bindUI();
 syncControlValues();
+initVoiceControls();
 applyVisibilityPrefs();
 rollWord();
 rollPattern();
@@ -1108,6 +1123,18 @@ function bindUI() {
   els.globalLevel.addEventListener("change", markControlsDirty);
   els.globalTense.addEventListener("change", markControlsDirty);
   els.globalTheme.addEventListener("change", markControlsDirty);
+  els.audioVoice.addEventListener("change", () => {
+    state.prefs.voiceURI = els.audioVoice.value || "auto";
+    saveJson(STORAGE_KEYS.prefs, state.prefs);
+  });
+  els.audioRate.addEventListener("input", () => {
+    state.prefs.voiceRate = Number(els.audioRate.value) || 0.9;
+    saveJson(STORAGE_KEYS.prefs, state.prefs);
+    els.audioRateValue.textContent = `${state.prefs.voiceRate.toFixed(2)}x`;
+  });
+  els.testVoice.addEventListener("click", () => {
+    speak("你好，我哋而家開始練習廣東話。");
+  });
   els.applyControls.addEventListener("click", applyGlobalControls);
   els.toggleGrammarLens.addEventListener("click", () => {
     state.prefs.showGrammarLens = !state.prefs.showGrammarLens;
@@ -1318,16 +1345,29 @@ function refreshStats() {
 
 function speak(text) {
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "zh-HK";
-  const voices = window.speechSynthesis.getVoices();
-  const preferred = voices.find((v) => /yue|cantonese/i.test(v.lang + v.name))
-    || voices.find((v) => v.lang.toLowerCase().includes("zh-hk"))
-    || voices.find((v) => v.lang.toLowerCase().startsWith("zh"));
-  if (preferred) utterance.voice = preferred;
-  utterance.rate = 0.88;
+  const voices = (state.availableVoices && state.availableVoices.length)
+    ? state.availableVoices
+    : window.speechSynthesis.getVoices();
+  const selected = selectVoiceForSpeech(voices);
+  utterance.lang = selected?.lang || "zh-HK";
+  if (selected) utterance.voice = selected;
+  utterance.rate = Math.min(1.2, Math.max(0.6, Number(state.prefs.voiceRate) || 0.9));
   utterance.pitch = 1;
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(utterance);
+}
+
+function selectVoiceForSpeech(voices) {
+  if (!voices || !voices.length) return null;
+  if (state.prefs.voiceURI && state.prefs.voiceURI !== "auto") {
+    const exact = voices.find((v) => v.voiceURI === state.prefs.voiceURI);
+    if (exact) return exact;
+  }
+  return voices.find((v) => /yue|cantonese/i.test(`${v.lang} ${v.name}`))
+    || voices.find((v) => /^zh-hk$/i.test(v.lang))
+    || voices.find((v) => /^yue/i.test(v.lang))
+    || voices.find((v) => /^zh/i.test(v.lang))
+    || voices[0];
 }
 
 function importDataFile(event) {
@@ -1427,6 +1467,43 @@ function syncControlValues() {
   els.globalLevel.value = String(state.prefs.level || 2);
   els.globalTense.value = state.prefs.tense || "mixed";
   els.globalTheme.value = state.prefs.theme || "mixed";
+  els.audioRate.value = String(state.prefs.voiceRate || 0.9);
+  els.audioRateValue.textContent = `${Number(state.prefs.voiceRate || 0.9).toFixed(2)}x`;
+}
+
+function initVoiceControls() {
+  refreshVoiceOptions();
+  if (window.speechSynthesis) {
+    window.speechSynthesis.onvoiceschanged = refreshVoiceOptions;
+  }
+}
+
+function refreshVoiceOptions() {
+  const voices = window.speechSynthesis?.getVoices?.() || [];
+  state.availableVoices = voices.slice();
+  const current = state.prefs.voiceURI || "auto";
+  els.audioVoice.innerHTML = "";
+
+  const auto = document.createElement("option");
+  auto.value = "auto";
+  auto.textContent = "Auto (best Cantonese)";
+  els.audioVoice.appendChild(auto);
+
+  voices
+    .sort((a, b) => `${a.lang} ${a.name}`.localeCompare(`${b.lang} ${b.name}`))
+    .forEach((v) => {
+      const option = document.createElement("option");
+      option.value = v.voiceURI;
+      option.textContent = `${v.name} (${v.lang})`;
+      els.audioVoice.appendChild(option);
+    });
+
+  const hasCurrent = current === "auto" || voices.some((v) => v.voiceURI === current);
+  els.audioVoice.value = hasCurrent ? current : "auto";
+  if (!hasCurrent) {
+    state.prefs.voiceURI = "auto";
+    saveJson(STORAGE_KEYS.prefs, state.prefs);
+  }
 }
 
 function applyVisibilityPrefs() {

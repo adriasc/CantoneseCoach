@@ -66,9 +66,20 @@
             <option value="holiday">Holiday plans</option>
           </select>
         </div>
+        <div>
+          <label for="audioVoice">Audio Voice</label>
+          <select id="audioVoice">
+            <option value="auto">Auto (best Cantonese)</option>
+          </select>
+        </div>
+        <div>
+          <label for="audioRate">Audio Speed (<span id="audioRateValue">0.90x</span>)</label>
+          <input id="audioRate" type="range" min="0.6" max="1.2" step="0.05" value="0.9">
+        </div>
       </div>
       <div class="actions">
         <button id="applyControls">Apply Settings</button>
+        <button id="testVoice">Test Voice</button>
       </div>
       <p class="example" id="controlsMessage"></p>
     </section>
