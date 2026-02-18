@@ -975,7 +975,12 @@ const ASPECT_MARKERS = {
 };
 
 const GENERATED_SENTENCES = buildGeneratedAspectSentences();
-const ALL_SENTENCES = SENTENCE_BANK.concat(GENERATED_SENTENCES);
+const GENERATED_FUTURE_SENTENCES = buildGeneratedFutureSentences();
+const GENERATED_CONDITIONAL_SENTENCES = buildGeneratedConditionalSentences();
+const ALL_SENTENCES = SENTENCE_BANK
+  .concat(GENERATED_SENTENCES)
+  .concat(GENERATED_FUTURE_SENTENCES)
+  .concat(GENERATED_CONDITIONAL_SENTENCES);
 
 const state = {
   content: loadContent(),
@@ -1192,17 +1197,18 @@ function renderPatternControls() {
 
 function renderPatternSentence() {
   const built = buildPatternSentence();
-  const analysis = analyzeSentence(built.hanzi);
+  const analysis = analyzeSentence({ hanzi: built.hanzi, jyutping: built.jyutping });
   if (state.prefs.showGrammarLens) {
     els.patternHanzi.innerHTML = analysis.annotatedHanzi;
+    els.patternJyutping.innerHTML = analysis.annotatedJyutping;
     els.patternGrammarNotes.innerHTML = analysis.notes.length
       ? analysis.notes.map((note) => `<div class="grammar-note">${note}</div>`).join("")
       : `<div class="grammar-note">No tense/aspect marker detected in this sentence.</div>`;
   } else {
     els.patternHanzi.textContent = built.hanzi;
+    els.patternJyutping.textContent = built.jyutping;
     els.patternGrammarNotes.innerHTML = "";
   }
-  els.patternJyutping.textContent = built.jyutping;
   els.patternEnglish.textContent = built.english;
   els.patternLiteral.textContent = `Literal: ${analysis.literal}`;
   applyVisibilityPrefs();
@@ -1250,14 +1256,16 @@ function rollQuiz() {
 
 function renderQuizGrammar() {
   if (!state.currentQuiz) return;
-  const analysis = analyzeSentence(state.currentQuiz.hanzi);
+  const analysis = analyzeSentence({ hanzi: state.currentQuiz.hanzi, jyutping: state.currentQuiz.jyutping });
   if (state.prefs.showGrammarLens) {
     els.quizHanzi.innerHTML = analysis.annotatedHanzi;
+    els.quizJyutping.innerHTML = analysis.annotatedJyutping;
     els.quizGrammarNotes.innerHTML = analysis.notes.length
       ? analysis.notes.map((note) => `<div class="grammar-note">${note}</div>`).join("")
       : `<div class="grammar-note">No tense/aspect marker detected in this sentence.</div>`;
   } else {
     els.quizHanzi.textContent = state.currentQuiz.hanzi;
+    els.quizJyutping.textContent = state.currentQuiz.jyutping;
     els.quizGrammarNotes.innerHTML = "";
   }
   els.quizLiteral.textContent = `Literal: ${analysis.literal}`;
@@ -1520,8 +1528,6 @@ function buildGeneratedAspectSentences() {
     { h: "你哋", j: "nei5 dei6", e: "You all" }
   ];
 
-  const levelsByTemplate = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5];
-
   const zo2Templates = [
     { vH: "食", vJ: "sik6", past: "ate", oH: "飯", oJ: "faan6", oE: "a meal", theme: "daily" },
     { vH: "飲", vJ: "jam2", past: "drank", oH: "水", oJ: "seoi2", oE: "water", theme: "daily" },
@@ -1578,67 +1584,75 @@ function buildGeneratedAspectSentences() {
   let idCounter = 1000;
 
   function addZo2Examples() {
-    zo2Templates.forEach((tpl, tplIndex) => {
-      subjects.forEach((sub, subIndex) => {
-        out.push({
-          id: `g${idCounter++}`,
-          level: levelsByTemplate[tplIndex],
-          tense: "past",
-          theme: tpl.theme,
-          hanzi: `${sub.h}${tpl.vH}咗${tpl.oH}。`,
-          jyutping: `${sub.j} ${tpl.vJ} zo2 ${tpl.oJ}`,
-          english: `${sub.e} ${tpl.past} ${tpl.oE}.`
+    for (let level = 1; level <= 5; level += 1) {
+      zo2Templates.forEach((tpl) => {
+        subjects.forEach((sub) => {
+          out.push({
+            id: `g${idCounter++}`,
+            level,
+            tense: "past",
+            theme: tpl.theme,
+            hanzi: `${sub.h}${tpl.vH}咗${tpl.oH}。`,
+            jyutping: `${sub.j} ${tpl.vJ} zo2 ${tpl.oJ}`,
+            english: `${sub.e} ${tpl.past} ${tpl.oE}.`
+          });
         });
       });
-    });
+    }
   }
 
   function addGwo3Examples() {
-    gwo3Templates.forEach((tpl, tplIndex) => {
-      subjects.forEach((sub) => {
-        out.push({
-          id: `g${idCounter++}`,
-          level: levelsByTemplate[tplIndex],
-          tense: "past",
-          theme: tpl.theme,
-          hanzi: `${sub.h}${tpl.vH}過${tpl.oH}。`,
-          jyutping: `${sub.j} ${tpl.vJ} gwo3 ${tpl.oJ}`,
-          english: `${sub.e} ${haveVerb(sub.e)} ${tpl.exp} ${tpl.oE} before.`
+    for (let level = 1; level <= 5; level += 1) {
+      gwo3Templates.forEach((tpl) => {
+        subjects.forEach((sub) => {
+          out.push({
+            id: `g${idCounter++}`,
+            level,
+            tense: "past",
+            theme: tpl.theme,
+            hanzi: `${sub.h}${tpl.vH}過${tpl.oH}。`,
+            jyutping: `${sub.j} ${tpl.vJ} gwo3 ${tpl.oJ}`,
+            english: `${sub.e} ${haveVerb(sub.e)} ${tpl.exp} ${tpl.oE} before.`
+          });
         });
       });
-    });
+    }
   }
 
   function addJyunExamples() {
-    jyunTemplates.forEach((tpl, tplIndex) => {
-      subjects.forEach((sub) => {
-        out.push({
-          id: `g${idCounter++}`,
-          level: levelsByTemplate[tplIndex],
-          tense: "past",
-          theme: tpl.theme,
-          hanzi: `${sub.h}${tpl.vH}完${tpl.oH}。`,
-          jyutping: `${sub.j} ${tpl.vJ} jyun4 ${tpl.oJ}`,
-          english: `${sub.e} ${tpl.fin} ${tpl.oE}`.trim() + "."
+    for (let level = 1; level <= 5; level += 1) {
+      jyunTemplates.forEach((tpl) => {
+        subjects.forEach((sub) => {
+          out.push({
+            id: `g${idCounter++}`,
+            level,
+            tense: "past",
+            theme: tpl.theme,
+            hanzi: `${sub.h}${tpl.vH}完${tpl.oH}。`,
+            jyutping: `${sub.j} ${tpl.vJ} jyun4 ${tpl.oJ}`,
+            english: `${sub.e} ${tpl.fin} ${tpl.oE}`.trim() + "."
+          });
         });
       });
-    });
+    }
   }
 
   function addGanExamples() {
-    ganTemplates.forEach((tpl, tplIndex) => {
-      subjects.forEach((sub) => {
-        out.push({
-          id: `g${idCounter++}`,
-          level: levelsByTemplate[tplIndex],
-          tense: "present",
-          theme: tpl.theme,
-          hanzi: `${sub.h}${tpl.vH}緊${tpl.oH}。`,
-          jyutping: `${sub.j} ${tpl.vJ} gan2 ${tpl.oJ}`,
-          english: `${sub.e} ${beVerb(sub.e)} ${tpl.ing} ${tpl.oE}.`
+    for (let level = 1; level <= 5; level += 1) {
+      ganTemplates.forEach((tpl) => {
+        subjects.forEach((sub) => {
+          out.push({
+            id: `g${idCounter++}`,
+            level,
+            tense: "present",
+            theme: tpl.theme,
+            hanzi: `${sub.h}${tpl.vH}緊${tpl.oH}。`,
+            jyutping: `${sub.j} ${tpl.vJ} gan2 ${tpl.oJ}`,
+            english: `${sub.e} ${beVerb(sub.e)} ${tpl.ing} ${tpl.oE}.`
+          });
         });
       });
-    });
+    }
   }
 
   addZo2Examples();
@@ -1659,11 +1673,114 @@ function haveVerb(subjectEnglish) {
   return "have";
 }
 
-function analyzeSentence(hanzi) {
+function buildGeneratedFutureSentences() {
+  const subjects = [
+    { h: "我", j: "ngo5", e: "I" },
+    { h: "你", j: "nei5", e: "You" },
+    { h: "佢", j: "keoi5", e: "He/She" },
+    { h: "我哋", j: "ngo5 dei6", e: "We" },
+    { h: "你哋", j: "nei5 dei6", e: "You all" }
+  ];
+  const prefixes = {
+    1: { h: "", j: "", e: "" },
+    2: { h: "聽日", j: "ting1 jat6", e: "Tomorrow" },
+    3: { h: "之後", j: "zi1 hau6", e: "Later" },
+    4: { h: "下次", j: "haa6 ci3", e: "Next time" },
+    5: { h: "將來", j: "zoeng1 loi4", e: "In the future" }
+  };
+  const templates = [
+    { vH: "食", vJ: "sik6", vE: "eat", oH: "飯", oJ: "faan6", oE: "a meal", theme: "daily" },
+    { vH: "飲", vJ: "jam2", vE: "drink", oH: "茶", oJ: "caa4", oE: "tea", theme: "daily" },
+    { vH: "買", vJ: "maai5", vE: "buy", oH: "嘢", oJ: "je5", oE: "things", theme: "travel" },
+    { vH: "睇", vJ: "tai2", vE: "read", oH: "書", oJ: "syu1", oE: "a book", theme: "home" },
+    { vH: "聽", vJ: "teng1", vE: "listen to", oH: "廣東話", oJ: "gwong2 dung1 waa2", oE: "Cantonese", theme: "daily" },
+    { vH: "講", vJ: "gong2", vE: "speak", oH: "英文", oJ: "jing1 man4", oE: "English", theme: "friends" },
+    { vH: "去", vJ: "heoi3", vE: "go to", oH: "餐廳", oJ: "caan1 teng1", oE: "a restaurant", theme: "travel" },
+    { vH: "返", vJ: "faan1", vE: "return to", oH: "屋企", oJ: "uk1 kei2", oE: "home", theme: "home" },
+    { vH: "見", vJ: "gin3", vE: "meet", oH: "朋友", oJ: "pang4 jau5", oE: "a friend", theme: "friends" },
+    { vH: "學", vJ: "hok6", vE: "learn", oH: "廣東話", oJ: "gwong2 dung1 waa2", oE: "Cantonese", theme: "daily" }
+  ];
+  const out = [];
+  let idCounter = 3000;
+  for (let level = 1; level <= 5; level += 1) {
+    const p = prefixes[level];
+    templates.forEach((tpl) => {
+      subjects.forEach((sub) => {
+        const hanzi = `${p.h}${sub.h}會${tpl.vH}${tpl.oH}。`;
+        const jyutping = `${p.j ? `${p.j} ` : ""}${sub.j} wui5 ${tpl.vJ} ${tpl.oJ}`.trim();
+        const english = `${p.e ? `${p.e}, ` : ""}${sub.e} will ${tpl.vE} ${tpl.oE}.`;
+        out.push({
+          id: `gf${idCounter++}`,
+          level,
+          tense: "future",
+          theme: tpl.theme,
+          hanzi,
+          jyutping,
+          english
+        });
+      });
+    });
+  }
+  return out;
+}
+
+function buildGeneratedConditionalSentences() {
+  const subjects = [
+    { h: "我", j: "ngo5", e: "I" },
+    { h: "你", j: "nei5", e: "you" },
+    { h: "佢", j: "keoi5", e: "he/she" },
+    { h: "我哋", j: "ngo5 dei6", e: "we" },
+    { h: "你哋", j: "nei5 dei6", e: "you all" }
+  ];
+  const templates = [
+    { cH: "有時間", cJ: "jau5 si4 gaan3", cE: "have time", rH: "學廣東話", rJ: "hok6 gwong2 dung1 waa2", rE: "study Cantonese", theme: "daily" },
+    { cH: "唔舒服", cJ: "m4 syu1 fuk6", cE: "feel unwell", rH: "早啲休息", rJ: "zou2 di1 jau1 sik1", rE: "rest earlier", theme: "home" },
+    { cH: "肚餓", cJ: "tou5 ngo6", cE: "are hungry", rH: "去食飯", rJ: "heoi3 sik6 faan6", rE: "go eat", theme: "daily" },
+    { cH: "口渴", cJ: "hau2 hot3", cE: "are thirsty", rH: "飲水", rJ: "jam2 seoi2", rE: "drink water", theme: "daily" },
+    { cH: "想出街", cJ: "soeng2 ceot1 gaai1", cE: "want to go out", rH: "打畀朋友", rJ: "daa2 bei2 pang4 jau5", rE: "call a friend", theme: "friends" },
+    { cH: "要返工", cJ: "jiu3 faan1 gung1", cE: "need to work", rH: "早啲出門", rJ: "zou2 di1 ceot1 mun4", rE: "leave earlier", theme: "daily" },
+    { cH: "落雨", cJ: "lok6 jyu5", cE: "see rain", rH: "留喺屋企", rJ: "lau4 hai2 uk1 kei2", rE: "stay at home", theme: "home" },
+    { cH: "做完功課", cJ: "zou6 jyun4 gung1 fo3", cE: "finish homework", rH: "睇書", rJ: "tai2 syu1", rE: "read", theme: "home" },
+    { cH: "見到朋友", cJ: "gin3 dou2 pang4 jau5", cE: "meet friends", rH: "一齊飲茶", rJ: "jat1 cai4 jam2 caa4", rE: "drink tea together", theme: "friends" },
+    { cH: "聽日放假", cJ: "ting1 jat6 fong3 gaa3", cE: "have a holiday tomorrow", rH: "去市場買嘢", rJ: "heoi3 si5 coeng4 maai5 je5", rE: "go to the market to buy things", theme: "holiday" }
+  ];
+
+  const out = [];
+  let idCounter = 5000;
+  for (let level = 1; level <= 5; level += 1) {
+    templates.forEach((tpl) => {
+      subjects.forEach((sub) => {
+        const modalH = level >= 3 ? "就會" : "就";
+        const modalJ = level >= 3 ? "zau6 wui5" : "zau6";
+        const modalE = level >= 3 ? "will" : "";
+        const tailH = level >= 5 ? "，因為咁樣會更好" : (level >= 4 ? "，之後再試一次" : "");
+        const tailJ = level >= 5 ? ", jan1 wai6 gam3 joeng6 wui5 gang3 hou2" : (level >= 4 ? ", zi1 hau6 zoi3 si3 jat1 ci3" : "");
+        const tailE = level >= 5 ? " because that is better" : (level >= 4 ? " and then try one more time" : "");
+        const hanzi = `如果${sub.h}${tpl.cH}，${sub.h}${modalH}${tpl.rH}${tailH}。`;
+        const jyutping = `jyu4 gwo2 ${sub.j} ${tpl.cJ}, ${sub.j} ${modalJ} ${tpl.rJ}${tailJ}`.trim();
+        const english = `If ${sub.e} ${tpl.cE}, ${sub.e} ${modalE ? `${modalE} ` : ""}${tpl.rE}${tailE}.`
+          .replace(/\s+/g, " ")
+          .trim();
+        out.push({
+          id: `gc${idCounter++}`,
+          level,
+          tense: "conditional",
+          theme: tpl.theme,
+          hanzi,
+          jyutping,
+          english
+        });
+      });
+    });
+  }
+  return out;
+}
+
+function analyzeSentence(sentenceInput) {
+  const hanzi = typeof sentenceInput === "string" ? sentenceInput : (sentenceInput?.hanzi || "");
   const tokens = tokenizeSentence(hanzi);
   const notes = [];
   const literalParts = [];
-  const linkedVerbRoleByIndex = {};
   const markerByIndex = {};
 
   tokens.forEach((token, idx) => {
@@ -1672,7 +1789,6 @@ function analyzeSentence(hanzi) {
     markerByIndex[idx] = marker;
     const verbIndex = findPreviousVerbIndex(tokens, idx);
     if (verbIndex >= 0) {
-      linkedVerbRoleByIndex[verbIndex] = marker.role;
       notes.push(`Marker <strong>${token}</strong> = ${marker.label}, linked to verb <strong>${tokens[verbIndex]}</strong>.`);
     } else {
       notes.push(`Marker <strong>${token}</strong> = ${marker.label}.`);
@@ -1686,10 +1802,9 @@ function analyzeSentence(hanzi) {
     }
 
     const marker = markerByIndex[idx];
-    const linkedRole = linkedVerbRoleByIndex[idx];
-    const isVerb = isVerbToken(token) || !!linkedRole;
+    const isVerb = isVerbToken(token);
     let cls = "tok";
-    const role = marker?.role || linkedRole;
+    const role = marker?.role;
     if (role === "past") cls += " tok-past";
     if (role === "prog") cls += " tok-prog";
     if (role === "future") cls += " tok-future";
@@ -1699,8 +1814,21 @@ function analyzeSentence(hanzi) {
     return `<span class="${cls}">${escapeHtml(token)}</span>`;
   });
 
+  const annotatedJyutping = tokens.map((token, idx) => {
+    if (isPunctuation(token)) return escapeHtml(token);
+    const marker = markerByIndex[idx];
+    const isVerb = isVerbToken(token);
+    let cls = "tok tok-jp";
+    if (marker?.role === "past") cls += " tok-past";
+    if (marker?.role === "prog") cls += " tok-prog";
+    if (marker?.role === "future") cls += " tok-future";
+    if (isVerb) cls += " tok-verb";
+    return `<span class="${cls}">${escapeHtml(jyutpingForToken(token))}</span>`;
+  }).join(" ").replace(/\s+([，。！？,.!?])/g, "$1");
+
   return {
     annotatedHanzi: annotated.join(""),
+    annotatedJyutping,
     literal: cleanLiteral(literalParts.join(" ")),
     notes
   };
@@ -1776,6 +1904,15 @@ function literalForToken(token) {
     return String(byWord.english).split("/")[0].trim();
   }
   if (CORE_WORD_MEANINGS[normalized]) return CORE_WORD_MEANINGS[normalized];
+  return normalized;
+}
+
+function jyutpingForToken(token) {
+  const normalized = normalizeHanzi(token);
+  if (isPunctuation(normalized)) return normalized;
+  const byWord = (state.content?.words || []).find((w) => normalizeHanzi(w.hanzi) === normalized);
+  if (byWord?.jyutping && byWord.jyutping !== "to-confirm") return byWord.jyutping;
+  if (CORE_WORD_JYUTPING[normalized]) return CORE_WORD_JYUTPING[normalized];
   return normalized;
 }
 

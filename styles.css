@@ -237,33 +237,45 @@ button:hover,
 .tok-verb {
   border: 2px solid #0f9d8b;
   background: #e9fbf8;
+}
+
+.tok-past {
+  border: 2px solid #ff6b35;
+  background: #fff1ea;
+}
+
+.tok-prog {
+  border: 2px solid #2f7ec2;
+  background: #ebf4fd;
+}
+
+.tok-future {
+  border: 2px solid #d09821;
+  background: #fff6e2;
+}
+
+.tok-jp.tok-verb {
   text-decoration: underline;
   text-decoration-thickness: 3px;
   text-underline-offset: 3px;
   text-decoration-color: #0f9d8b;
 }
 
-.tok-past {
-  border: 2px solid #ff6b35;
-  background: #fff1ea;
+.tok-jp.tok-past {
   text-decoration: underline;
   text-decoration-thickness: 3px;
   text-underline-offset: 3px;
   text-decoration-color: #ff6b35;
 }
 
-.tok-prog {
-  border: 2px solid #2f7ec2;
-  background: #ebf4fd;
+.tok-jp.tok-prog {
   text-decoration: underline;
   text-decoration-thickness: 3px;
   text-underline-offset: 3px;
   text-decoration-color: #2f7ec2;
 }
 
-.tok-future {
-  border: 2px solid #d09821;
-  background: #fff6e2;
+.tok-jp.tok-future {
   text-decoration: underline;
   text-decoration-thickness: 3px;
   text-underline-offset: 3px;
