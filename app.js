@@ -1432,6 +1432,8 @@ function applyVisibilityPrefs() {
   els.wordEnglish.classList.toggle("hidden", !showEn);
   els.patternEnglish.classList.toggle("hidden", !showEn);
   els.quizEnglish.classList.toggle("hidden", !showEn);
+  els.patternLiteral.classList.toggle("hidden", !showEn);
+  els.quizLiteral.classList.toggle("hidden", !showEn);
 
   els.toggleWordJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
   els.togglePatternJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
@@ -1468,15 +1470,15 @@ function getFilteredSentences() {
   const tense = state.prefs.tense || "mixed";
   const theme = state.prefs.theme || "mixed";
   let pool = ALL_SENTENCES.filter((s) => (
-    s.level <= level
+    s.level === level
     && (tense === "mixed" || s.tense === tense)
     && (theme === "mixed" || s.theme === theme)
   ));
   if (!pool.length) {
-    pool = ALL_SENTENCES.filter((s) => s.level <= level && (tense === "mixed" || s.tense === tense));
+    pool = ALL_SENTENCES.filter((s) => s.level === level && (tense === "mixed" || s.tense === tense));
   }
   if (!pool.length) {
-    pool = ALL_SENTENCES.filter((s) => s.level <= level);
+    pool = ALL_SENTENCES.filter((s) => s.level === level);
   }
   return pool;
 }
@@ -1661,26 +1663,37 @@ function analyzeSentence(hanzi) {
   const tokens = tokenizeSentence(hanzi);
   const notes = [];
   const literalParts = [];
+  const linkedVerbRoleByIndex = {};
+  const markerByIndex = {};
+
+  tokens.forEach((token, idx) => {
+    const marker = ASPECT_MARKERS[token];
+    if (!marker) return;
+    markerByIndex[idx] = marker;
+    const verbIndex = findPreviousVerbIndex(tokens, idx);
+    if (verbIndex >= 0) {
+      linkedVerbRoleByIndex[verbIndex] = marker.role;
+      notes.push(`Marker <strong>${token}</strong> = ${marker.label}, linked to verb <strong>${tokens[verbIndex]}</strong>.`);
+    } else {
+      notes.push(`Marker <strong>${token}</strong> = ${marker.label}.`);
+    }
+  });
+
   const annotated = tokens.map((token, idx) => {
     if (isPunctuation(token)) {
       literalParts.push(token);
       return escapeHtml(token);
     }
 
-    const marker = ASPECT_MARKERS[token];
-    const isVerb = isVerbToken(token);
+    const marker = markerByIndex[idx];
+    const linkedRole = linkedVerbRoleByIndex[idx];
+    const isVerb = isVerbToken(token) || !!linkedRole;
     let cls = "tok";
-    if (marker?.role === "past") cls += " tok-past";
-    if (marker?.role === "prog") cls += " tok-prog";
-    if (marker?.role === "future") cls += " tok-future";
+    const role = marker?.role || linkedRole;
+    if (role === "past") cls += " tok-past";
+    if (role === "prog") cls += " tok-prog";
+    if (role === "future") cls += " tok-future";
     if (isVerb) cls += " tok-verb";
-
-    if (marker) {
-      const linkedVerb = findPreviousVerb(tokens, idx);
-      notes.push(linkedVerb
-        ? `Marker <strong>${token}</strong> = ${marker.label}, linked to verb <strong>${linkedVerb}</strong>.`
-        : `Marker <strong>${token}</strong> = ${marker.label}.`);
-    }
 
     literalParts.push(literalForToken(token));
     return `<span class="${cls}">${escapeHtml(token)}</span>`;
@@ -1748,11 +1761,11 @@ function isVerbToken(token) {
   return new Set(["係", "喺", "要", "想", "會", "將會", "有", "冇"]).has(normalized);
 }
 
-function findPreviousVerb(tokens, markerIndex) {
+function findPreviousVerbIndex(tokens, markerIndex) {
   for (let i = markerIndex - 1; i >= 0; i -= 1) {
-    if (isVerbToken(tokens[i])) return tokens[i];
+    if (isVerbToken(tokens[i])) return i;
   }
-  return "";
+  return -1;
 }
 
 function literalForToken(token) {

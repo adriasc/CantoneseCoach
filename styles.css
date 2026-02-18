@@ -237,21 +237,37 @@ button:hover,
 .tok-verb {
   border: 2px solid #0f9d8b;
   background: #e9fbf8;
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 3px;
+  text-decoration-color: #0f9d8b;
 }
 
 .tok-past {
   border: 2px solid #ff6b35;
   background: #fff1ea;
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 3px;
+  text-decoration-color: #ff6b35;
 }
 
 .tok-prog {
   border: 2px solid #2f7ec2;
   background: #ebf4fd;
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 3px;
+  text-decoration-color: #2f7ec2;
 }
 
 .tok-future {
   border: 2px solid #d09821;
   background: #fff6e2;
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 3px;
+  text-decoration-color: #d09821;
 }
 
 .example {
