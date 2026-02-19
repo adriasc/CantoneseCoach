@@ -1240,6 +1240,7 @@ const state = {
   currentQuiz: null,
   currentTonePair: null,
   currentToneSide: null,
+  toneLabelMap: { a: "a", b: "b" },
   toneScore: { correct: 0, total: 0 }
 };
 
@@ -1560,6 +1561,7 @@ function rollTonePair() {
   if (!pool.length) return;
   state.currentTonePair = takeFromRotation("tonePairs", pool, (pair) => pair.id);
   state.currentToneSide = null;
+  state.toneLabelMap = Math.random() < 0.5 ? { a: "a", b: "b" } : { a: "b", b: "a" };
   renderTonePair();
   renderToneChoices();
 }
@@ -1567,13 +1569,15 @@ function rollTonePair() {
 function renderTonePair() {
   const pair = state.currentTonePair;
   if (!pair || !els.toneLabel || !els.tonePrompt) return;
-  els.toneLabel.textContent = `Level ${pair.level} · ${pair.a.jyutping} / ${pair.b.jyutping}`;
-  els.toneHanzi.textContent = `A: ${pair.a.hanzi}   B: ${pair.b.hanzi}`;
-  els.toneJyutping.textContent = `A: ${pair.a.jyutping}   B: ${pair.b.jyutping}`;
-  els.toneEnglish.textContent = `A: ${pair.a.english}   B: ${pair.b.english}`;
+  const toneA = toneItemForLabel("a");
+  const toneB = toneItemForLabel("b");
+  els.toneLabel.textContent = `Level ${pair.level} · ${toneA.jyutping} / ${toneB.jyutping}`;
+  els.toneHanzi.textContent = `A: ${toneA.hanzi}   B: ${toneB.hanzi}`;
+  els.toneJyutping.textContent = `A: ${toneA.jyutping}   B: ${toneB.jyutping}`;
+  els.toneEnglish.textContent = `A: ${toneA.english}   B: ${toneB.english}`;
   els.toneFeedback.textContent = "";
   els.toneFeedback.className = "feedback";
-  els.tonePrompt.textContent = "Step 1: Play A, B, or Random. Step 2: Choose the meaning of the clip you heard.";
+  els.tonePrompt.textContent = "Step 1: Play A, B, or Random. Step 2: Choose the Jyutping you heard.";
   applyVisibilityPrefs();
   updateToneScore();
 }
@@ -1581,7 +1585,9 @@ function renderTonePair() {
 function renderToneChoices() {
   const pair = state.currentTonePair;
   if (!pair || !els.toneChoices) return;
-  const options = [pair.a.english, pair.b.english];
+  const toneA = toneItemForLabel("a");
+  const toneB = toneItemForLabel("b");
+  const options = [toneA.jyutping, toneB.jyutping];
   shuffle(options);
   els.toneChoices.innerHTML = "";
   options.forEach((option) => {
@@ -1601,18 +1607,18 @@ function checkToneAnswer(selected, clickedBtn) {
     els.toneFeedback.className = "feedback bad";
     return;
   }
-  const target = pair[state.currentToneSide];
-  const ok = selected === target.english;
+  const target = toneItemForLabel(state.currentToneSide);
+  const ok = selected === target.jyutping;
   state.toneScore.total += 1;
   if (ok) state.toneScore.correct += 1;
   els.toneFeedback.textContent = ok
     ? "Correct"
-    : `Not quite. Random clip was: ${target.hanzi} (${target.jyutping}) = ${target.english}`;
+    : `Not quite. Clip was: ${target.hanzi} (${target.jyutping}) = ${target.english}`;
   els.toneFeedback.className = `feedback ${ok ? "ok" : "bad"}`;
   const buttons = [...els.toneChoices.querySelectorAll("button")];
   buttons.forEach((button) => {
     button.disabled = true;
-    if (button.textContent === target.english) button.style.borderColor = "#0a7d6f";
+    if (button.textContent === target.jyutping) button.style.borderColor = "#0a7d6f";
   });
   if (!ok && clickedBtn) clickedBtn.style.borderColor = "#b62a2a";
   markReviewed();
@@ -1629,19 +1635,26 @@ function playToneClip(which) {
   if (!pair) return;
   if (which === "a") {
     state.currentToneSide = "a";
-    els.tonePrompt.textContent = "You played A. Choose meaning for A.";
-    speak(pair.a.hanzi);
+    els.tonePrompt.textContent = "You played A. Choose the Jyutping for A.";
+    speak(toneItemForLabel("a").hanzi);
     return;
   }
   if (which === "b") {
     state.currentToneSide = "b";
-    els.tonePrompt.textContent = "You played B. Choose meaning for B.";
-    speak(pair.b.hanzi);
+    els.tonePrompt.textContent = "You played B. Choose the Jyutping for B.";
+    speak(toneItemForLabel("b").hanzi);
     return;
   }
   state.currentToneSide = Math.random() < 0.5 ? "a" : "b";
-  els.tonePrompt.textContent = "You played Random. Choose meaning for the random clip.";
-  speak(pair[state.currentToneSide].hanzi);
+  els.tonePrompt.textContent = "You played Random. Choose the Jyutping for the random clip.";
+  speak(toneItemForLabel(state.currentToneSide).hanzi);
+}
+
+function toneItemForLabel(label) {
+  const pair = state.currentTonePair;
+  if (!pair) return null;
+  const mappedKey = state.toneLabelMap?.[label] || label;
+  return pair[mappedKey];
 }
 
 function wordsByCategories(categories) {
