@@ -790,6 +790,225 @@ const CORE_WORD_JYUTPING = {
   "嘞": "laak3"
 };
 
+const EXTRA_TOKEN_JYUTPING = {
+  "巴士": "baa1 si2",
+  "飛機": "fei1 gei1",
+  "音樂": "jam1 ngok6",
+  "電話": "din6 waa2",
+  "功課": "gung1 fo3",
+  "家務": "gaa1 mou6",
+  "早餐": "zou2 caan1",
+  "海鮮": "hoi2 sin1",
+  "海邊": "hoi2 bin1",
+  "天氣": "tin1 hei3",
+  "機場": "gei1 coeng4",
+  "日本": "jat6 bun2",
+  "放假": "fong3 gaa3",
+  "工作": "gung1 zok3",
+  "計劃": "gai3 waak6",
+  "旅行": "leoi5 hang4",
+  "塞車": "sak1 ce1",
+  "新菜": "san1 coi3",
+  "辣嘢": "laat6 je5",
+  "呢本書": "ni1 bun2 syu1",
+  "呢首歌": "ni1 sau2 go1",
+  "呢課": "ni1 fo3",
+  "呢樣嘢": "ni1 joeng6 je5",
+  "出門": "ceot1 mun4",
+  "一齊": "jat1 cai4",
+  "假期": "gaa3 kei4",
+  "啱啱": "ngaam1 ngaam1",
+  "頭先": "tau4 sin1",
+  "休息": "jau1 sik1",
+  "落雨": "lok6 jyu5",
+  "塞車": "sak1 ce1",
+  "工作": "gung1 zok3",
+  "計劃": "gai3 waak6",
+  "將來": "zoeng1 loi4",
+  "更好": "gang3 hou2",
+  "阿媽": "aa3 maa1",
+  "阿哥": "aa3 go1",
+  "細佬": "sai3 lou2",
+  "兩個鐘": "loeng5 go3 zung1",
+  "市場": "si5 coeng4",
+  "市場買嘢": "si5 coeng4 maai5 je5",
+  "巿場": "si5 coeng4",
+  "煮飯": "zyu2 faan6",
+  "返工": "faan1 gung1",
+  "做緊": "zou6 gan2",
+  "有時間": "jau5 si4 gaan3",
+  "唔舒服": "m4 syu1 fuk6",
+  "肚餓": "tou5 ngo6",
+  "口渴": "hau2 hot3",
+  "次": "ci3",
+  "等": "dang2",
+  "煮": "zyu2",
+  "菜": "coi3",
+  "出": "ceot1",
+  "留": "lau4",
+  "返工": "faan1 gung1",
+  "進步": "zeon3 bou6",
+  "每日": "mui5 jat6",
+  "十分鐘": "sap6 fan1 zung1",
+  "機票": "gei1 piu3",
+  "大家": "daai6 gaa1",
+  "好耐": "hou2 noi6",
+  "改時間": "goi2 si4 gaan3",
+  "避免": "bei6 min5",
+  "即刻": "zik1 hak1",
+  "得閒": "dak1 haan4",
+  "搬屋": "bun1 uk1",
+  "不如": "bat1 jyu4",
+  "尋晚": "cam4 maan5",
+  "帶": "daai3",
+  "接": "zip3",
+  "幫": "bong1",
+  "訂": "ding3",
+  "家務": "gaa1 mou6",
+  "今晚": "gam1 maan5",
+  "樣": "joeng6",
+  "人": "jan4",
+  "月": "jyut6",
+  "車": "ce1",
+  "度": "dou6",
+  "偈": "gai2",
+  "整": "zing2",
+  "可": "ho2",
+  "先": "sin1",
+  "機": "gei1",
+  "肯": "hang2",
+  "練習": "lin6 zaap6",
+  "改": "goi2",
+  "時": "si4",
+  "話": "waa6",
+  "太": "taai3",
+  "執": "zap1",
+  "今": "gam1",
+  "晚": "maan5",
+  "搵": "wan2",
+  "所": "so2",
+  "未": "mei6",
+  "嗰": "go2"
+};
+
+const EXTRA_TOKEN_MEANINGS = {
+  "功課": "homework",
+  "電話": "phone",
+  "巴士": "bus",
+  "次": "time (occurrence)",
+  "出門": "go out / leave home",
+  "將來": "future",
+  "一齊": "together",
+  "煮": "cook",
+  "等": "wait",
+  "菜": "vegetables / dish",
+  "落雨": "rain",
+  "放假": "holiday / day off",
+  "休息": "rest",
+  "飛機": "plane",
+  "音樂": "music",
+  "搵": "look for",
+  "肚餓": "hungry",
+  "口渴": "thirsty",
+  "旅行": "travel",
+  "頭先": "just now",
+  "阿媽": "mom",
+  "阿哥": "older brother",
+  "細佬": "younger brother",
+  "機場": "airport",
+  "工作": "work",
+  "計劃": "plan",
+  "市場": "market",
+  "兩個鐘": "two hours",
+  "假期": "holiday",
+  "啱啱": "just now",
+  "塞車": "traffic jam",
+  "更好": "better",
+  "有時間": "have time",
+  "唔舒服": "feel unwell",
+  "呢本書": "this book",
+  "呢首歌": "this song",
+  "呢課": "this lesson",
+  "呢樣嘢": "this thing",
+  "新菜": "new dishes",
+  "辣嘢": "spicy food"
+  ,
+  "次": "time",
+  "樣": "kind / type",
+  "返工": "go to work",
+  "做緊": "in the middle of doing",
+  "出": "go out",
+  "留": "stay",
+  "市場買嘢": "buy things at the market",
+  "今晚": "tonight",
+  "帶": "bring / take",
+  "人": "person / people",
+  "月": "month",
+  "機": "machine / plane (short)",
+  "天氣": "weather",
+  "海邊": "seaside",
+  "煮飯": "cook",
+  "車": "vehicle / car",
+  "度": "place / measure word",
+  "偈": "chat (as in 傾偈)",
+  "日本": "Japan",
+  "整": "make / prepare",
+  "可": "can / possible",
+  "接": "pick up / receive",
+  "幫": "help",
+  "訂": "book / reserve",
+  "尋": "seek",
+  "先": "first / then",
+  "海鮮": "seafood",
+  "肯": "willing",
+  "練習": "practice",
+  "每": "each / every",
+  "日": "day",
+  "十": "ten",
+  "分": "minute / part",
+  "鐘": "clock / hour (spoken)",
+  "進步": "improve",
+  "票": "ticket",
+  "家": "home / family",
+  "耐": "long time",
+  "改": "change",
+  "時": "time",
+  "避": "avoid",
+  "免": "avoid / exempt",
+  "話": "say / speech",
+  "即": "immediate",
+  "刻": "moment",
+  "閒": "free (as in free time)",
+  "太": "too",
+  "搬": "move",
+  "屋": "house",
+  "執": "tidy / pack",
+  "所": "place / institute",
+  "未": "not yet",
+  "早餐": "breakfast",
+  "嗰": "that",
+  "不": "not",
+  "如": "as / like",
+  "每日": "every day",
+  "十分鐘": "ten minutes",
+  "機票": "flight ticket",
+  "大家": "everyone",
+  "好耐": "for a long time",
+  "改時間": "change the schedule",
+  "避免": "avoid",
+  "即刻": "immediately",
+  "得閒": "free / available",
+  "搬屋": "move house",
+  "不如": "how about",
+  "尋晚": "last night"
+  ,
+  "家務": "housework",
+  "今晚": "tonight",
+  "樣": "kind / type",
+  "今": "this / now",
+  "晚": "late / evening"
+};
+
 const DEFAULT_DATA = {
   words: [
     { id: "w1", hanzi: "我", jyutping: "ngo5", english: "I / me", category: "pronoun", example: "我學廣東話。" },
@@ -1855,6 +2074,7 @@ function buildGeneratedConditionalSentences() {
 
 function analyzeSentence(sentenceInput) {
   const hanzi = typeof sentenceInput === "string" ? sentenceInput : (sentenceInput?.hanzi || "");
+  const originalJyutping = typeof sentenceInput === "string" ? "" : (sentenceInput?.jyutping || "");
   const tokens = tokenizeSentence(hanzi);
   const notes = [];
   const literalParts = [];
@@ -1891,17 +2111,21 @@ function analyzeSentence(sentenceInput) {
     return `<span class="${cls}">${escapeHtml(token)}</span>`;
   });
 
-  const annotatedJyutping = tokens.map((token, idx) => {
-    if (isPunctuation(token)) return escapeHtml(token);
+  const highlights = [];
+  tokens.forEach((token, idx) => {
+    if (isPunctuation(token)) return;
     const marker = markerByIndex[idx];
     const isVerb = isVerbToken(token);
-    let cls = "tok tok-jp";
-    if (marker?.role === "past") cls += " tok-past";
-    if (marker?.role === "prog") cls += " tok-prog";
-    if (marker?.role === "future") cls += " tok-future";
-    if (isVerb) cls += " tok-verb";
-    return `<span class="${cls}">${escapeHtml(jyutpingForToken(token))}</span>`;
-  }).join(" ").replace(/\s+([，。！？,.!?])/g, "$1");
+    const jp = jyutpingForToken(token);
+    if (!jp || jp === token || jp === "to-confirm") return;
+    const classes = ["tok", "tok-jp"];
+    if (isVerb) classes.push("tok-verb");
+    if (marker?.role === "past") classes.push("tok-past");
+    if (marker?.role === "prog") classes.push("tok-prog");
+    if (marker?.role === "future") classes.push("tok-future");
+    highlights.push({ jp, cls: classes.join(" ") });
+  });
+  const annotatedJyutping = highlightJyutpingLine(originalJyutping, highlights);
 
   return {
     annotatedHanzi: annotated.join(""),
@@ -1948,7 +2172,10 @@ function tokenizeSentence(hanzi) {
 
 function getTokenizerVocabulary() {
   const words = (state.content?.words || []).map((w) => normalizeHanzi(w.hanzi)).filter(Boolean);
-  const extras = Object.keys(ASPECT_MARKERS).concat([
+  const extras = Object.keys(ASPECT_MARKERS)
+    .concat(Object.keys(EXTRA_TOKEN_JYUTPING))
+    .concat(Object.keys(EXTRA_TOKEN_MEANINGS))
+    .concat([
     "已經", "將會", "唔係", "一齊", "啱啱", "之前", "之後", "不過", "因為", "所以"
   ]);
   const vocab = Array.from(new Set(words.concat(extras))).sort((a, b) => b.length - a.length);
@@ -1980,6 +2207,7 @@ function literalForToken(token) {
   if (byWord?.english) {
     return String(byWord.english).split("/")[0].trim();
   }
+  if (EXTRA_TOKEN_MEANINGS[normalized]) return EXTRA_TOKEN_MEANINGS[normalized];
   if (CORE_WORD_MEANINGS[normalized]) return CORE_WORD_MEANINGS[normalized];
   return normalized;
 }
@@ -1989,8 +2217,34 @@ function jyutpingForToken(token) {
   if (isPunctuation(normalized)) return normalized;
   const byWord = (state.content?.words || []).find((w) => normalizeHanzi(w.hanzi) === normalized);
   if (byWord?.jyutping && byWord.jyutping !== "to-confirm") return byWord.jyutping;
+  if (EXTRA_TOKEN_JYUTPING[normalized]) return EXTRA_TOKEN_JYUTPING[normalized];
   if (CORE_WORD_JYUTPING[normalized]) return CORE_WORD_JYUTPING[normalized];
   return normalized;
+}
+
+function highlightJyutpingLine(baseJyutping, highlights) {
+  if (!baseJyutping) return "";
+  let out = escapeHtml(baseJyutping);
+  const used = new Set();
+  highlights.forEach((h, idx) => {
+    const key = `${h.jp}|${h.cls}`;
+    const count = used.has(key) ? 2 : 1;
+    used.add(key);
+    out = wrapNthOccurrence(out, escapeHtml(h.jp), `<span class="${h.cls}">`, "</span>", count);
+  });
+  return out;
+}
+
+function wrapNthOccurrence(text, needle, open, close, n) {
+  if (!needle) return text;
+  let from = 0;
+  let found = -1;
+  for (let i = 0; i < n; i += 1) {
+    found = text.indexOf(needle, from);
+    if (found < 0) return text;
+    from = found + needle.length;
+  }
+  return text.slice(0, found) + open + needle + close + text.slice(found + needle.length);
 }
 
 function cleanLiteral(text) {
