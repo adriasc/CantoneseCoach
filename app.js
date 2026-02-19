@@ -1216,6 +1216,45 @@ const TONE_PAIR_BANK = [
   { id: "t12", level: 5, a: { hanzi: "富", jyutping: "fu3", english: "rich" }, b: { hanzi: "苦", jyutping: "fu2", english: "bitter / hardship" } }
 ];
 
+const TONE_SENTENCE_BANK = [
+  {
+    id: "ts1",
+    level: 3,
+    a: { hanzi: "我想買菜。", jyutping: "ngo5 soeng2 maai5 coi3", english: "I want to buy vegetables." },
+    b: { hanzi: "我想賣菜。", jyutping: "ngo5 soeng2 maai6 coi3", english: "I want to sell vegetables." }
+  },
+  {
+    id: "ts2",
+    level: 3,
+    a: { hanzi: "佢識游水。", jyutping: "keoi5 sik1 jau4 seoi2", english: "He/She knows how to swim." },
+    b: { hanzi: "佢食宵夜。", jyutping: "keoi5 sik6 siu1 je6", english: "He/She eats a late-night snack." }
+  },
+  {
+    id: "ts3",
+    level: 4,
+    a: { hanzi: "我住喺呢度。", jyutping: "ngo5 zyu6 hai2 ni1 dou6", english: "I live here." },
+    b: { hanzi: "嗰隻豬好大。", jyutping: "go2 zek3 zyu1 hou2 daai6", english: "That pig is very big." }
+  },
+  {
+    id: "ts4",
+    level: 4,
+    a: { hanzi: "你姓咩？", jyutping: "nei5 sing3 me1", english: "What is your surname?" },
+    b: { hanzi: "我啱啱醒。", jyutping: "ngo5 ngaam1 ngaam1 sing2", english: "I just woke up." }
+  },
+  {
+    id: "ts5",
+    level: 5,
+    a: { hanzi: "佢讀呢首詩。", jyutping: "keoi5 duk6 ni1 sau2 si1", english: "He/She reads this poem." },
+    b: { hanzi: "佢讀香港史。", jyutping: "keoi5 duk6 hoeng1 gong2 si2", english: "He/She studies Hong Kong history." }
+  },
+  {
+    id: "ts6",
+    level: 5,
+    a: { hanzi: "佢好富有。", jyutping: "keoi5 hou2 fu3 jau5", english: "He/She is wealthy." },
+    b: { hanzi: "呢杯咖啡好苦。", jyutping: "ni1 bui1 gaa3 fe1 hou2 fu2", english: "This coffee is very bitter." }
+  }
+];
+
 const state = {
   content: loadContent(),
   known: new Set(loadJson(STORAGE_KEYS.known, [])),
@@ -1227,6 +1266,7 @@ const state = {
     theme: "mixed",
     uiTheme: "classic",
     controlsCollapsed: false,
+    toneExerciseMode: "auto",
     showJyutping: true,
     showEnglish: true,
     toneShowJyutping: false,
@@ -1243,6 +1283,7 @@ const state = {
   patternSelections: {},
   currentQuiz: null,
   currentTonePair: null,
+  currentToneKind: "word",
   currentToneSide: null,
   toneLabelMap: { a: "a", b: "b" },
   toneScore: { correct: 0, total: 0 }
@@ -1263,6 +1304,7 @@ const els = {
   audioVoice: byId("audioVoice"),
   audioRate: byId("audioRate"),
   audioRateValue: byId("audioRateValue"),
+  toneExerciseMode: byId("toneExerciseMode"),
   themeStyle: byId("themeStyle"),
   testVoice: byId("testVoice"),
   applyControls: byId("applyControls"),
@@ -1389,6 +1431,14 @@ function bindUI() {
       applyToneVisibility();
     });
   }
+  if (els.toneExerciseMode) {
+    els.toneExerciseMode.addEventListener("change", () => {
+      state.prefs.toneExerciseMode = els.toneExerciseMode.value || "auto";
+      saveJson(STORAGE_KEYS.prefs, state.prefs);
+      resetRotations();
+      rollTonePair();
+    });
+  }
 
   byId("nextQuiz").addEventListener("click", rollQuiz);
   if (byId("nextTone")) byId("nextTone").addEventListener("click", rollTonePair);
@@ -1462,6 +1512,7 @@ function applyGlobalControls() {
   state.prefs.tense = els.globalTense.value;
   state.prefs.theme = els.globalTheme.value;
   state.prefs.uiTheme = els.themeStyle?.value || "classic";
+  state.prefs.toneExerciseMode = els.toneExerciseMode?.value || "auto";
   saveJson(STORAGE_KEYS.prefs, state.prefs);
   applyTheme(state.prefs.uiTheme);
   resetRotations();
@@ -1589,8 +1640,10 @@ function renderQuizGrammar() {
 
 function rollTonePair() {
   if (!els.toneLabel || !els.toneChoices) return;
-  const pool = getFilteredTonePairs();
+  const mode = resolveToneExerciseMode();
+  const pool = mode === "sentence" ? getFilteredToneSentencePairs() : getFilteredTonePairs();
   if (!pool.length) return;
+  state.currentToneKind = mode;
   state.currentTonePair = takeFromRotation("tonePairs", pool, (pair) => pair.id);
   state.currentToneSide = null;
   state.toneLabelMap = Math.random() < 0.5 ? { a: "a", b: "b" } : { a: "b", b: "a" };
@@ -1606,13 +1659,16 @@ function renderTonePair() {
   if (!pair || !els.toneLabel || !els.tonePrompt) return;
   const toneA = toneItemForLabel("a");
   const toneB = toneItemForLabel("b");
-  els.toneLabel.textContent = `Level ${pair.level} · ${toneA.jyutping} / ${toneB.jyutping}`;
+  const modeLabel = state.currentToneKind === "sentence" ? "Sentence tones" : "Word tones";
+  els.toneLabel.textContent = `Level ${pair.level} · ${modeLabel} · ${toneA.jyutping} / ${toneB.jyutping}`;
   els.toneHanzi.textContent = `A: ${toneA.hanzi}   B: ${toneB.hanzi}`;
   els.toneJyutping.textContent = `A: ${toneA.jyutping}   B: ${toneB.jyutping}`;
   els.toneEnglish.textContent = `A: ${toneA.english}   B: ${toneB.english}`;
   els.toneFeedback.textContent = "";
   els.toneFeedback.className = "feedback";
-  els.tonePrompt.textContent = "Step 1: Play A, B, or Random. Step 2: Choose the Jyutping you heard.";
+  els.tonePrompt.textContent = state.currentToneKind === "sentence"
+    ? "Step 1: Play A, B, or Random. Step 2: Choose the sentence you heard."
+    : "Step 1: Play A, B, or Random. Step 2: Choose the Jyutping you heard.";
   applyToneVisibility();
   updateToneScore();
 }
@@ -1622,7 +1678,9 @@ function renderToneChoices() {
   if (!pair || !els.toneChoices) return;
   const toneA = toneItemForLabel("a");
   const toneB = toneItemForLabel("b");
-  const options = [toneA.jyutping, toneB.jyutping];
+  const options = state.currentToneKind === "sentence"
+    ? [toneA.hanzi, toneB.hanzi]
+    : [toneA.jyutping, toneB.jyutping];
   shuffle(options);
   els.toneChoices.innerHTML = "";
   options.forEach((option) => {
@@ -1643,7 +1701,8 @@ function checkToneAnswer(selected, clickedBtn) {
     return;
   }
   const target = toneItemForLabel(state.currentToneSide);
-  const ok = selected === target.jyutping;
+  const expected = state.currentToneKind === "sentence" ? target.hanzi : target.jyutping;
+  const ok = selected === expected;
   state.toneScore.total += 1;
   if (ok) state.toneScore.correct += 1;
   els.toneFeedback.textContent = ok
@@ -1653,7 +1712,7 @@ function checkToneAnswer(selected, clickedBtn) {
   const buttons = [...els.toneChoices.querySelectorAll("button")];
   buttons.forEach((button) => {
     button.disabled = true;
-    if (button.textContent === target.jyutping) button.style.borderColor = "#0a7d6f";
+    if (button.textContent === expected) button.style.borderColor = "#0a7d6f";
   });
   if (!ok && clickedBtn) clickedBtn.style.borderColor = "#b62a2a";
   markReviewed();
@@ -1668,20 +1727,21 @@ function updateToneScore() {
 function playToneClip(which) {
   const pair = state.currentTonePair;
   if (!pair) return;
+  const answerType = state.currentToneKind === "sentence" ? "sentence" : "Jyutping";
   if (which === "a") {
     state.currentToneSide = "a";
-    els.tonePrompt.textContent = "You played A. Choose the Jyutping for A.";
+    els.tonePrompt.textContent = `You played A. Choose the ${answerType} for A.`;
     speak(toneItemForLabel("a").hanzi);
     return;
   }
   if (which === "b") {
     state.currentToneSide = "b";
-    els.tonePrompt.textContent = "You played B. Choose the Jyutping for B.";
+    els.tonePrompt.textContent = `You played B. Choose the ${answerType} for B.`;
     speak(toneItemForLabel("b").hanzi);
     return;
   }
   state.currentToneSide = Math.random() < 0.5 ? "a" : "b";
-  els.tonePrompt.textContent = "You played Random. Choose the Jyutping for the random clip.";
+  els.tonePrompt.textContent = `You played Random. Choose the ${answerType} for the random clip.`;
   speak(toneItemForLabel(state.currentToneSide).hanzi);
 }
 
@@ -1715,6 +1775,23 @@ function getFilteredTonePairs() {
   const level = Number(state.prefs.level) || 2;
   const pool = TONE_PAIR_BANK.filter((pair) => pair.level <= level);
   return pool.length ? pool : TONE_PAIR_BANK.slice(0, 3);
+}
+
+function getFilteredToneSentencePairs() {
+  const level = Number(state.prefs.level) || 2;
+  const pool = TONE_SENTENCE_BANK.filter((pair) => pair.level <= level && pair.level >= 3);
+  return pool.length ? pool : [];
+}
+
+function resolveToneExerciseMode() {
+  const mode = state.prefs.toneExerciseMode || "auto";
+  const level = Number(state.prefs.level) || 2;
+  if (mode === "word") return "word";
+  if (mode === "sentence") return level >= 3 ? "sentence" : "word";
+  if (level <= 2) return "word";
+  const hasSentencePool = getFilteredToneSentencePairs().length > 0;
+  if (!hasSentencePool) return "word";
+  return Math.random() < 0.5 ? "word" : "sentence";
 }
 
 function markReviewed() {
@@ -1867,6 +1944,7 @@ function syncControlValues() {
   els.globalLevel.value = String(state.prefs.level || 2);
   els.globalTense.value = state.prefs.tense || "mixed";
   els.globalTheme.value = state.prefs.theme || "mixed";
+  if (els.toneExerciseMode) els.toneExerciseMode.value = state.prefs.toneExerciseMode || "auto";
   if (els.themeStyle) els.themeStyle.value = state.prefs.uiTheme || "classic";
   els.audioRate.value = String(state.prefs.voiceRate || 0.9);
   els.audioRateValue.textContent = `${Number(state.prefs.voiceRate || 0.9).toFixed(2)}x`;

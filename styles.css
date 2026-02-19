@@ -42,6 +42,34 @@ body[data-theme="neon"] {
   --shape-b: #ffb171;
 }
 
+body[data-theme="neon-strong"] {
+  --ink: #101733;
+  --paper: #fff4ec;
+  --accent: #ff3b30;
+  --accent-2: #00a39b;
+  --soft: #fffdf7;
+  --muted: #4d5579;
+  --bg-a: #ffd8bf;
+  --bg-b: #ffe5f8;
+  --bg-c: #cfefff;
+  --shape-a: #4f8dff;
+  --shape-b: #ff8a42;
+}
+
+body[data-theme="ink"] {
+  --ink: #1d1d1d;
+  --paper: #f2f2ee;
+  --accent: #5a5a5a;
+  --accent-2: #2e2e2e;
+  --soft: #fbfbf8;
+  --muted: #636363;
+  --bg-a: #e8e8e3;
+  --bg-b: #f1f1ec;
+  --bg-c: #dfe2e5;
+  --shape-a: #bfc6cc;
+  --shape-b: #cfc8be;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -188,6 +216,12 @@ h1 {
 .controls-card.is-collapsed .actions,
 .controls-card.is-collapsed #controlsMessage {
   display: none;
+}
+
+.inline-pair {
+  display: flex;
+  gap: 8px;
+  flex-wrap: nowrap;
 }
 
 .controls-grid {

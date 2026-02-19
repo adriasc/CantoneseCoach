@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v17.2</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v17.3</span></p>
         <h1>Cantonese Coach</h1>
       </div>
       <div class="streak" id="streakBadge">Streak: 0 days</div>
@@ -86,6 +86,8 @@
             <option value="classic">Classic Pastel</option>
             <option value="harbour">HK Harbour Pastel</option>
             <option value="neon">HK Neon Soft</option>
+            <option value="neon-strong">HK Neon Strong</option>
+            <option value="ink">Ink Newspaper</option>
           </select>
         </div>
       </div>
@@ -164,7 +166,17 @@
     <section class="panel" id="panel-tones">
       <div class="card">
         <h2>Tone Contrast Drills</h2>
-        <p>Press A, B, or Random. Then choose the English meaning of the clip you just heard.</p>
+        <p>Press A, B, or Random. Then choose the Jyutping or sentence you just heard.</p>
+        <div class="slot-grid">
+          <div>
+            <label for="toneExerciseMode">Tone Exercise</label>
+            <select id="toneExerciseMode">
+              <option value="auto">Auto (level-based)</option>
+              <option value="word">Word pairs</option>
+              <option value="sentence">Sentence pairs (L3+)</option>
+            </select>
+          </div>
+        </div>
         <p class="formula" id="toneLabel"></p>
         <p class="example" id="tonePrompt">Step 1: Play a clip. Step 2: Choose meaning below.</p>
         <div class="result-box">
@@ -176,8 +188,10 @@
           <button id="playToneA">Play A</button>
           <button id="playToneB">Play B</button>
           <button id="playToneRandom">Play Random</button>
-          <button id="toggleToneJyutping">Hide Jyutping</button>
-          <button id="toggleToneEnglish">Hide English</button>
+          <div class="inline-pair">
+            <button id="toggleToneJyutping">Hide Jyutping</button>
+            <button id="toggleToneEnglish">Hide English</button>
+          </div>
           <button id="nextTone">Next pair</button>
         </div>
         <div class="choices" id="toneChoices"></div>
