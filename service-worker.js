@@ -1,4 +1,4 @@
-const CACHE_NAME = "cantonese-coach-v16";
+const CACHE_NAME = "cantonese-coach-v17";
 const ASSETS = [
   "./",
   "./index.html",
@@ -22,7 +22,22 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-  event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
-  );
+  if (event.request.method !== "GET") return;
+  const url = new URL(event.request.url);
+  const isAppAsset = ASSETS.some((asset) => url.pathname.endsWith(asset.replace("./", "/")));
+
+  if (isAppAsset || event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)).catch(() => {});
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request)));
 });

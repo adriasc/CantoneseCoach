@@ -68,6 +68,18 @@ body {
   letter-spacing: 0.08em;
 }
 
+.version-tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid #8fb3d9;
+  color: #365173;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
 h1 {
   margin: 4px 0 0;
   font-size: clamp(1.5rem, 3vw, 2rem);
