@@ -1275,7 +1275,8 @@ const state = {
     voiceURI: "auto",
     voiceRate: 0.9,
     audioNoiseOn: false,
-    audioNoiseLevel: 0.12
+    audioNoiseLevel: 0.12,
+    audioNoiseType: "white"
   }),
   availableVoices: [],
   rotation: { words: [], patternSentences: [], quizSentences: [], tonePairs: [] },
@@ -1307,6 +1308,7 @@ const els = {
   audioRate: byId("audioRate"),
   audioRateValue: byId("audioRateValue"),
   audioNoiseOn: byId("audioNoiseOn"),
+  audioNoiseType: byId("audioNoiseType"),
   audioNoiseLevel: byId("audioNoiseLevel"),
   audioNoiseValue: byId("audioNoiseValue"),
   toneExerciseMode: byId("toneExerciseMode"),
@@ -1477,6 +1479,15 @@ function bindUI() {
       if (!state.prefs.audioNoiseOn) stopSpeechNoise();
     });
   }
+  if (els.audioNoiseType) {
+    els.audioNoiseType.addEventListener("change", () => {
+      state.prefs.audioNoiseType = els.audioNoiseType.value || "white";
+      saveJson(STORAGE_KEYS.prefs, state.prefs);
+      if (speechNoise.source) {
+        startSpeechNoise();
+      }
+    });
+  }
   if (els.audioNoiseLevel) {
     els.audioNoiseLevel.addEventListener("input", () => {
       state.prefs.audioNoiseLevel = Number(els.audioNoiseLevel.value) || 0.12;
@@ -1541,6 +1552,7 @@ function applyGlobalControls() {
   state.prefs.toneExerciseMode = els.toneExerciseMode?.value || "auto";
   state.prefs.audioNoiseOn = (els.audioNoiseOn?.value || "off") === "on";
   state.prefs.audioNoiseLevel = Number(els.audioNoiseLevel?.value || 0.12) || 0.12;
+  state.prefs.audioNoiseType = els.audioNoiseType?.value || "white";
   saveJson(STORAGE_KEYS.prefs, state.prefs);
   applyTheme(state.prefs.uiTheme);
   resetRotations();
@@ -1702,7 +1714,7 @@ function renderTonePair() {
   els.toneFeedback.textContent = "";
   els.toneFeedback.className = "feedback";
   els.tonePrompt.textContent = state.currentToneKind === "sentence"
-    ? "Step 1: Play A, B, or Random. Step 2: Choose the sentence you heard."
+    ? "Step 1: Play A, B, or Random. Step 2: Choose the Jyutping sentence you heard."
     : "Step 1: Play A, B, or Random. Step 2: Choose the Jyutping you heard.";
   applyToneVisibility();
   updateToneScore();
@@ -1714,7 +1726,7 @@ function renderToneChoices() {
   const toneA = toneItemForLabel("a");
   const toneB = toneItemForLabel("b");
   const options = state.currentToneKind === "sentence"
-    ? [toneA.hanzi, toneB.hanzi]
+    ? [toneA.jyutping, toneB.jyutping]
     : [toneA.jyutping, toneB.jyutping];
   shuffle(options);
   els.toneChoices.innerHTML = "";
@@ -1736,7 +1748,7 @@ function checkToneAnswer(selected, clickedBtn) {
     return;
   }
   const target = toneItemForLabel(state.currentToneSide);
-  const expected = state.currentToneKind === "sentence" ? target.hanzi : target.jyutping;
+  const expected = target.jyutping;
   const ok = selected === expected;
   state.toneScore.total += 1;
   if (ok) state.toneScore.correct += 1;
@@ -1763,7 +1775,7 @@ function updateToneScore() {
 function playToneClip(which) {
   const pair = state.currentTonePair;
   if (!pair) return;
-  const answerType = state.currentToneKind === "sentence" ? "sentence" : "Jyutping";
+  const answerType = state.currentToneKind === "sentence" ? "Jyutping sentence" : "Jyutping";
   if (which === "a") {
     state.currentToneSide = "a";
     els.tonePrompt.textContent = `You played A. Choose the ${answerType} for A.`;
@@ -1890,9 +1902,7 @@ function startSpeechNoise() {
   const frameCount = speechNoise.ctx.sampleRate;
   const buffer = speechNoise.ctx.createBuffer(1, frameCount, speechNoise.ctx.sampleRate);
   const data = buffer.getChannelData(0);
-  for (let i = 0; i < frameCount; i += 1) {
-    data[i] = Math.random() * 2 - 1;
-  }
+  fillNoiseBuffer(data, state.prefs.audioNoiseType || "white", speechNoise.ctx.sampleRate);
 
   const source = speechNoise.ctx.createBufferSource();
   source.buffer = buffer;
@@ -1907,6 +1917,45 @@ function startSpeechNoise() {
 
   speechNoise.source = source;
   speechNoise.gain = gain;
+}
+
+function fillNoiseBuffer(data, noiseType, sampleRate) {
+  let last = 0;
+  let brown = 0;
+  const humA = 2 * Math.PI * 50 / sampleRate;
+  const humB = 2 * Math.PI * 120 / sampleRate;
+  const type = String(noiseType || "white");
+
+  for (let i = 0; i < data.length; i += 1) {
+    const white = Math.random() * 2 - 1;
+    const pink = 0.98 * last + 0.02 * white;
+    last = pink;
+    brown = (brown + 0.02 * white) / 1.02;
+
+    if (type === "street") {
+      const rumble = 0.5 * Math.sin(i * humA) + 0.25 * Math.sin(i * humB);
+      data[i] = (pink * 0.65) + (brown * 0.28) + (rumble * 0.12);
+      continue;
+    }
+
+    if (type === "radio") {
+      const hiss = white * 0.45;
+      const staticBurst = (Math.random() > 0.995 ? (Math.random() * 2 - 1) : 0) * 0.8;
+      const hum = 0.08 * Math.sin(i * humA);
+      data[i] = hiss + staticBurst + hum;
+      continue;
+    }
+
+    if (type === "people") {
+      const chatterGate = (Math.sin(i * (2 * Math.PI * 2.2 / sampleRate)) + 1) / 2;
+      const chatter = pink * (0.2 + chatterGate * 0.65);
+      const crowd = brown * 0.35;
+      data[i] = chatter + crowd;
+      continue;
+    }
+
+    data[i] = white;
+  }
 }
 
 function stopSpeechNoise() {
@@ -2036,6 +2085,7 @@ function syncControlValues() {
   els.audioRate.value = String(state.prefs.voiceRate || 0.9);
   els.audioRateValue.textContent = `${Number(state.prefs.voiceRate || 0.9).toFixed(2)}x`;
   if (els.audioNoiseOn) els.audioNoiseOn.value = state.prefs.audioNoiseOn ? "on" : "off";
+  if (els.audioNoiseType) els.audioNoiseType.value = state.prefs.audioNoiseType || "white";
   if (els.audioNoiseLevel) els.audioNoiseLevel.value = String(state.prefs.audioNoiseLevel || 0.12);
   if (els.audioNoiseValue) els.audioNoiseValue.textContent = Number(state.prefs.audioNoiseLevel || 0.12).toFixed(2);
 }

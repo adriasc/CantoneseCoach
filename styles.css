@@ -57,17 +57,17 @@ body[data-theme="neon-strong"] {
 }
 
 body[data-theme="neon-extreme"] {
-  --ink: #f8f6ff;
-  --paper: #140a2a;
-  --accent: #ff3b7a;
-  --accent-2: #00e5d1;
-  --soft: #1b1035;
-  --muted: #d9c9ff;
-  --bg-a: #17072f;
-  --bg-b: #081c3d;
-  --bg-c: #311042;
-  --shape-a: #00d9ff;
-  --shape-b: #ff6a00;
+  --ink: #fff8ff;
+  --paper: #18071f;
+  --accent: #ff2f6d;
+  --accent-2: #00f5d4;
+  --soft: #221031;
+  --muted: #f4c8f2;
+  --bg-a: #16030f;
+  --bg-b: #2b031e;
+  --bg-c: #051429;
+  --shape-a: #00ecff;
+  --shape-b: #ff5a00;
 }
 
 body[data-theme="ink"] {
@@ -85,18 +85,46 @@ body[data-theme="ink"] {
 }
 
 body[data-theme="ink"]::after {
-  content: "NEWS 1930 CANTONESE LEARNING EDITION \\A typewriter notes: ngo5 nei5 keoi5 jyu4 gwo2 \\A 新聞 學習 句子 聲調 練習";
+  content: "香港日報 1930 CANTONESE LEARNING EDITION\\A廣東話 聲調 練習 新聞 新聞 新聞 新聞 新聞\\A我 你 佢 如果 就 會 咗 過 緊 住 返\\A買 賣 食 識 早 做 手 受 詩 史 富 苦";
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
   white-space: pre-wrap;
-  font-family: \"Courier New\", \"American Typewriter\", monospace;
-  font-size: 12px;
-  line-height: 1.8;
-  letter-spacing: 1px;
-  color: rgba(20, 20, 20, 0.08);
-  padding: 20px;
+  font-family: "Courier New", "American Typewriter", monospace;
+  font-size: 18px;
+  line-height: 1.5;
+  letter-spacing: 2px;
+  color: rgba(20, 20, 20, 0.2);
+  padding: 18px;
+  text-transform: uppercase;
+}
+
+body[data-theme="ink"]::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.85;
+  background:
+    repeating-linear-gradient(0deg, rgba(30, 30, 30, 0.06) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(90deg, rgba(30, 30, 30, 0.05) 0 1px, transparent 1px 28px),
+    radial-gradient(circle at 20% 10%, rgba(110, 110, 110, 0.15), transparent 40%);
+}
+
+body[data-theme="poster"] {
+  --ink: #fff7e8;
+  --paper: #2a1515;
+  --accent: #ef3e2f;
+  --accent-2: #ffcc00;
+  --soft: #381a19;
+  --muted: #ffd6bd;
+  --bg-a: #5b1a1a;
+  --bg-b: #163a2f;
+  --bg-c: #331a52;
+  --shape-a: #f23d2f;
+  --shape-b: #ffd500;
 }
 
 * {
@@ -125,16 +153,34 @@ body[data-theme="neon-extreme"]::before {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.7;
+  opacity: 0.84;
   background:
-    radial-gradient(circle at 85% 16%, rgba(255, 33, 133, 0.24), transparent 34%),
-    radial-gradient(circle at 16% 82%, rgba(0, 229, 209, 0.22), transparent 38%),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.02) 0 2px, transparent 2px 26px);
+    radial-gradient(circle at 84% 20%, rgba(255, 44, 120, 0.34), transparent 35%),
+    radial-gradient(circle at 20% 80%, rgba(0, 245, 210, 0.3), transparent 40%),
+    linear-gradient(145deg, rgba(255, 55, 0, 0.14), transparent 45%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0 2px, transparent 2px 26px);
 }
 
 body[data-theme="neon-extreme"] .bg-shape {
-  filter: blur(12px);
-  opacity: 0.88;
+  filter: blur(8px);
+  opacity: 0.95;
+}
+
+body[data-theme="poster"]::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.9;
+  background:
+    linear-gradient(25deg, rgba(255, 212, 0, 0.1), transparent 35%),
+    linear-gradient(160deg, rgba(239, 62, 47, 0.14), transparent 45%),
+    repeating-linear-gradient(-35deg, rgba(255, 255, 255, 0.05) 0 4px, transparent 4px 38px);
+}
+
+body[data-theme="poster"] .bg-shape {
+  display: none;
 }
 
 .shape-a {
@@ -327,6 +373,11 @@ body[data-theme="neon-extreme"] .tab.is-active,
 body[data-theme="neon-extreme"] button,
 body[data-theme="neon-extreme"] .file-btn {
   box-shadow: 0 0 14px rgba(255, 60, 140, 0.45), 0 0 20px rgba(0, 220, 200, 0.22);
+}
+
+body[data-theme="neon-extreme"] .card {
+  border: 1px solid rgba(255, 96, 163, 0.45);
+  box-shadow: 0 0 22px rgba(255, 61, 156, 0.25), 0 0 28px rgba(0, 224, 210, 0.18);
 }
 
 button:hover,
