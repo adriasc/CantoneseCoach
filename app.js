@@ -1275,7 +1275,7 @@ const state = {
     voiceURI: "auto",
     voiceRate: 0.9,
     audioNoiseOn: false,
-    audioNoiseLevel: 0.12,
+    audioNoiseLevel: 0.25,
     audioNoiseType: "white"
   }),
   availableVoices: [],
@@ -1490,10 +1490,10 @@ function bindUI() {
   }
   if (els.audioNoiseLevel) {
     els.audioNoiseLevel.addEventListener("input", () => {
-      state.prefs.audioNoiseLevel = Number(els.audioNoiseLevel.value) || 0.12;
+      state.prefs.audioNoiseLevel = Number(els.audioNoiseLevel.value) || 0.25;
       saveJson(STORAGE_KEYS.prefs, state.prefs);
       if (els.audioNoiseValue) els.audioNoiseValue.textContent = state.prefs.audioNoiseLevel.toFixed(2);
-      if (speechNoise.gain) speechNoise.gain.gain.value = Math.max(0.02, Math.min(0.35, state.prefs.audioNoiseLevel));
+      if (speechNoise.gain) speechNoise.gain.gain.value = Math.max(0.05, Math.min(0.8, state.prefs.audioNoiseLevel));
     });
   }
   els.testVoice.addEventListener("click", () => {
@@ -1551,7 +1551,7 @@ function applyGlobalControls() {
   state.prefs.uiTheme = els.themeStyle?.value || "classic";
   state.prefs.toneExerciseMode = els.toneExerciseMode?.value || "auto";
   state.prefs.audioNoiseOn = (els.audioNoiseOn?.value || "off") === "on";
-  state.prefs.audioNoiseLevel = Number(els.audioNoiseLevel?.value || 0.12) || 0.12;
+  state.prefs.audioNoiseLevel = Number(els.audioNoiseLevel?.value || 0.25) || 0.25;
   state.prefs.audioNoiseType = els.audioNoiseType?.value || "white";
   saveJson(STORAGE_KEYS.prefs, state.prefs);
   applyTheme(state.prefs.uiTheme);
@@ -1909,7 +1909,7 @@ function startSpeechNoise() {
   source.loop = true;
 
   const gain = speechNoise.ctx.createGain();
-  gain.gain.value = Math.max(0.02, Math.min(0.35, Number(state.prefs.audioNoiseLevel) || 0.12));
+  gain.gain.value = Math.max(0.05, Math.min(0.8, Number(state.prefs.audioNoiseLevel) || 0.25));
 
   source.connect(gain);
   gain.connect(speechNoise.ctx.destination);
@@ -1933,8 +1933,9 @@ function fillNoiseBuffer(data, noiseType, sampleRate) {
     brown = (brown + 0.02 * white) / 1.02;
 
     if (type === "street") {
-      const rumble = 0.5 * Math.sin(i * humA) + 0.25 * Math.sin(i * humB);
-      data[i] = (pink * 0.65) + (brown * 0.28) + (rumble * 0.12);
+      const rumble = 0.55 * Math.sin(i * humA) + 0.32 * Math.sin(i * humB);
+      const horn = (Math.sin(i * (2 * Math.PI * 620 / sampleRate)) * (Math.random() > 0.9992 ? 1 : 0)) * 0.8;
+      data[i] = (pink * 0.7) + (brown * 0.35) + (rumble * 0.25) + horn;
       continue;
     }
 
@@ -1947,9 +1948,11 @@ function fillNoiseBuffer(data, noiseType, sampleRate) {
     }
 
     if (type === "people") {
-      const chatterGate = (Math.sin(i * (2 * Math.PI * 2.2 / sampleRate)) + 1) / 2;
-      const chatter = pink * (0.2 + chatterGate * 0.65);
-      const crowd = brown * 0.35;
+      const chatterGate = (Math.sin(i * (2 * Math.PI * 3.1 / sampleRate)) + 1) / 2;
+      const formantA = Math.sin(i * (2 * Math.PI * 260 / sampleRate));
+      const formantB = Math.sin(i * (2 * Math.PI * 380 / sampleRate));
+      const chatter = pink * (0.3 + chatterGate * 0.9) + formantA * 0.12 + formantB * 0.09;
+      const crowd = brown * 0.45;
       data[i] = chatter + crowd;
       continue;
     }
@@ -2086,8 +2089,8 @@ function syncControlValues() {
   els.audioRateValue.textContent = `${Number(state.prefs.voiceRate || 0.9).toFixed(2)}x`;
   if (els.audioNoiseOn) els.audioNoiseOn.value = state.prefs.audioNoiseOn ? "on" : "off";
   if (els.audioNoiseType) els.audioNoiseType.value = state.prefs.audioNoiseType || "white";
-  if (els.audioNoiseLevel) els.audioNoiseLevel.value = String(state.prefs.audioNoiseLevel || 0.12);
-  if (els.audioNoiseValue) els.audioNoiseValue.textContent = Number(state.prefs.audioNoiseLevel || 0.12).toFixed(2);
+  if (els.audioNoiseLevel) els.audioNoiseLevel.value = String(state.prefs.audioNoiseLevel || 0.25);
+  if (els.audioNoiseValue) els.audioNoiseValue.textContent = Number(state.prefs.audioNoiseLevel || 0.25).toFixed(2);
 }
 
 function initVoiceControls() {
