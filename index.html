@@ -29,6 +29,7 @@
       <button class="tab is-active" data-tab="words">Words</button>
       <button class="tab" data-tab="patterns">Patterns</button>
       <button class="tab" data-tab="listening">Listening</button>
+      <button class="tab" data-tab="tones">Tones</button>
       <button class="tab" data-tab="settings">Content</button>
     </nav>
 
@@ -146,6 +147,28 @@
         </div>
         <div class="choices" id="quizChoices"></div>
         <p class="feedback" id="quizFeedback"></p>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-tones">
+      <div class="card">
+        <h2>Tone Contrast Drills</h2>
+        <p>Listen and pick the correct meaning. This trains your ear for similar sounds with different tones.</p>
+        <p class="formula" id="toneLabel"></p>
+        <div class="result-box">
+          <p class="hanzi tone-line" id="toneHanzi"></p>
+          <p class="jyutping tone-line" id="toneJyutping"></p>
+          <p class="english tone-line" id="toneEnglish"></p>
+        </div>
+        <div class="actions">
+          <button id="playToneA">Play A</button>
+          <button id="playToneB">Play B</button>
+          <button id="playToneRandom">Play Random</button>
+          <button id="nextTone">Next pair</button>
+        </div>
+        <div class="choices" id="toneChoices"></div>
+        <p class="feedback" id="toneFeedback"></p>
+        <p class="example" id="toneScore">Tone score: 0 / 0</p>
       </div>
     </section>
 

@@ -84,7 +84,7 @@ h1 {
 .tabs {
   margin-top: 18px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 8px;
 }
 
@@ -187,7 +187,8 @@ button:hover,
 
 #nextWord,
 #nextQuiz,
-#newPattern {
+#newPattern,
+#nextTone {
   background: var(--accent);
 }
 
@@ -197,6 +198,12 @@ button:hover,
 #togglePatternEnglish,
 #toggleQuizJyutping,
 #toggleQuizEnglish {
+  background: #365173;
+}
+
+#playToneA,
+#playToneB,
+#playToneRandom {
   background: #365173;
 }
 

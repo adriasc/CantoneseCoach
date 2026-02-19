@@ -1201,6 +1201,21 @@ const ALL_SENTENCES = SENTENCE_BANK
   .concat(GENERATED_FUTURE_SENTENCES)
   .concat(GENERATED_CONDITIONAL_SENTENCES);
 
+const TONE_PAIR_BANK = [
+  { id: "t1", level: 1, a: { hanzi: "買", jyutping: "maai5", english: "buy" }, b: { hanzi: "賣", jyutping: "maai6", english: "sell" } },
+  { id: "t2", level: 1, a: { hanzi: "識", jyutping: "sik1", english: "know (a skill/person)" }, b: { hanzi: "食", jyutping: "sik6", english: "eat" } },
+  { id: "t3", level: 1, a: { hanzi: "早", jyutping: "zou2", english: "early" }, b: { hanzi: "做", jyutping: "zou6", english: "do / make" } },
+  { id: "t4", level: 2, a: { hanzi: "試", jyutping: "si3", english: "try" }, b: { hanzi: "事", jyutping: "si6", english: "matter / thing" } },
+  { id: "t5", level: 2, a: { hanzi: "時", jyutping: "si4", english: "time" }, b: { hanzi: "市", jyutping: "si5", english: "market / city" } },
+  { id: "t6", level: 2, a: { hanzi: "到", jyutping: "dou3", english: "arrive" }, b: { hanzi: "刀", jyutping: "dou1", english: "knife" } },
+  { id: "t7", level: 3, a: { hanzi: "先", jyutping: "sin1", english: "first" }, b: { hanzi: "線", jyutping: "sin3", english: "line / wire" } },
+  { id: "t8", level: 3, a: { hanzi: "手", jyutping: "sau2", english: "hand" }, b: { hanzi: "受", jyutping: "sau6", english: "receive / suffer" } },
+  { id: "t9", level: 4, a: { hanzi: "豬", jyutping: "zyu1", english: "pig" }, b: { hanzi: "住", jyutping: "zyu6", english: "live / stay" } },
+  { id: "t10", level: 4, a: { hanzi: "姓", jyutping: "sing3", english: "surname" }, b: { hanzi: "醒", jyutping: "sing2", english: "awake / clear-headed" } },
+  { id: "t11", level: 5, a: { hanzi: "詩", jyutping: "si1", english: "poem" }, b: { hanzi: "史", jyutping: "si2", english: "history" } },
+  { id: "t12", level: 5, a: { hanzi: "富", jyutping: "fu3", english: "rich" }, b: { hanzi: "苦", jyutping: "fu2", english: "bitter / hardship" } }
+];
+
 const state = {
   content: loadContent(),
   known: new Set(loadJson(STORAGE_KEYS.known, [])),
@@ -1217,12 +1232,15 @@ const state = {
     voiceRate: 0.9
   }),
   availableVoices: [],
-  rotation: { words: [], patternSentences: [], quizSentences: [] },
+  rotation: { words: [], patternSentences: [], quizSentences: [], tonePairs: [] },
   currentWord: null,
   currentSentence: null,
   currentPattern: null,
   patternSelections: {},
-  currentQuiz: null
+  currentQuiz: null,
+  currentTonePair: null,
+  currentToneSide: "a",
+  toneScore: { correct: 0, total: 0 }
 };
 
 const els = {
@@ -1267,6 +1285,13 @@ const els = {
   quizGrammarNotes: byId("quizGrammarNotes"),
   quizChoices: byId("quizChoices"),
   quizFeedback: byId("quizFeedback"),
+  toneLabel: byId("toneLabel"),
+  toneHanzi: byId("toneHanzi"),
+  toneJyutping: byId("toneJyutping"),
+  toneEnglish: byId("toneEnglish"),
+  toneChoices: byId("toneChoices"),
+  toneFeedback: byId("toneFeedback"),
+  toneScore: byId("toneScore"),
   contentMessage: byId("contentMessage")
 };
 
@@ -1277,6 +1302,7 @@ applyVisibilityPrefs();
 rollWord();
 rollPattern();
 rollQuiz();
+rollTonePair();
 refreshStats();
 registerServiceWorker();
 
@@ -1338,6 +1364,10 @@ function bindUI() {
   els.toggleQuizEnglish.addEventListener("click", () => togglePref("showEnglish"));
 
   byId("nextQuiz").addEventListener("click", rollQuiz);
+  byId("nextTone").addEventListener("click", rollTonePair);
+  byId("playToneA").addEventListener("click", () => playToneClip("a"));
+  byId("playToneB").addEventListener("click", () => playToneClip("b"));
+  byId("playToneRandom").addEventListener("click", () => playToneClip("random"));
 
   els.globalLevel.addEventListener("change", markControlsDirty);
   els.globalTense.addEventListener("change", markControlsDirty);
@@ -1382,6 +1412,7 @@ function bindUI() {
     rollWord();
     rollPattern();
     rollQuiz();
+    rollTonePair();
     refreshStats();
   });
 }
@@ -1399,6 +1430,7 @@ function applyGlobalControls() {
   rollWord();
   rollPattern();
   rollQuiz();
+  rollTonePair();
   els.controlsMessage.textContent = "Settings applied.";
 }
 
@@ -1517,6 +1549,83 @@ function renderQuizGrammar() {
   els.quizLiteral.textContent = `Literal: ${analysis.literal}`;
 }
 
+function rollTonePair() {
+  const pool = getFilteredTonePairs();
+  if (!pool.length) return;
+  state.currentTonePair = takeFromRotation("tonePairs", pool, (pair) => pair.id);
+  state.currentToneSide = Math.random() < 0.5 ? "a" : "b";
+  renderTonePair();
+  renderToneChoices();
+}
+
+function renderTonePair() {
+  const pair = state.currentTonePair;
+  if (!pair) return;
+  els.toneLabel.textContent = `Level ${pair.level} · ${pair.a.jyutping} / ${pair.b.jyutping}`;
+  els.toneHanzi.textContent = `A: ${pair.a.hanzi}   B: ${pair.b.hanzi}`;
+  els.toneJyutping.textContent = `A: ${pair.a.jyutping}   B: ${pair.b.jyutping}`;
+  els.toneEnglish.textContent = `A: ${pair.a.english}   B: ${pair.b.english}`;
+  els.toneFeedback.textContent = "";
+  els.toneFeedback.className = "feedback";
+  applyVisibilityPrefs();
+  updateToneScore();
+}
+
+function renderToneChoices() {
+  const pair = state.currentTonePair;
+  if (!pair) return;
+  const options = [pair.a.english, pair.b.english];
+  shuffle(options);
+  els.toneChoices.innerHTML = "";
+  options.forEach((option) => {
+    const btn = document.createElement("button");
+    btn.className = "choice";
+    btn.textContent = option;
+    btn.addEventListener("click", () => checkToneAnswer(option, btn));
+    els.toneChoices.appendChild(btn);
+  });
+}
+
+function checkToneAnswer(selected, clickedBtn) {
+  const pair = state.currentTonePair;
+  if (!pair) return;
+  const target = pair[state.currentToneSide];
+  const ok = selected === target.english;
+  state.toneScore.total += 1;
+  if (ok) state.toneScore.correct += 1;
+  els.toneFeedback.textContent = ok
+    ? "Correct"
+    : `Not quite. Random clip was: ${target.hanzi} (${target.jyutping}) = ${target.english}`;
+  els.toneFeedback.className = `feedback ${ok ? "ok" : "bad"}`;
+  const buttons = [...els.toneChoices.querySelectorAll("button")];
+  buttons.forEach((button) => {
+    button.disabled = true;
+    if (button.textContent === target.english) button.style.borderColor = "#0a7d6f";
+  });
+  if (!ok && clickedBtn) clickedBtn.style.borderColor = "#b62a2a";
+  markReviewed();
+  updateToneScore();
+}
+
+function updateToneScore() {
+  els.toneScore.textContent = `Tone score: ${state.toneScore.correct} / ${state.toneScore.total}`;
+}
+
+function playToneClip(which) {
+  const pair = state.currentTonePair;
+  if (!pair) return;
+  if (which === "a") {
+    speak(pair.a.hanzi);
+    return;
+  }
+  if (which === "b") {
+    speak(pair.b.hanzi);
+    return;
+  }
+  state.currentToneSide = Math.random() < 0.5 ? "a" : "b";
+  speak(pair[state.currentToneSide].hanzi);
+}
+
 function wordsByCategories(categories) {
   const words = state.content.words || [];
   const selected = words.filter((w) => categories.includes(w.category));
@@ -1534,6 +1643,12 @@ function pickDistractors(correctId, correctEnglish, amount) {
     .filter((en) => en !== correctEnglish);
   shuffle(pool);
   return pool.slice(0, amount);
+}
+
+function getFilteredTonePairs() {
+  const level = Number(state.prefs.level) || 2;
+  const pool = TONE_PAIR_BANK.filter((pair) => pair.level <= level);
+  return pool.length ? pool : TONE_PAIR_BANK.slice(0, 3);
 }
 
 function markReviewed() {
@@ -1732,10 +1847,12 @@ function applyVisibilityPrefs() {
   els.wordJyutping.classList.toggle("hidden", !showJp);
   els.patternJyutping.classList.toggle("hidden", !showJp);
   els.quizJyutping.classList.toggle("hidden", !showJp);
+  els.toneJyutping.classList.toggle("hidden", !showJp);
 
   els.wordEnglish.classList.toggle("hidden", !showEn);
   els.patternEnglish.classList.toggle("hidden", !showEn);
   els.quizEnglish.classList.toggle("hidden", !showEn);
+  els.toneEnglish.classList.toggle("hidden", !showEn);
   els.patternLiteral.classList.toggle("hidden", !showEn);
   els.quizLiteral.classList.toggle("hidden", !showEn);
 
@@ -1755,7 +1872,7 @@ function togglePref(prefKey) {
 }
 
 function resetRotations() {
-  state.rotation = { words: [], patternSentences: [], quizSentences: [] };
+  state.rotation = { words: [], patternSentences: [], quizSentences: [], tonePairs: [] };
 }
 
 function takeFromRotation(key, pool, getId) {
