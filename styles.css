@@ -209,7 +209,9 @@ button:hover,
 #togglePatternJyutping,
 #togglePatternEnglish,
 #toggleQuizJyutping,
-#toggleQuizEnglish {
+#toggleQuizEnglish,
+#toggleToneJyutping,
+#toggleToneEnglish {
   background: #365173;
 }
 

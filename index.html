@@ -153,8 +153,9 @@
     <section class="panel" id="panel-tones">
       <div class="card">
         <h2>Tone Contrast Drills</h2>
-        <p>Listen and pick the correct meaning. This trains your ear for similar sounds with different tones.</p>
+        <p>Press A, B, or Random. Then choose the English meaning of the clip you just heard.</p>
         <p class="formula" id="toneLabel"></p>
+        <p class="example" id="tonePrompt">Step 1: Play a clip. Step 2: Choose meaning below.</p>
         <div class="result-box">
           <p class="hanzi tone-line" id="toneHanzi"></p>
           <p class="jyutping tone-line" id="toneJyutping"></p>
@@ -164,6 +165,8 @@
           <button id="playToneA">Play A</button>
           <button id="playToneB">Play B</button>
           <button id="playToneRandom">Play Random</button>
+          <button id="toggleToneJyutping">Hide Jyutping</button>
+          <button id="toggleToneEnglish">Hide English</button>
           <button id="nextTone">Next pair</button>
         </div>
         <div class="choices" id="toneChoices"></div>

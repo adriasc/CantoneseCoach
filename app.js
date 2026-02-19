@@ -1239,7 +1239,7 @@ const state = {
   patternSelections: {},
   currentQuiz: null,
   currentTonePair: null,
-  currentToneSide: "a",
+  currentToneSide: null,
   toneScore: { correct: 0, total: 0 }
 };
 
@@ -1268,6 +1268,8 @@ const els = {
   togglePatternEnglish: byId("togglePatternEnglish"),
   toggleQuizJyutping: byId("toggleQuizJyutping"),
   toggleQuizEnglish: byId("toggleQuizEnglish"),
+  toggleToneJyutping: byId("toggleToneJyutping"),
+  toggleToneEnglish: byId("toggleToneEnglish"),
   knownWords: byId("knownWords"),
   reviewedWords: byId("reviewedWords"),
   streakBadge: byId("streakBadge"),
@@ -1286,6 +1288,7 @@ const els = {
   quizChoices: byId("quizChoices"),
   quizFeedback: byId("quizFeedback"),
   toneLabel: byId("toneLabel"),
+  tonePrompt: byId("tonePrompt"),
   toneHanzi: byId("toneHanzi"),
   toneJyutping: byId("toneJyutping"),
   toneEnglish: byId("toneEnglish"),
@@ -1362,12 +1365,14 @@ function bindUI() {
   els.togglePatternEnglish.addEventListener("click", () => togglePref("showEnglish"));
   els.toggleQuizJyutping.addEventListener("click", () => togglePref("showJyutping"));
   els.toggleQuizEnglish.addEventListener("click", () => togglePref("showEnglish"));
+  if (els.toggleToneJyutping) els.toggleToneJyutping.addEventListener("click", () => togglePref("showJyutping"));
+  if (els.toggleToneEnglish) els.toggleToneEnglish.addEventListener("click", () => togglePref("showEnglish"));
 
   byId("nextQuiz").addEventListener("click", rollQuiz);
-  byId("nextTone").addEventListener("click", rollTonePair);
-  byId("playToneA").addEventListener("click", () => playToneClip("a"));
-  byId("playToneB").addEventListener("click", () => playToneClip("b"));
-  byId("playToneRandom").addEventListener("click", () => playToneClip("random"));
+  if (byId("nextTone")) byId("nextTone").addEventListener("click", rollTonePair);
+  if (byId("playToneA")) byId("playToneA").addEventListener("click", () => playToneClip("a"));
+  if (byId("playToneB")) byId("playToneB").addEventListener("click", () => playToneClip("b"));
+  if (byId("playToneRandom")) byId("playToneRandom").addEventListener("click", () => playToneClip("random"));
 
   els.globalLevel.addEventListener("change", markControlsDirty);
   els.globalTense.addEventListener("change", markControlsDirty);
@@ -1550,30 +1555,32 @@ function renderQuizGrammar() {
 }
 
 function rollTonePair() {
+  if (!els.toneLabel || !els.toneChoices) return;
   const pool = getFilteredTonePairs();
   if (!pool.length) return;
   state.currentTonePair = takeFromRotation("tonePairs", pool, (pair) => pair.id);
-  state.currentToneSide = Math.random() < 0.5 ? "a" : "b";
+  state.currentToneSide = null;
   renderTonePair();
   renderToneChoices();
 }
 
 function renderTonePair() {
   const pair = state.currentTonePair;
-  if (!pair) return;
+  if (!pair || !els.toneLabel || !els.tonePrompt) return;
   els.toneLabel.textContent = `Level ${pair.level} · ${pair.a.jyutping} / ${pair.b.jyutping}`;
   els.toneHanzi.textContent = `A: ${pair.a.hanzi}   B: ${pair.b.hanzi}`;
   els.toneJyutping.textContent = `A: ${pair.a.jyutping}   B: ${pair.b.jyutping}`;
   els.toneEnglish.textContent = `A: ${pair.a.english}   B: ${pair.b.english}`;
   els.toneFeedback.textContent = "";
   els.toneFeedback.className = "feedback";
+  els.tonePrompt.textContent = "Step 1: Play A, B, or Random. Step 2: Choose the meaning of the clip you heard.";
   applyVisibilityPrefs();
   updateToneScore();
 }
 
 function renderToneChoices() {
   const pair = state.currentTonePair;
-  if (!pair) return;
+  if (!pair || !els.toneChoices) return;
   const options = [pair.a.english, pair.b.english];
   shuffle(options);
   els.toneChoices.innerHTML = "";
@@ -1588,7 +1595,12 @@ function renderToneChoices() {
 
 function checkToneAnswer(selected, clickedBtn) {
   const pair = state.currentTonePair;
-  if (!pair) return;
+  if (!pair || !els.toneFeedback) return;
+  if (!state.currentToneSide) {
+    els.toneFeedback.textContent = "Play A, B, or Random first.";
+    els.toneFeedback.className = "feedback bad";
+    return;
+  }
   const target = pair[state.currentToneSide];
   const ok = selected === target.english;
   state.toneScore.total += 1;
@@ -1608,6 +1620,7 @@ function checkToneAnswer(selected, clickedBtn) {
 }
 
 function updateToneScore() {
+  if (!els.toneScore) return;
   els.toneScore.textContent = `Tone score: ${state.toneScore.correct} / ${state.toneScore.total}`;
 }
 
@@ -1615,14 +1628,19 @@ function playToneClip(which) {
   const pair = state.currentTonePair;
   if (!pair) return;
   if (which === "a") {
+    state.currentToneSide = "a";
+    els.tonePrompt.textContent = "You played A. Choose meaning for A.";
     speak(pair.a.hanzi);
     return;
   }
   if (which === "b") {
+    state.currentToneSide = "b";
+    els.tonePrompt.textContent = "You played B. Choose meaning for B.";
     speak(pair.b.hanzi);
     return;
   }
   state.currentToneSide = Math.random() < 0.5 ? "a" : "b";
+  els.tonePrompt.textContent = "You played Random. Choose meaning for the random clip.";
   speak(pair[state.currentToneSide].hanzi);
 }
 
@@ -1847,21 +1865,23 @@ function applyVisibilityPrefs() {
   els.wordJyutping.classList.toggle("hidden", !showJp);
   els.patternJyutping.classList.toggle("hidden", !showJp);
   els.quizJyutping.classList.toggle("hidden", !showJp);
-  els.toneJyutping.classList.toggle("hidden", !showJp);
+  if (els.toneJyutping) els.toneJyutping.classList.toggle("hidden", !showJp);
 
   els.wordEnglish.classList.toggle("hidden", !showEn);
   els.patternEnglish.classList.toggle("hidden", !showEn);
   els.quizEnglish.classList.toggle("hidden", !showEn);
-  els.toneEnglish.classList.toggle("hidden", !showEn);
+  if (els.toneEnglish) els.toneEnglish.classList.toggle("hidden", !showEn);
   els.patternLiteral.classList.toggle("hidden", !showEn);
   els.quizLiteral.classList.toggle("hidden", !showEn);
 
   els.toggleWordJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
   els.togglePatternJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
   els.toggleQuizJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
+  if (els.toggleToneJyutping) els.toggleToneJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
   els.toggleWordEnglish.textContent = showEn ? "Hide English" : "Show English";
   els.togglePatternEnglish.textContent = showEn ? "Hide English" : "Show English";
   els.toggleQuizEnglish.textContent = showEn ? "Hide English" : "Show English";
+  if (els.toggleToneEnglish) els.toggleToneEnglish.textContent = showEn ? "Hide English" : "Show English";
   els.toggleGrammarLens.textContent = state.prefs.showGrammarLens ? "Grammar Lens: On" : "Grammar Lens: Off";
 }
 
