@@ -56,6 +56,20 @@ body[data-theme="neon-strong"] {
   --shape-b: #ff8a42;
 }
 
+body[data-theme="neon-extreme"] {
+  --ink: #f8f6ff;
+  --paper: #140a2a;
+  --accent: #ff3b7a;
+  --accent-2: #00e5d1;
+  --soft: #1b1035;
+  --muted: #d9c9ff;
+  --bg-a: #17072f;
+  --bg-b: #081c3d;
+  --bg-c: #311042;
+  --shape-a: #00d9ff;
+  --shape-b: #ff6a00;
+}
+
 body[data-theme="ink"] {
   --ink: #1d1d1d;
   --paper: #f2f2ee;
@@ -68,6 +82,21 @@ body[data-theme="ink"] {
   --bg-c: #dfe2e5;
   --shape-a: #bfc6cc;
   --shape-b: #cfc8be;
+}
+
+body[data-theme="ink"]::after {
+  content: "NEWS 1930 CANTONESE LEARNING EDITION \\A typewriter notes: ngo5 nei5 keoi5 jyu4 gwo2 \\A 新聞 學習 句子 聲調 練習";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  white-space: pre-wrap;
+  font-family: \"Courier New\", \"American Typewriter\", monospace;
+  font-size: 12px;
+  line-height: 1.8;
+  letter-spacing: 1px;
+  color: rgba(20, 20, 20, 0.08);
+  padding: 20px;
 }
 
 * {
@@ -88,6 +117,24 @@ body {
   z-index: 0;
   filter: blur(30px);
   opacity: 0.5;
+}
+
+body[data-theme="neon-extreme"]::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.7;
+  background:
+    radial-gradient(circle at 85% 16%, rgba(255, 33, 133, 0.24), transparent 34%),
+    radial-gradient(circle at 16% 82%, rgba(0, 229, 209, 0.22), transparent 38%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.02) 0 2px, transparent 2px 26px);
+}
+
+body[data-theme="neon-extreme"] .bg-shape {
+  filter: blur(12px);
+  opacity: 0.88;
 }
 
 .shape-a {
@@ -276,6 +323,12 @@ button,
   cursor: pointer;
 }
 
+body[data-theme="neon-extreme"] .tab.is-active,
+body[data-theme="neon-extreme"] button,
+body[data-theme="neon-extreme"] .file-btn {
+  box-shadow: 0 0 14px rgba(255, 60, 140, 0.45), 0 0 20px rgba(0, 220, 200, 0.22);
+}
+
 button:hover,
 .file-btn:hover {
   opacity: 0.92;
@@ -459,6 +512,16 @@ button:hover,
   background: #fff;
   color: var(--ink);
   border: 2px solid #d7dfef;
+}
+
+.choice.is-correct {
+  border-color: #0a7d6f;
+  background: #e9fbf5;
+}
+
+.choice.is-wrong {
+  border-color: #b62a2a;
+  background: #ffecee;
 }
 
 .feedback {

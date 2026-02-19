@@ -1273,7 +1273,9 @@ const state = {
     toneShowEnglish: false,
     showGrammarLens: false,
     voiceURI: "auto",
-    voiceRate: 0.9
+    voiceRate: 0.9,
+    audioNoiseOn: false,
+    audioNoiseLevel: 0.12
   }),
   availableVoices: [],
   rotation: { words: [], patternSentences: [], quizSentences: [], tonePairs: [] },
@@ -1304,6 +1306,9 @@ const els = {
   audioVoice: byId("audioVoice"),
   audioRate: byId("audioRate"),
   audioRateValue: byId("audioRateValue"),
+  audioNoiseOn: byId("audioNoiseOn"),
+  audioNoiseLevel: byId("audioNoiseLevel"),
+  audioNoiseValue: byId("audioNoiseValue"),
   toneExerciseMode: byId("toneExerciseMode"),
   themeStyle: byId("themeStyle"),
   testVoice: byId("testVoice"),
@@ -1346,6 +1351,12 @@ const els = {
   toneFeedback: byId("toneFeedback"),
   toneScore: byId("toneScore"),
   contentMessage: byId("contentMessage")
+};
+
+const speechNoise = {
+  ctx: null,
+  source: null,
+  gain: null
 };
 
 bindUI();
@@ -1459,6 +1470,21 @@ function bindUI() {
     saveJson(STORAGE_KEYS.prefs, state.prefs);
     els.audioRateValue.textContent = `${state.prefs.voiceRate.toFixed(2)}x`;
   });
+  if (els.audioNoiseOn) {
+    els.audioNoiseOn.addEventListener("change", () => {
+      state.prefs.audioNoiseOn = els.audioNoiseOn.value === "on";
+      saveJson(STORAGE_KEYS.prefs, state.prefs);
+      if (!state.prefs.audioNoiseOn) stopSpeechNoise();
+    });
+  }
+  if (els.audioNoiseLevel) {
+    els.audioNoiseLevel.addEventListener("input", () => {
+      state.prefs.audioNoiseLevel = Number(els.audioNoiseLevel.value) || 0.12;
+      saveJson(STORAGE_KEYS.prefs, state.prefs);
+      if (els.audioNoiseValue) els.audioNoiseValue.textContent = state.prefs.audioNoiseLevel.toFixed(2);
+      if (speechNoise.gain) speechNoise.gain.gain.value = Math.max(0.02, Math.min(0.35, state.prefs.audioNoiseLevel));
+    });
+  }
   els.testVoice.addEventListener("click", () => {
     speak("你好，我哋而家開始練習廣東話。");
   });
@@ -1513,6 +1539,8 @@ function applyGlobalControls() {
   state.prefs.theme = els.globalTheme.value;
   state.prefs.uiTheme = els.themeStyle?.value || "classic";
   state.prefs.toneExerciseMode = els.toneExerciseMode?.value || "auto";
+  state.prefs.audioNoiseOn = (els.audioNoiseOn?.value || "off") === "on";
+  state.prefs.audioNoiseLevel = Number(els.audioNoiseLevel?.value || 0.12) || 0.12;
   saveJson(STORAGE_KEYS.prefs, state.prefs);
   applyTheme(state.prefs.uiTheme);
   resetRotations();
@@ -1615,6 +1643,13 @@ function rollQuiz() {
       const ok = text === state.currentQuiz.english;
       els.quizFeedback.textContent = ok ? "Correct" : `Not quite. Correct: ${state.currentQuiz.english}`;
       els.quizFeedback.className = `feedback ${ok ? "ok" : "bad"}`;
+      const buttons = [...els.quizChoices.querySelectorAll("button")];
+      buttons.forEach((button) => {
+        button.disabled = true;
+        if (button.textContent === state.currentQuiz.english) button.classList.add("is-correct");
+      });
+      if (!ok) btn.classList.add("is-wrong");
+      else btn.classList.add("is-correct");
       markReviewed();
     });
     els.quizChoices.appendChild(btn);
@@ -1712,9 +1747,10 @@ function checkToneAnswer(selected, clickedBtn) {
   const buttons = [...els.toneChoices.querySelectorAll("button")];
   buttons.forEach((button) => {
     button.disabled = true;
-    if (button.textContent === expected) button.style.borderColor = "#0a7d6f";
+    if (button.textContent === expected) button.classList.add("is-correct");
   });
-  if (!ok && clickedBtn) clickedBtn.style.borderColor = "#b62a2a";
+  if (!ok && clickedBtn) clickedBtn.classList.add("is-wrong");
+  else if (ok && clickedBtn) clickedBtn.classList.add("is-correct");
   markReviewed();
   updateToneScore();
 }
@@ -1830,8 +1866,59 @@ function speak(text) {
   if (selected) utterance.voice = selected;
   utterance.rate = Math.min(1.2, Math.max(0.6, Number(state.prefs.voiceRate) || 0.9));
   utterance.pitch = 1;
+  utterance.onend = () => stopSpeechNoise();
+  utterance.onerror = () => stopSpeechNoise();
   window.speechSynthesis.cancel();
+  startSpeechNoise();
   window.speechSynthesis.speak(utterance);
+}
+
+function startSpeechNoise() {
+  if (!state.prefs.audioNoiseOn) return;
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtx) return;
+
+  if (!speechNoise.ctx) {
+    speechNoise.ctx = new AudioCtx();
+  }
+  if (speechNoise.ctx.state === "suspended") {
+    speechNoise.ctx.resume().catch(() => {});
+  }
+
+  stopSpeechNoise();
+
+  const frameCount = speechNoise.ctx.sampleRate;
+  const buffer = speechNoise.ctx.createBuffer(1, frameCount, speechNoise.ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < frameCount; i += 1) {
+    data[i] = Math.random() * 2 - 1;
+  }
+
+  const source = speechNoise.ctx.createBufferSource();
+  source.buffer = buffer;
+  source.loop = true;
+
+  const gain = speechNoise.ctx.createGain();
+  gain.gain.value = Math.max(0.02, Math.min(0.35, Number(state.prefs.audioNoiseLevel) || 0.12));
+
+  source.connect(gain);
+  gain.connect(speechNoise.ctx.destination);
+  source.start();
+
+  speechNoise.source = source;
+  speechNoise.gain = gain;
+}
+
+function stopSpeechNoise() {
+  if (speechNoise.source) {
+    try { speechNoise.source.stop(); } catch {}
+    try { speechNoise.source.disconnect(); } catch {}
+    speechNoise.source = null;
+  }
+  if (speechNoise.gain) {
+    try { speechNoise.gain.disconnect(); } catch {}
+    speechNoise.gain = null;
+  }
 }
 
 function selectVoiceForSpeech(voices) {
@@ -1948,6 +2035,9 @@ function syncControlValues() {
   if (els.themeStyle) els.themeStyle.value = state.prefs.uiTheme || "classic";
   els.audioRate.value = String(state.prefs.voiceRate || 0.9);
   els.audioRateValue.textContent = `${Number(state.prefs.voiceRate || 0.9).toFixed(2)}x`;
+  if (els.audioNoiseOn) els.audioNoiseOn.value = state.prefs.audioNoiseOn ? "on" : "off";
+  if (els.audioNoiseLevel) els.audioNoiseLevel.value = String(state.prefs.audioNoiseLevel || 0.12);
+  if (els.audioNoiseValue) els.audioNoiseValue.textContent = Number(state.prefs.audioNoiseLevel || 0.12).toFixed(2);
 }
 
 function initVoiceControls() {
