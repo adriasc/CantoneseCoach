@@ -1225,8 +1225,12 @@ const state = {
     level: 2,
     tense: "mixed",
     theme: "mixed",
+    uiTheme: "classic",
+    controlsCollapsed: false,
     showJyutping: true,
     showEnglish: true,
+    toneShowJyutping: false,
+    toneShowEnglish: false,
     showGrammarLens: false,
     voiceURI: "auto",
     voiceRate: 0.9
@@ -1259,8 +1263,11 @@ const els = {
   audioVoice: byId("audioVoice"),
   audioRate: byId("audioRate"),
   audioRateValue: byId("audioRateValue"),
+  themeStyle: byId("themeStyle"),
   testVoice: byId("testVoice"),
   applyControls: byId("applyControls"),
+  controlsCard: document.querySelector(".controls-card"),
+  toggleControlsCard: byId("toggleControlsCard"),
   toggleGrammarLens: byId("toggleGrammarLens"),
   controlsMessage: byId("controlsMessage"),
   toggleWordJyutping: byId("toggleWordJyutping"),
@@ -1302,6 +1309,8 @@ const els = {
 bindUI();
 syncControlValues();
 initVoiceControls();
+applyTheme(state.prefs.uiTheme || "classic");
+setControlsCollapsed(!!state.prefs.controlsCollapsed);
 applyVisibilityPrefs();
 rollWord();
 rollPattern();
@@ -1366,8 +1375,20 @@ function bindUI() {
   els.togglePatternEnglish.addEventListener("click", () => togglePref("showEnglish"));
   els.toggleQuizJyutping.addEventListener("click", () => togglePref("showJyutping"));
   els.toggleQuizEnglish.addEventListener("click", () => togglePref("showEnglish"));
-  if (els.toggleToneJyutping) els.toggleToneJyutping.addEventListener("click", () => togglePref("showJyutping"));
-  if (els.toggleToneEnglish) els.toggleToneEnglish.addEventListener("click", () => togglePref("showEnglish"));
+  if (els.toggleToneJyutping) {
+    els.toggleToneJyutping.addEventListener("click", () => {
+      state.prefs.toneShowJyutping = !state.prefs.toneShowJyutping;
+      saveJson(STORAGE_KEYS.prefs, state.prefs);
+      applyToneVisibility();
+    });
+  }
+  if (els.toggleToneEnglish) {
+    els.toggleToneEnglish.addEventListener("click", () => {
+      state.prefs.toneShowEnglish = !state.prefs.toneShowEnglish;
+      saveJson(STORAGE_KEYS.prefs, state.prefs);
+      applyToneVisibility();
+    });
+  }
 
   byId("nextQuiz").addEventListener("click", rollQuiz);
   if (byId("nextTone")) byId("nextTone").addEventListener("click", rollTonePair);
@@ -1378,6 +1399,7 @@ function bindUI() {
   els.globalLevel.addEventListener("change", markControlsDirty);
   els.globalTense.addEventListener("change", markControlsDirty);
   els.globalTheme.addEventListener("change", markControlsDirty);
+  if (els.themeStyle) els.themeStyle.addEventListener("change", markControlsDirty);
   els.audioVoice.addEventListener("change", () => {
     state.prefs.voiceURI = els.audioVoice.value || "auto";
     saveJson(STORAGE_KEYS.prefs, state.prefs);
@@ -1391,6 +1413,14 @@ function bindUI() {
     speak("你好，我哋而家開始練習廣東話。");
   });
   els.applyControls.addEventListener("click", applyGlobalControls);
+  if (els.toggleControlsCard) {
+    els.toggleControlsCard.addEventListener("click", () => {
+      const next = !state.prefs.controlsCollapsed;
+      state.prefs.controlsCollapsed = next;
+      saveJson(STORAGE_KEYS.prefs, state.prefs);
+      setControlsCollapsed(next);
+    });
+  }
   els.toggleGrammarLens.addEventListener("click", () => {
     state.prefs.showGrammarLens = !state.prefs.showGrammarLens;
     saveJson(STORAGE_KEYS.prefs, state.prefs);
@@ -1431,7 +1461,9 @@ function applyGlobalControls() {
   state.prefs.level = Number(els.globalLevel.value) || 2;
   state.prefs.tense = els.globalTense.value;
   state.prefs.theme = els.globalTheme.value;
+  state.prefs.uiTheme = els.themeStyle?.value || "classic";
   saveJson(STORAGE_KEYS.prefs, state.prefs);
+  applyTheme(state.prefs.uiTheme);
   resetRotations();
   rollWord();
   rollPattern();
@@ -1562,6 +1594,9 @@ function rollTonePair() {
   state.currentTonePair = takeFromRotation("tonePairs", pool, (pair) => pair.id);
   state.currentToneSide = null;
   state.toneLabelMap = Math.random() < 0.5 ? { a: "a", b: "b" } : { a: "b", b: "a" };
+  state.prefs.toneShowJyutping = false;
+  state.prefs.toneShowEnglish = false;
+  saveJson(STORAGE_KEYS.prefs, state.prefs);
   renderTonePair();
   renderToneChoices();
 }
@@ -1578,7 +1613,7 @@ function renderTonePair() {
   els.toneFeedback.textContent = "";
   els.toneFeedback.className = "feedback";
   els.tonePrompt.textContent = "Step 1: Play A, B, or Random. Step 2: Choose the Jyutping you heard.";
-  applyVisibilityPrefs();
+  applyToneVisibility();
   updateToneScore();
 }
 
@@ -1832,6 +1867,7 @@ function syncControlValues() {
   els.globalLevel.value = String(state.prefs.level || 2);
   els.globalTense.value = state.prefs.tense || "mixed";
   els.globalTheme.value = state.prefs.theme || "mixed";
+  if (els.themeStyle) els.themeStyle.value = state.prefs.uiTheme || "classic";
   els.audioRate.value = String(state.prefs.voiceRate || 0.9);
   els.audioRateValue.textContent = `${Number(state.prefs.voiceRate || 0.9).toFixed(2)}x`;
 }
@@ -1878,24 +1914,50 @@ function applyVisibilityPrefs() {
   els.wordJyutping.classList.toggle("hidden", !showJp);
   els.patternJyutping.classList.toggle("hidden", !showJp);
   els.quizJyutping.classList.toggle("hidden", !showJp);
-  if (els.toneJyutping) els.toneJyutping.classList.toggle("hidden", !showJp);
 
   els.wordEnglish.classList.toggle("hidden", !showEn);
   els.patternEnglish.classList.toggle("hidden", !showEn);
   els.quizEnglish.classList.toggle("hidden", !showEn);
-  if (els.toneEnglish) els.toneEnglish.classList.toggle("hidden", !showEn);
   els.patternLiteral.classList.toggle("hidden", !showEn);
   els.quizLiteral.classList.toggle("hidden", !showEn);
 
   els.toggleWordJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
   els.togglePatternJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
   els.toggleQuizJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
-  if (els.toggleToneJyutping) els.toggleToneJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
   els.toggleWordEnglish.textContent = showEn ? "Hide English" : "Show English";
   els.togglePatternEnglish.textContent = showEn ? "Hide English" : "Show English";
   els.toggleQuizEnglish.textContent = showEn ? "Hide English" : "Show English";
-  if (els.toggleToneEnglish) els.toggleToneEnglish.textContent = showEn ? "Hide English" : "Show English";
   els.toggleGrammarLens.textContent = state.prefs.showGrammarLens ? "Grammar Lens: On" : "Grammar Lens: Off";
+  applyToneVisibility();
+}
+
+function applyToneVisibility() {
+  if (!els.toneJyutping || !els.toneEnglish) return;
+  const showToneJp = !!state.prefs.toneShowJyutping;
+  const showToneEn = !!state.prefs.toneShowEnglish;
+  els.toneJyutping.classList.toggle("hidden", !showToneJp);
+  els.toneEnglish.classList.toggle("hidden", !showToneEn);
+  if (els.toggleToneJyutping) {
+    els.toggleToneJyutping.textContent = showToneJp ? "Hide Jyutping" : "Show Jyutping";
+  }
+  if (els.toggleToneEnglish) {
+    els.toggleToneEnglish.textContent = showToneEn ? "Hide English" : "Show English";
+  }
+}
+
+function applyTheme(themeName) {
+  const normalized = String(themeName || "classic");
+  if (normalized === "classic") {
+    document.body.removeAttribute("data-theme");
+    return;
+  }
+  document.body.setAttribute("data-theme", normalized);
+}
+
+function setControlsCollapsed(collapsed) {
+  if (!els.controlsCard || !els.toggleControlsCard) return;
+  els.controlsCard.classList.toggle("is-collapsed", collapsed);
+  els.toggleControlsCard.textContent = collapsed ? "Show ▼" : "Hide ▲";
 }
 
 function togglePref(prefKey) {

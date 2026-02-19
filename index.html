@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v17.1</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v17.2</span></p>
         <h1>Cantonese Coach</h1>
       </div>
       <div class="streak" id="streakBadge">Streak: 0 days</div>
@@ -34,7 +34,10 @@
     </nav>
 
     <section class="card controls-card">
-      <h2>Practice Controls</h2>
+      <div class="card-head">
+        <h2>Practice Controls</h2>
+        <button id="toggleControlsCard" class="ghost-btn" type="button">Hide ▲</button>
+      </div>
       <div class="slot-grid controls-grid">
         <div>
           <label for="globalLevel">Level (all exercises)</label>
@@ -76,6 +79,14 @@
         <div>
           <label for="audioRate">Audio Speed (<span id="audioRateValue">0.90x</span>)</label>
           <input id="audioRate" type="range" min="0.6" max="1.2" step="0.05" value="0.9">
+        </div>
+        <div>
+          <label for="themeStyle">Theme Style</label>
+          <select id="themeStyle">
+            <option value="classic">Classic Pastel</option>
+            <option value="harbour">HK Harbour Pastel</option>
+            <option value="neon">HK Neon Soft</option>
+          </select>
         </div>
       </div>
       <div class="actions">
