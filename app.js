@@ -1909,7 +1909,15 @@ function startSpeechNoise() {
   source.loop = true;
 
   const gain = speechNoise.ctx.createGain();
-  gain.gain.value = Math.max(0.05, Math.min(0.8, Number(state.prefs.audioNoiseLevel) || 0.25));
+  const base = Math.max(0.05, Math.min(0.8, Number(state.prefs.audioNoiseLevel) || 0.25));
+  const boostByType = {
+    white: 1,
+    radio: 1.35,
+    street: 1.85,
+    people: 2.25
+  };
+  const boost = boostByType[state.prefs.audioNoiseType] || 1;
+  gain.gain.value = Math.min(1.5, base * boost);
 
   source.connect(gain);
   gain.connect(speechNoise.ctx.destination);
