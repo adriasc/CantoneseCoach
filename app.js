@@ -1257,7 +1257,7 @@ const TONE_SENTENCE_BANK = [
 ];
 
 function defaultMission() {
-  return { listens: 0, tones: 0, patterns: 0, targets: { listens: 10, tones: 5, patterns: 3 }, awarded: false };
+  return { listens: 0, tones: 0, patterns: 0, hanzi: 0, targets: { listens: 10, tones: 5, patterns: 3, hanzi: 3 }, awarded: false };
 }
 
 function defaultGameState() {
@@ -1269,7 +1269,8 @@ function defaultGameState() {
     mistakes: [],
     fixMode: false,
     mission: defaultMission(),
-    boss: { active: false, index: 0, score: 0, questions: [], current: null }
+    boss: { active: false, index: 0, score: 0, questions: [], current: null },
+    hanzi: { active: false, index: 0, score: 0, questions: [], current: null }
   };
 }
 
@@ -1289,10 +1290,12 @@ function normalizeGameState(input) {
       listens: Number(missionIn.listens) || 0,
       tones: Number(missionIn.tones) || 0,
       patterns: Number(missionIn.patterns) || 0,
+      hanzi: Number(missionIn.hanzi) || 0,
       targets: {
         listens: Number(targetsIn.listens) || base.mission.targets.listens,
         tones: Number(targetsIn.tones) || base.mission.targets.tones,
-        patterns: Number(targetsIn.patterns) || base.mission.targets.patterns
+        patterns: Number(targetsIn.patterns) || base.mission.targets.patterns,
+        hanzi: Number(targetsIn.hanzi) || base.mission.targets.hanzi
       },
       awarded: !!missionIn.awarded
     },
@@ -1302,6 +1305,13 @@ function normalizeGameState(input) {
       score: Number(safe.boss?.score) || 0,
       questions: Array.isArray(safe.boss?.questions) ? safe.boss.questions : [],
       current: safe.boss?.current || null
+    },
+    hanzi: {
+      active: !!(safe.hanzi && safe.hanzi.active),
+      index: Number(safe.hanzi?.index) || 0,
+      score: Number(safe.hanzi?.score) || 0,
+      questions: Array.isArray(safe.hanzi?.questions) ? safe.hanzi.questions : [],
+      current: safe.hanzi?.current || null
     }
   };
 }
@@ -1412,10 +1422,17 @@ const els = {
   missionListens: byId("missionListens"),
   missionTones: byId("missionTones"),
   missionPatterns: byId("missionPatterns"),
+  missionHanzi: byId("missionHanzi"),
   mistakeCount: byId("mistakeCount"),
   toggleFixMode: byId("toggleFixMode"),
+  startHanziTest: byId("startHanziTest"),
   startBoss: byId("startBoss"),
   funFeedback: byId("funFeedback"),
+  hanziWrap: byId("hanziWrap"),
+  hanziProgress: byId("hanziProgress"),
+  hanziPrompt: byId("hanziPrompt"),
+  hanziChoices: byId("hanziChoices"),
+  hanziNext: byId("hanziNext"),
   bossWrap: byId("bossWrap"),
   bossProgress: byId("bossProgress"),
   bossPrompt: byId("bossPrompt"),
@@ -1454,7 +1471,11 @@ function bindUI() {
     });
   });
   if (els.openFunLoop && els.funModal) {
-    els.openFunLoop.addEventListener("click", () => els.funModal.classList.remove("hidden"));
+    els.openFunLoop.addEventListener("click", () => {
+      ensureDailyGameState();
+      refreshGameUI();
+      els.funModal.classList.remove("hidden");
+    });
   }
   if (els.closeFunLoop && els.funModal) {
     els.closeFunLoop.addEventListener("click", () => els.funModal.classList.add("hidden"));
@@ -1558,6 +1579,14 @@ function bindUI() {
     });
   }
   if (els.startBoss) els.startBoss.addEventListener("click", startBossChallenge);
+  if (els.startHanziTest) els.startHanziTest.addEventListener("click", startHanziTest);
+  if (els.hanziNext) {
+    els.hanziNext.addEventListener("click", () => {
+      if (!state.game.hanzi.active) return;
+      state.game.hanzi.index += 1;
+      nextHanziQuestion();
+    });
+  }
   if (els.bossSkip) {
     els.bossSkip.addEventListener("click", () => {
       if (!state.game.boss.active) return;
@@ -1975,6 +2004,7 @@ function ensureDailyGameState() {
   state.game.mission = defaultMission();
   state.game.combo = 0;
   state.game.boss = { active: false, index: 0, score: 0, questions: [], current: null };
+  state.game.hanzi = { active: false, index: 0, score: 0, questions: [], current: null };
   saveGameState();
 }
 
@@ -1997,7 +2027,10 @@ function incrementMission(key, amount) {
 
 function maybeRewardMission() {
   const m = state.game.mission;
-  const done = m.listens >= m.targets.listens && m.tones >= m.targets.tones && m.patterns >= m.targets.patterns;
+  const done = m.listens >= m.targets.listens
+    && m.tones >= m.targets.tones
+    && m.patterns >= m.targets.patterns
+    && m.hanzi >= m.targets.hanzi;
   if (done && !m.awarded) {
     m.awarded = true;
     awardXp(50, "Daily mission complete: +50 XP");
@@ -2081,14 +2114,15 @@ function refreshGameUI() {
   if (!els.xpLine) return;
   ensureDailyGameState();
   const lvl = currentLevelFromXp();
-  els.xpLine.textContent = `XP: ${state.game.xp} · Level ${lvl}`;
-  els.comboLine.textContent = `Combo: x${state.game.combo}`;
-  els.mistakeCount.textContent = `Mistakes: ${state.game.mistakes.length}`;
+  els.xpLine.textContent = `XP: ${state.game.xp} (practice points) · Level ${lvl}`;
+  els.comboLine.textContent = `Combo: x${state.game.combo} (correct in a row)`;
+  els.mistakeCount.textContent = `Mistakes saved: ${state.game.mistakes.length}`;
   els.toggleFixMode.textContent = `Fix Mistakes: ${state.game.fixMode ? "On" : "Off"}`;
   const m = state.game.mission;
   els.missionListens.textContent = `Listen: ${m.listens} / ${m.targets.listens}`;
   els.missionTones.textContent = `Tone wins: ${m.tones} / ${m.targets.tones}`;
   els.missionPatterns.textContent = `Sentence drills: ${m.patterns} / ${m.targets.patterns}`;
+  if (els.missionHanzi) els.missionHanzi.textContent = `Hanzi tests: ${m.hanzi} / ${m.targets.hanzi}`;
 }
 
 function startBossChallenge() {
@@ -2163,7 +2197,10 @@ function answerBossQuestion(choice, btn) {
   });
   if (!ok) btn.classList.add("is-wrong");
   else btn.classList.add("is-correct");
-  if (ok) b.score += 1;
+  if (ok) {
+    b.score += 1;
+    if (b.current.type === "tone") incrementMission("tones", 1);
+  }
   setTimeout(() => {
     b.index += 1;
     nextBossQuestion();
@@ -2177,6 +2214,79 @@ function finishBossChallenge() {
   b.active = false;
   b.current = null;
   els.bossWrap.classList.add("hidden");
+  saveGameState();
+  refreshGameUI();
+}
+
+function startHanziTest() {
+  const pool = (state.content.words || [])
+    .filter((w) => wordLevel(w) <= (Number(state.prefs.level) || 2))
+    .filter((w) => !!String(w.hanzi || "").trim() && !!String(w.english || "").trim());
+  if (!pool.length) return;
+  const picked = shuffle(pool.slice()).slice(0, 3);
+  const questions = picked.map((word) => {
+    const distractors = shuffle(pool.filter((w) => w.id !== word.id).map((w) => w.english)).slice(0, 3);
+    return {
+      hanzi: word.hanzi,
+      correct: word.english,
+      choices: shuffle([word.english, ...distractors])
+    };
+  });
+  state.game.hanzi = { active: true, index: 0, score: 0, questions, current: null };
+  nextHanziQuestion();
+}
+
+function nextHanziQuestion() {
+  const h = state.game.hanzi;
+  if (!h.active) return;
+  if (h.index >= h.questions.length) {
+    finishHanziTest();
+    return;
+  }
+  h.current = h.questions[h.index];
+  renderHanziQuestion();
+}
+
+function renderHanziQuestion() {
+  const h = state.game.hanzi;
+  if (!h.active || !h.current || !els.hanziWrap) return;
+  els.hanziWrap.classList.remove("hidden");
+  els.hanziProgress.textContent = `Hanzi ${h.index + 1}/${h.questions.length} · Score ${h.score}`;
+  els.hanziPrompt.textContent = h.current.hanzi;
+  els.hanziChoices.innerHTML = "";
+  h.current.choices.forEach((choice) => {
+    const btn = document.createElement("button");
+    btn.className = "choice";
+    btn.textContent = choice;
+    btn.addEventListener("click", () => answerHanziQuestion(choice, btn));
+    els.hanziChoices.appendChild(btn);
+  });
+}
+
+function answerHanziQuestion(choice, btn) {
+  const h = state.game.hanzi;
+  if (!h.active || !h.current) return;
+  const ok = choice === h.current.correct;
+  const buttons = [...els.hanziChoices.querySelectorAll("button")];
+  buttons.forEach((button) => {
+    button.disabled = true;
+    if (button.textContent === h.current.correct) button.classList.add("is-correct");
+  });
+  if (!ok) btn.classList.add("is-wrong");
+  else btn.classList.add("is-correct");
+  if (ok) {
+    h.score += 1;
+    incrementMission("hanzi", 1);
+    awardXp(8, "");
+  }
+}
+
+function finishHanziTest() {
+  const h = state.game.hanzi;
+  awardXp(h.score >= 2 ? 20 : 8, `Hanzi test done: ${h.score}/3`);
+  h.active = false;
+  h.current = null;
+  if (els.hanziWrap) els.hanziWrap.classList.add("hidden");
   saveGameState();
   refreshGameUI();
 }
