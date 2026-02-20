@@ -1524,6 +1524,10 @@ function bindUI() {
 
   byId("markKnown").addEventListener("click", () => {
     if (!state.currentWord) return;
+    if ((Number(state.prefs.level) || 2) === 6) {
+      rollWord();
+      return;
+    }
     state.known.add(state.currentWord.id);
     saveJson(STORAGE_KEYS.known, [...state.known]);
     markReviewed();
@@ -1744,6 +1748,28 @@ function switchTab(tabName) {
 }
 
 function rollWord() {
+  if ((Number(state.prefs.level) || 2) === 6) {
+    const questionPool = getQuestionSentencePool();
+    if (!questionPool.length) return;
+    const q = takeFromRotation("words", questionPool, (s) => s.id);
+    state.currentWord = {
+      id: q.id,
+      hanzi: q.hanzi,
+      jyutping: q.jyutping,
+      english: q.english,
+      category: "Question mode",
+      example: ""
+    };
+    els.wordCategory.textContent = "Question mode (L6)";
+    els.wordHanzi.textContent = q.hanzi || "-";
+    els.wordJyutping.textContent = q.jyutping || "-";
+    els.wordEnglish.textContent = q.english || "-";
+    els.wordExample.textContent = "Level 6 shows only questions.";
+    els.revealExample.textContent = "Show example";
+    applyVisibilityPrefs();
+    refreshStats();
+    return;
+  }
   const words = (state.content.words || []).filter((w) => wordLevel(w) <= state.prefs.level);
   if (!words.length) return;
 
@@ -2808,6 +2834,7 @@ function takeFromRotation(key, pool, getId) {
 
 function getFilteredSentences() {
   const level = Number(state.prefs.level) || 2;
+  if (level === 6) return getQuestionSentencePool();
   const tense = state.prefs.tense || "mixed";
   const theme = state.prefs.theme || "mixed";
   let pool = ALL_SENTENCES.filter((s) => (
@@ -2822,6 +2849,18 @@ function getFilteredSentences() {
     pool = ALL_SENTENCES.filter((s) => s.level === level);
   }
   return pool;
+}
+
+function isQuestionSentence(sentence) {
+  const h = String(sentence?.hanzi || "");
+  const e = String(sentence?.english || "");
+  return /[？?]/.test(h) || /[？?]/.test(e) || /咩|未|邊度|邊個|點|幾時/.test(h);
+}
+
+function getQuestionSentencePool() {
+  const l6 = ALL_SENTENCES.filter((s) => s.level === 6 && isQuestionSentence(s));
+  if (l6.length) return l6;
+  return ALL_SENTENCES.filter((s) => isQuestionSentence(s));
 }
 
 function buildWordExample(word) {
