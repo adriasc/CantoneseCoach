@@ -3256,24 +3256,90 @@ function buildGeneratedConditionalSentences() {
 
 function buildGeneratedQuestionSentences() {
   const subjects = [
-    { h: "你", j: "nei5", e: "you" },
-    { h: "佢", j: "keoi5", e: "he/she" },
-    { h: "你哋", j: "nei5 dei6", e: "you all" },
-    { h: "我哋", j: "ngo5 dei6", e: "we" },
-    { h: "你朋友", j: "nei5 pang4 jau5", e: "your friend" }
+    { h: "你", j: "nei5", e: "you", be: "are", do: "do", has: "have" },
+    { h: "佢", j: "keoi5", e: "he/she", be: "is", do: "does", has: "has" },
+    { h: "你哋", j: "nei5 dei6", e: "you all", be: "are", do: "do", has: "have" },
+    { h: "我哋", j: "ngo5 dei6", e: "we", be: "are", do: "do", has: "have" },
+    { h: "你朋友", j: "nei5 pang4 jau5", e: "your friend", be: "is", do: "does", has: "has" }
   ];
   const templates = [
-    { tense: "present", theme: "daily", h: "而家食緊飯呀？", j: "ji4 gaa1 sik6 gan2 faan6 aa3", e: "are eating now?" },
-    { tense: "present", theme: "home", h: "喺屋企做咩呀？", j: "hai2 uk1 kei2 zou6 me1 aa3", e: "are doing what at home?" },
-    { tense: "present", theme: "friends", h: "而家同邊個傾緊計呀？", j: "ji4 gaa1 tung4 bin1 go3 king1 gan2 gai2 aa3", e: "are chatting with who now?" },
-    { tense: "past", theme: "daily", h: "尋日食咗咩呀？", j: "cam4 jat6 sik6 zo2 me1 aa3", e: "eat what yesterday?" },
-    { tense: "past", theme: "travel", h: "上次去咗邊度呀？", j: "soeng6 ci3 heoi3 zo2 bin1 dou6 aa3", e: "go where last time?" },
-    { tense: "past", theme: "friends", h: "你見過佢未呀？", j: "nei5 gin3 gwo3 keoi5 mei6 aa3", e: "met him/her before?" },
-    { tense: "future", theme: "daily", h: "聽日會唔會返工呀？", j: "ting1 jat6 wui5 m4 wui5 faan1 gung1 aa3", e: "work tomorrow?" },
-    { tense: "future", theme: "holiday", h: "下次會去唔去旅行呀？", j: "haa6 ci3 wui5 heoi3 m4 heoi3 leoi5 hang4 aa3", e: "go travel next time?" },
-    { tense: "future", theme: "home", h: "今晚會唔會煮飯呀？", j: "gam1 maan5 wui5 m4 wui5 zyu2 faan6 aa3", e: "cook tonight?" },
-    { tense: "conditional", theme: "friends", h: "如果落雨，你仲會出街呀？", j: "jyu4 gwo2 lok6 jyu5, nei5 zung6 wui5 ceot1 gaai1 aa3", e: "if it rains, still go out?" },
-    { tense: "conditional", theme: "travel", h: "如果有平機票，你會去邊度呀？", j: "jyu4 gwo2 jau5 peng4 gei1 piu3, nei5 wui5 heoi3 bin1 dou6 aa3", e: "if cheap tickets exist, where will you go?" }
+    {
+      tense: "present",
+      theme: "daily",
+      h: "而家食緊飯呀？",
+      j: "ji4 gaa1 sik6 gan2 faan6 aa3",
+      en: (sub) => `${capitalizeFirst(sub.be)} ${sub.e} eating now?`
+    },
+    {
+      tense: "present",
+      theme: "home",
+      h: "喺屋企做咩呀？",
+      j: "hai2 uk1 kei2 zou6 me1 aa3",
+      en: (sub) => `What ${sub.be} ${sub.e} doing at home?`
+    },
+    {
+      tense: "present",
+      theme: "friends",
+      h: "而家同邊個傾緊計呀？",
+      j: "ji4 gaa1 tung4 bin1 go3 king1 gan2 gai2 aa3",
+      en: (sub) => `Who ${sub.be} ${sub.e} chatting with now?`
+    },
+    {
+      tense: "past",
+      theme: "daily",
+      h: "尋日食咗咩呀？",
+      j: "cam4 jat6 sik6 zo2 me1 aa3",
+      en: (sub) => `What did ${sub.e} eat yesterday?`
+    },
+    {
+      tense: "past",
+      theme: "travel",
+      h: "上次去咗邊度呀？",
+      j: "soeng6 ci3 heoi3 zo2 bin1 dou6 aa3",
+      en: (sub) => `Where did ${sub.e} go last time?`
+    },
+    {
+      tense: "past",
+      theme: "friends",
+      h: "見過佢未呀？",
+      j: "gin3 gwo3 keoi5 mei6 aa3",
+      en: (sub) => `${capitalizeFirst(sub.has)} ${sub.e} met him/her before?`
+    },
+    {
+      tense: "future",
+      theme: "daily",
+      h: "聽日會唔會返工呀？",
+      j: "ting1 jat6 wui5 m4 wui5 faan1 gung1 aa3",
+      en: (sub) => `Will ${sub.e} go to work tomorrow?`
+    },
+    {
+      tense: "future",
+      theme: "holiday",
+      h: "下次會唔會去旅行呀？",
+      j: "haa6 ci3 wui5 m4 wui5 heoi3 leoi5 hang4 aa3",
+      en: (sub) => `Will ${sub.e} travel next time?`
+    },
+    {
+      tense: "future",
+      theme: "home",
+      h: "今晚會唔會煮飯呀？",
+      j: "gam1 maan5 wui5 m4 wui5 zyu2 faan6 aa3",
+      en: (sub) => `Will ${sub.e} cook tonight?`
+    },
+    {
+      tense: "conditional",
+      theme: "friends",
+      h: "如果落雨，仲會唔會出街呀？",
+      j: "jyu4 gwo2 lok6 jyu5, zung6 wui5 m4 wui5 ceot1 gaai1 aa3",
+      en: (sub) => `If it rains, will ${sub.e} still go out?`
+    },
+    {
+      tense: "conditional",
+      theme: "travel",
+      h: "如果有平機票，會去邊度呀？",
+      j: "jyu4 gwo2 jau5 peng4 gei1 piu3, wui5 heoi3 bin1 dou6 aa3",
+      en: (sub) => `If there are cheap tickets, where will ${sub.e} go?`
+    }
   ];
   const out = [];
   let idCounter = 7000;
@@ -3286,7 +3352,7 @@ function buildGeneratedQuestionSentences() {
         theme: tpl.theme,
         hanzi: `${sub.h}${tpl.h}`,
         jyutping: `${sub.j} ${tpl.j}`.trim(),
-        english: `${capitalizeFirst(sub.e)} ${tpl.e}`
+        english: tpl.en(sub)
       });
     });
   });
