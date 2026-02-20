@@ -1207,9 +1207,7 @@ const ALL_SENTENCES = SENTENCE_BANK
 const REAL_NOISE_URLS = {
   "real-market": [
     "audio/wet-market-1.mp3",
-    "audio/wet-market-2.mp3",
-    "https://www.bigsoundbank.com/UPLOAD/mp3/0183.mp3",
-    "https://www.bigsoundbank.com/UPLOAD/mp3/0184.mp3"
+    "audio/wet-market-2.mp3"
   ],
   "real-radio": [
     "audio/radio-chatter-1.mp3",
@@ -1777,6 +1775,10 @@ function markControlsDirty() {
 }
 
 function applyGlobalControls() {
+  const prevLevel = Number(state.prefs.level) || 2;
+  const prevTense = state.prefs.tense || "mixed";
+  const prevTheme = state.prefs.theme || "mixed";
+  const prevToneMode = state.prefs.toneExerciseMode || "word";
   state.prefs.level = Number(els.globalLevel.value) || 2;
   state.prefs.tense = els.globalTense.value;
   state.prefs.theme = els.globalTheme.value;
@@ -1787,11 +1789,21 @@ function applyGlobalControls() {
   state.prefs.audioNoiseType = els.audioNoiseType?.value || "white";
   saveJson(STORAGE_KEYS.prefs, state.prefs);
   applyTheme(state.prefs.uiTheme);
-  resetRotations();
-  rollWord();
-  rollPattern();
-  rollQuiz();
-  rollTonePair();
+  const coreChanged = prevLevel !== state.prefs.level
+    || prevTense !== state.prefs.tense
+    || prevTheme !== state.prefs.theme;
+  const toneModeChanged = prevToneMode !== state.prefs.toneExerciseMode;
+
+  if (coreChanged) {
+    resetRotations();
+    rollWord();
+    rollPattern();
+    rollQuiz();
+    rollTonePair();
+  } else if (toneModeChanged) {
+    state.rotation.tonePairs = [];
+    rollTonePair();
+  }
   els.controlsMessage.textContent = "Settings applied.";
   els.controlsMessage.classList.remove("pending");
   els.controlsMessage.classList.add("applied");
