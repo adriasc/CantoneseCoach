@@ -1197,10 +1197,23 @@ const ASPECT_MARKERS = {
 const GENERATED_SENTENCES = buildGeneratedAspectSentences();
 const GENERATED_FUTURE_SENTENCES = buildGeneratedFutureSentences();
 const GENERATED_CONDITIONAL_SENTENCES = buildGeneratedConditionalSentences();
+const GENERATED_QUESTION_SENTENCES = buildGeneratedQuestionSentences();
 const ALL_SENTENCES = SENTENCE_BANK
   .concat(GENERATED_SENTENCES)
   .concat(GENERATED_FUTURE_SENTENCES)
-  .concat(GENERATED_CONDITIONAL_SENTENCES);
+  .concat(GENERATED_CONDITIONAL_SENTENCES)
+  .concat(GENERATED_QUESTION_SENTENCES);
+
+const REAL_NOISE_URLS = {
+  "real-market": [
+    "https://www.bigsoundbank.com/UPLOAD/mp3/0183.mp3",
+    "https://www.bigsoundbank.com/UPLOAD/mp3/0184.mp3"
+  ],
+  "real-radio": [
+    "https://www.bigsoundbank.com/UPLOAD/mp3/3515.mp3",
+    "https://www.bigsoundbank.com/UPLOAD/mp3/3516.mp3"
+  ]
+};
 
 const TONE_PAIR_BANK = [
   { id: "t1", level: 1, a: { hanzi: "買", jyutping: "maai5", english: "buy" }, b: { hanzi: "賣", jyutping: "maai6", english: "sell" } },
@@ -1391,6 +1404,10 @@ const els = {
   toggleToneEnglish: byId("toggleToneEnglish"),
   knownWords: byId("knownWords"),
   reviewedWords: byId("reviewedWords"),
+  toggleKnownList: byId("toggleKnownList"),
+  knownListWrap: byId("knownListWrap"),
+  knownListMeta: byId("knownListMeta"),
+  knownList: byId("knownList"),
   streakBadge: byId("streakBadge"),
   patternFormula: byId("patternFormula"),
   slotGrid: byId("slotGrid"),
@@ -1442,6 +1459,7 @@ const speechNoise = {
   ctx: null,
   source: null,
   gain: null,
+  ambientEl: null,
   playId: 0
 };
 let bossAdvanceTimer = null;
@@ -1458,6 +1476,7 @@ rollPattern();
 rollQuiz();
 rollTonePair();
 refreshStats();
+renderKnownList();
 refreshGameUI();
 registerServiceWorker();
 
@@ -1509,8 +1528,18 @@ function bindUI() {
     saveJson(STORAGE_KEYS.known, [...state.known]);
     markReviewed();
     refreshStats();
+    renderKnownList();
     rollWord();
   });
+
+  if (els.toggleKnownList && els.knownListWrap) {
+    els.toggleKnownList.addEventListener("click", () => {
+      const hidden = els.knownListWrap.classList.contains("hidden");
+      els.knownListWrap.classList.toggle("hidden", !hidden);
+      els.toggleKnownList.textContent = hidden ? "Hide known list" : "Show known list";
+      if (hidden) renderKnownList();
+    });
+  }
 
   byId("newPattern").addEventListener("click", rollPattern);
 
@@ -1584,8 +1613,7 @@ function bindUI() {
         clearTimeout(bossAdvanceTimer);
         bossAdvanceTimer = null;
       }
-      state.game.boss.index += 1;
-      nextBossQuestion();
+      queueBossAdvance(0);
     });
   }
   if (els.bossPlayAudio) {
@@ -1626,7 +1654,7 @@ function bindUI() {
     els.audioNoiseType.addEventListener("change", () => {
       state.prefs.audioNoiseType = els.audioNoiseType.value || "white";
       saveJson(STORAGE_KEYS.prefs, state.prefs);
-      if (speechNoise.source) {
+      if (speechNoise.source || speechNoise.ambientEl) {
         startSpeechNoise();
       }
     });
@@ -1637,6 +1665,9 @@ function bindUI() {
       saveJson(STORAGE_KEYS.prefs, state.prefs);
       if (els.audioNoiseValue) els.audioNoiseValue.textContent = state.prefs.audioNoiseLevel.toFixed(2);
       if (speechNoise.gain) speechNoise.gain.gain.value = computeNoiseGain();
+      if (speechNoise.ambientEl) {
+        speechNoise.ambientEl.volume = Math.max(0.03, Math.min(0.95, computeNoiseGain() / 2));
+      }
     });
   }
   els.testVoice.addEventListener("click", () => {
@@ -1680,6 +1711,7 @@ function bindUI() {
     rollQuiz();
     rollTonePair();
     refreshStats();
+    renderKnownList();
   });
 }
 
@@ -1844,7 +1876,7 @@ function rollTonePair() {
   state.currentToneKind = mode;
   state.currentTonePair = takeFromRotation("tonePairs", pool, (pair) => pair.id);
   state.currentToneSide = null;
-  state.toneLabelMap = Math.random() < 0.5 ? { a: "a", b: "b" } : { a: "b", b: "a" };
+  state.toneLabelMap = randomUnit() < 0.5 ? { a: "a", b: "b" } : { a: "b", b: "a" };
   state.prefs.toneShowJyutping = false;
   state.prefs.toneShowEnglish = false;
   saveJson(STORAGE_KEYS.prefs, state.prefs);
@@ -1941,7 +1973,7 @@ function playToneClip(which) {
     speak(toneItemForLabel("b").hanzi);
     return;
   }
-  state.currentToneSide = Math.random() < 0.5 ? "a" : "b";
+  state.currentToneSide = randomUnit() < 0.5 ? "a" : "b";
   els.tonePrompt.textContent = `You played Random. Choose the ${answerType} for the random clip.`;
   speak(toneItemForLabel(state.currentToneSide).hanzi);
 }
@@ -1992,7 +2024,7 @@ function resolveToneExerciseMode() {
   if (level <= 2) return "word";
   const hasSentencePool = getFilteredToneSentencePairs().length > 0;
   if (!hasSentencePool) return "word";
-  return Math.random() < 0.5 ? "word" : "sentence";
+  return randomUnit() < 0.5 ? "word" : "sentence";
 }
 
 function ensureDailyGameState() {
@@ -2150,7 +2182,7 @@ function startBossChallenge() {
   });
   const tPick = shuffle(tonePool.slice()).slice(0, 2);
   tPick.forEach((pair) => {
-    const side = Math.random() < 0.5 ? "a" : "b";
+    const side = randomUnit() < 0.5 ? "a" : "b";
     const target = pair[side];
     questions.push({
       type: "tone",
@@ -2221,27 +2253,37 @@ function answerBossQuestion(choice, btn) {
   if (!b.active || !b.current) return;
   if (b.locked) return;
   b.locked = true;
-  const correct = b.current.type === "quiz"
-    ? b.current.sentence.english
-    : (b.current.type === "tone" ? b.current.item.jyutping : b.current.correct);
-  const ok = choice === correct;
-  const buttons = [...els.bossChoices.querySelectorAll("button")];
-  buttons.forEach((button) => {
-    button.disabled = true;
-    if (button.textContent === correct) button.classList.add("is-correct");
-  });
-  if (!ok) btn.classList.add("is-wrong");
-  else btn.classList.add("is-correct");
-  if (ok) {
-    b.score += 1;
-    if (b.current.type === "tone") incrementMission("tones", 1);
-    if (b.current.type === "hanzi") incrementMission("hanzi", 1);
+  try {
+    const correct = b.current.type === "quiz"
+      ? b.current.sentence.english
+      : (b.current.type === "tone" ? b.current.item.jyutping : b.current.correct);
+    const ok = choice === correct;
+    const buttons = [...els.bossChoices.querySelectorAll("button")];
+    buttons.forEach((button) => {
+      button.disabled = true;
+      if (button.textContent === correct) button.classList.add("is-correct");
+    });
+    if (!ok) btn.classList.add("is-wrong");
+    else btn.classList.add("is-correct");
+    if (ok) {
+      b.score += 1;
+      if (b.current.type === "tone") incrementMission("tones", 1);
+      if (b.current.type === "hanzi") incrementMission("hanzi", 1);
+    }
+  } finally {
+    queueBossAdvance(900);
   }
+}
+
+function queueBossAdvance(delayMs = 900) {
+  if (bossAdvanceTimer) clearTimeout(bossAdvanceTimer);
   bossAdvanceTimer = setTimeout(() => {
     bossAdvanceTimer = null;
+    const b = state.game.boss;
+    if (!b || !b.active) return;
     b.index += 1;
     nextBossQuestion();
-  }, 1100);
+  }, Math.max(0, Number(delayMs) || 0));
 }
 
 function finishBossChallenge() {
@@ -2260,14 +2302,15 @@ function finishBossChallenge() {
 
 function playConfettiBurst() {
   if (!els.fxLayer) return;
+  playHappyChime();
   const colors = ["#ff3d7f", "#ff8a00", "#ffd166", "#06d6a0", "#4cc9f0", "#f72585"];
   for (let i = 0; i < 60; i += 1) {
     const p = document.createElement("span");
     p.className = "confetti-piece";
-    p.style.left = `${Math.random() * 100}%`;
-    p.style.animationDelay = `${Math.random() * 180}ms`;
-    p.style.background = colors[Math.floor(Math.random() * colors.length)];
-    p.style.transform = `translateY(-8vh) rotate(${Math.floor(Math.random() * 180)}deg)`;
+    p.style.left = `${randomUnit() * 100}%`;
+    p.style.animationDelay = `${randomInt(180)}ms`;
+    p.style.background = colors[randomInt(colors.length)];
+    p.style.transform = `translateY(-8vh) rotate(${randomInt(180)}deg)`;
     els.fxLayer.appendChild(p);
     setTimeout(() => p.remove(), 1800);
   }
@@ -2306,6 +2349,32 @@ function playThunderSound() {
   osc.stop(now + 0.95);
 }
 
+function playHappyChime() {
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtx) return;
+  if (!speechNoise.ctx) speechNoise.ctx = new AudioCtx();
+  const ctx = speechNoise.ctx;
+  if (ctx.state === "suspended") {
+    ctx.resume().then(() => playHappyChime()).catch(() => {});
+    return;
+  }
+  const now = ctx.currentTime;
+  const notes = [523.25, 659.25, 783.99];
+  notes.forEach((freq, idx) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+    gain.gain.setValueAtTime(0.0001, now + idx * 0.12);
+    gain.gain.exponentialRampToValueAtTime(0.05, now + idx * 0.12 + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.12 + 0.28);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now + idx * 0.12);
+    osc.stop(now + idx * 0.12 + 0.3);
+  });
+}
+
 function markReviewed() {
   const today = todayString();
   if (state.reviewed.date !== today) {
@@ -2332,9 +2401,28 @@ function refreshStats() {
   els.streakBadge.textContent = `Streak: ${state.streak.days} day${state.streak.days === 1 ? "" : "s"}`;
 }
 
+function renderKnownList() {
+  if (!els.knownList || !els.knownListMeta) return;
+  const items = (state.content.words || [])
+    .filter((w) => state.known.has(w.id))
+    .sort((a, b) => String(a.hanzi || "").localeCompare(String(b.hanzi || ""), "zh-Hant"));
+  els.knownList.innerHTML = "";
+  if (!items.length) {
+    els.knownListMeta.textContent = "No words marked yet.";
+    return;
+  }
+  els.knownListMeta.textContent = `${items.length} words marked as known.`;
+  items.forEach((w) => {
+    const row = document.createElement("div");
+    row.className = "known-item";
+    row.innerHTML = `<p class="hanzi">${escapeHtml(w.hanzi || "-")}</p><p class="jyutping">${escapeHtml(w.jyutping || "-")}</p><p class="english">${escapeHtml(w.english || "-")}</p>`;
+    els.knownList.appendChild(row);
+  });
+}
+
 function speak(text) {
   const utterance = new SpeechSynthesisUtterance(text);
-  const playId = Date.now() + Math.random();
+  const playId = Date.now() + randomUnit();
   speechNoise.playId = playId;
   const voices = (state.availableVoices && state.availableVoices.length)
     ? state.availableVoices
@@ -2359,6 +2447,11 @@ function speak(text) {
 
 function startSpeechNoise() {
   if (!state.prefs.audioNoiseOn) return;
+  const type = String(state.prefs.audioNoiseType || "white");
+  if (type.startsWith("real-")) {
+    startRealNoise(type);
+    return;
+  }
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
   if (!AudioCtx) return;
 
@@ -2375,7 +2468,7 @@ function startSpeechNoise() {
   const frameCount = speechNoise.ctx.sampleRate;
   const buffer = speechNoise.ctx.createBuffer(1, frameCount, speechNoise.ctx.sampleRate);
   const data = buffer.getChannelData(0);
-  fillNoiseBuffer(data, state.prefs.audioNoiseType || "white", speechNoise.ctx.sampleRate);
+  fillNoiseBuffer(data, type, speechNoise.ctx.sampleRate);
 
   const source = speechNoise.ctx.createBufferSource();
   source.buffer = buffer;
@@ -2398,7 +2491,9 @@ function computeNoiseGain() {
     white: 1.2,
     radio: 1.6,
     street: 2.2,
-    people: 2.7
+    people: 2.7,
+    "real-market": 1.4,
+    "real-radio": 1.25
   };
   const boost = boostByType[state.prefs.audioNoiseType] || 1.2;
   return Math.min(1.8, base * boost);
@@ -2447,6 +2542,13 @@ function fillNoiseBuffer(data, noiseType, sampleRate) {
 }
 
 function stopSpeechNoise() {
+  if (speechNoise.ambientEl) {
+    try {
+      speechNoise.ambientEl.pause();
+      speechNoise.ambientEl.currentTime = 0;
+    } catch {}
+    speechNoise.ambientEl = null;
+  }
   if (speechNoise.source) {
     try { speechNoise.source.stop(); } catch {}
     try { speechNoise.source.disconnect(); } catch {}
@@ -2456,6 +2558,22 @@ function stopSpeechNoise() {
     try { speechNoise.gain.disconnect(); } catch {}
     speechNoise.gain = null;
   }
+}
+
+function startRealNoise(type) {
+  stopSpeechNoise();
+  const urls = REAL_NOISE_URLS[type] || REAL_NOISE_URLS["real-market"];
+  const url = urls[randomInt(urls.length)] || urls[0];
+  if (!url) return;
+  const el = new Audio(url);
+  el.loop = true;
+  el.preload = "auto";
+  el.crossOrigin = "anonymous";
+  el.volume = Math.max(0.03, Math.min(0.95, computeNoiseGain() / 2));
+  speechNoise.ambientEl = el;
+  el.play().catch(() => {
+    speechNoise.ambientEl = null;
+  });
 }
 
 function selectVoiceForSpeech(voices) {
@@ -2486,6 +2604,7 @@ function importDataFile(event) {
       rollWord();
       rollPattern();
       rollQuiz();
+      renderKnownList();
     } catch (err) {
       els.contentMessage.textContent = "Import failed. Please use valid JSON format.";
     }
@@ -2684,7 +2803,7 @@ function takeFromRotation(key, pool, getId) {
   if (!queue.length) queue = shuffle(ids.slice());
   const id = queue.shift();
   state.rotation[key] = queue;
-  return pool.find((item) => getId(item) === id) || pool[Math.floor(Math.random() * pool.length)];
+  return pool.find((item) => getId(item) === id) || pool[randomInt(pool.length)];
 }
 
 function getFilteredSentences() {
@@ -2730,7 +2849,7 @@ function wordLevel(word) {
   const len = normalizeHanzi(word?.hanzi).length;
   if (len >= 4) level += 2;
   else if (len >= 3) level += 1;
-  return Math.min(level, 5);
+  return Math.min(level, 6);
 }
 
 function buildGeneratedAspectSentences() {
@@ -2990,6 +3109,45 @@ function buildGeneratedConditionalSentences() {
   return out;
 }
 
+function buildGeneratedQuestionSentences() {
+  const subjects = [
+    { h: "你", j: "nei5", e: "you" },
+    { h: "佢", j: "keoi5", e: "he/she" },
+    { h: "你哋", j: "nei5 dei6", e: "you all" },
+    { h: "我哋", j: "ngo5 dei6", e: "we" },
+    { h: "你朋友", j: "nei5 pang4 jau5", e: "your friend" }
+  ];
+  const templates = [
+    { tense: "present", theme: "daily", h: "而家食緊飯呀？", j: "ji4 gaa1 sik6 gan2 faan6 aa3", e: "are eating now?" },
+    { tense: "present", theme: "home", h: "喺屋企做咩呀？", j: "hai2 uk1 kei2 zou6 me1 aa3", e: "are doing what at home?" },
+    { tense: "present", theme: "friends", h: "而家同邊個傾緊計呀？", j: "ji4 gaa1 tung4 bin1 go3 king1 gan2 gai2 aa3", e: "are chatting with who now?" },
+    { tense: "past", theme: "daily", h: "尋日食咗咩呀？", j: "cam4 jat6 sik6 zo2 me1 aa3", e: "eat what yesterday?" },
+    { tense: "past", theme: "travel", h: "上次去咗邊度呀？", j: "soeng6 ci3 heoi3 zo2 bin1 dou6 aa3", e: "go where last time?" },
+    { tense: "past", theme: "friends", h: "你見過佢未呀？", j: "nei5 gin3 gwo3 keoi5 mei6 aa3", e: "met him/her before?" },
+    { tense: "future", theme: "daily", h: "聽日會唔會返工呀？", j: "ting1 jat6 wui5 m4 wui5 faan1 gung1 aa3", e: "work tomorrow?" },
+    { tense: "future", theme: "holiday", h: "下次會去唔去旅行呀？", j: "haa6 ci3 wui5 heoi3 m4 heoi3 leoi5 hang4 aa3", e: "go travel next time?" },
+    { tense: "future", theme: "home", h: "今晚會唔會煮飯呀？", j: "gam1 maan5 wui5 m4 wui5 zyu2 faan6 aa3", e: "cook tonight?" },
+    { tense: "conditional", theme: "friends", h: "如果落雨，你仲會出街呀？", j: "jyu4 gwo2 lok6 jyu5, nei5 zung6 wui5 ceot1 gaai1 aa3", e: "if it rains, still go out?" },
+    { tense: "conditional", theme: "travel", h: "如果有平機票，你會去邊度呀？", j: "jyu4 gwo2 jau5 peng4 gei1 piu3, nei5 wui5 heoi3 bin1 dou6 aa3", e: "if cheap tickets exist, where will you go?" }
+  ];
+  const out = [];
+  let idCounter = 7000;
+  templates.forEach((tpl) => {
+    subjects.forEach((sub) => {
+      out.push({
+        id: `gq${idCounter++}`,
+        level: 6,
+        tense: tpl.tense,
+        theme: tpl.theme,
+        hanzi: `${sub.h}${tpl.h}`,
+        jyutping: `${sub.j} ${tpl.j}`.trim(),
+        english: `${capitalizeFirst(sub.e)} ${tpl.e}`
+      });
+    });
+  });
+  return out;
+}
+
 function analyzeSentence(sentenceInput) {
   const hanzi = typeof sentenceInput === "string" ? sentenceInput : (sentenceInput?.hanzi || "");
   const originalJyutping = typeof sentenceInput === "string" ? "" : (sentenceInput?.jyutping || "");
@@ -3172,6 +3330,12 @@ function cleanLiteral(text) {
     .trim();
 }
 
+function capitalizeFirst(value) {
+  const text = String(value || "");
+  if (!text) return text;
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 function escapeHtml(value) {
   return String(value)
     .replace(/&/g, "&amp;")
@@ -3216,9 +3380,23 @@ function addDays(dateString, delta) {
   return d.toISOString().slice(0, 10);
 }
 
+function randomUnit() {
+  if (window.crypto?.getRandomValues) {
+    const arr = new Uint32Array(1);
+    window.crypto.getRandomValues(arr);
+    return arr[0] / 4294967296;
+  }
+  return Math.random();
+}
+
+function randomInt(max) {
+  const n = Math.floor(randomUnit() * Math.max(1, max));
+  return Math.min(Math.max(0, n), Math.max(0, max - 1));
+}
+
 function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = randomInt(i + 1);
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;

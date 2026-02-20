@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v18.4</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v18.5</span></p>
         <h1>Cantonese Coach</h1>
       </div>
       <div class="streak" id="streakBadge">Streak: 0 days</div>
@@ -48,6 +48,7 @@
             <option value="3">Level 3 - medium</option>
             <option value="4">Level 4 - advanced</option>
             <option value="5">Level 5 - long/conditional</option>
+            <option value="6">Level 6 - question mode</option>
           </select>
         </div>
         <div>
@@ -107,6 +108,8 @@
             <option value="street">Street</option>
             <option value="radio">Radio</option>
             <option value="people">People talking</option>
+            <option value="real-market">Real wet market (beta)</option>
+            <option value="real-radio">Real radio chatter (beta)</option>
           </select>
         </div>
         <div>
@@ -178,6 +181,14 @@
       <div class="mini-stats">
         <p id="knownWords">Known words: 0</p>
         <p id="reviewedWords">Reviewed today: 0</p>
+      </div>
+      <div class="actions">
+        <button id="toggleKnownList">Show known list</button>
+      </div>
+      <div class="card hidden" id="knownListWrap">
+        <h3>Known Words</h3>
+        <p class="example" id="knownListMeta">No words marked yet.</p>
+        <div class="known-list" id="knownList"></div>
       </div>
     </section>
 

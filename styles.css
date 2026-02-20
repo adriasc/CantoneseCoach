@@ -547,7 +547,7 @@ button:hover,
 
 .goal-line {
   margin: 10px 0 0;
-  color: #7a2235;
+  color: #b45a1a;
   font-weight: 700;
   font-size: 0.95rem;
 }
@@ -589,21 +589,21 @@ button:hover,
   max-height: 88vh;
   overflow-y: auto;
   border-radius: 18px;
-  background: linear-gradient(180deg, #fff3ed 0%, #fff8f0 42%, #ffffff 100%);
-  border: 2px solid #ffb188;
+  background: linear-gradient(180deg, #fff4e4 0%, #fff8ec 42%, #ffffff 100%);
+  border: 2px solid #ffb061;
   box-shadow: var(--shadow);
   padding: 16px;
 }
 
 #funModal .card-head h2 {
-  color: #8f1f3e;
+  color: #d46b08;
 }
 
 #funModal .mini-stats p,
 #funModal .mission-grid p,
 #funModal .formula {
-  background: #fff2e6;
-  border: 1px solid #ffd0b3;
+  background: #fff3e0;
+  border: 1px solid #ffc98f;
 }
 
 #bossPrompt {
@@ -706,6 +706,33 @@ button:hover,
   pointer-events: none;
   overflow: hidden;
   z-index: 40;
+}
+
+.known-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+.known-item {
+  display: grid;
+  grid-template-columns: minmax(70px, auto) minmax(90px, auto) 1fr;
+  gap: 10px;
+  align-items: baseline;
+  padding: 6px 8px;
+  border: 1px solid #e8edf8;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.known-item .hanzi {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.known-item .jyutping,
+.known-item .english {
+  margin: 0;
 }
 
 .confetti-piece {
