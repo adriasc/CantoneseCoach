@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v18.7.1</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v18.8.0</span></p>
         <h1>Cantonese Coach</h1>
       </div>
       <div class="streak" id="streakBadge">Streak: 0 days</div>
@@ -29,6 +29,7 @@
       <button class="tab is-active" data-tab="words">Words</button>
       <button class="tab" data-tab="patterns">Patterns</button>
       <button class="tab" data-tab="listening">Listening</button>
+      <button class="tab" data-tab="questions">Questions</button>
       <button class="tab" data-tab="tones">Tones</button>
       <button class="tab" data-tab="settings">Content</button>
       <button class="tab fun-tab" id="openFunLoop" type="button">Fun Loop</button>
@@ -41,14 +42,12 @@
       </div>
       <div class="slot-grid controls-grid">
         <div>
-          <label for="globalLevel">Level (all exercises)</label>
+          <label for="globalLevel">Level (general exercises)</label>
           <select id="globalLevel">
             <option value="1">Level 1 - short (old L1+L2)</option>
             <option value="2">Level 2 - medium</option>
             <option value="3">Level 3 - advanced</option>
             <option value="4">Level 4 - long/conditional</option>
-            <option value="5">Level 5 - basic questions</option>
-            <option value="6">Level 6 - advanced questions</option>
           </select>
         </div>
         <div>
@@ -237,6 +236,58 @@
         </div>
         <div class="choices" id="quizChoices"></div>
         <p class="feedback" id="quizFeedback"></p>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-questions">
+      <div class="card">
+        <h2>Questions Practice</h2>
+        <p>Question-only training with natural English + literal structure.</p>
+        <div class="slot-grid">
+          <div>
+            <label for="questionLevel">Question Level</label>
+            <select id="questionLevel">
+              <option value="basic">Basic Questions</option>
+              <option value="advanced">Advanced Questions</option>
+            </select>
+          </div>
+          <div>
+            <label for="questionTense">Verb Time</label>
+            <select id="questionTense">
+              <option value="mixed">Mixed</option>
+              <option value="present">Present</option>
+              <option value="past">Past</option>
+              <option value="future">Future</option>
+              <option value="conditional">Conditional</option>
+            </select>
+          </div>
+          <div>
+            <label for="questionTheme">Theme</label>
+            <select id="questionTheme">
+              <option value="mixed">Mixed</option>
+              <option value="home">Home/Family</option>
+              <option value="friends">Friends</option>
+              <option value="travel">Travel/Going out</option>
+              <option value="daily">Daily routines</option>
+              <option value="holiday">Holiday plans</option>
+            </select>
+          </div>
+        </div>
+        <p class="formula" id="questionFormula"></p>
+        <div class="result-box">
+          <p class="hanzi" id="questionHanzi"></p>
+          <p class="jyutping" id="questionJyutping"></p>
+          <p class="english" id="questionEnglish"></p>
+          <p class="literal" id="questionLiteral"></p>
+        </div>
+        <div class="actions">
+          <button id="playQuestionAudio">Play question</button>
+          <div class="inline-pair">
+            <button id="toggleQuestionJyutping">Hide Jyutping</button>
+            <button id="toggleQuestionEnglish">Hide English</button>
+          </div>
+          <button id="nextQuestion">Next question</button>
+        </div>
       </div>
     </section>
 

@@ -1386,6 +1386,9 @@ const state = {
     level: 1,
     tense: "mixed",
     theme: "mixed",
+    questionLevel: "basic",
+    questionTense: "mixed",
+    questionTheme: "mixed",
     uiTheme: "classic",
     controlsCollapsed: false,
     toneExerciseMode: "word",
@@ -1401,9 +1404,10 @@ const state = {
     audioNoiseType: "white"
   }),
   availableVoices: [],
-  rotation: { words: [], patternSentences: [], quizSentences: [], tonePairs: [] },
+  rotation: { words: [], patternSentences: [], quizSentences: [], questionSentences: [], tonePairs: [] },
   currentWord: null,
   currentSentence: null,
+  currentQuestion: null,
   currentPattern: null,
   patternSelections: {},
   currentQuiz: null,
@@ -1428,6 +1432,9 @@ const els = {
   globalLevel: byId("globalLevel"),
   globalTense: byId("globalTense"),
   globalTheme: byId("globalTheme"),
+  questionLevel: byId("questionLevel"),
+  questionTense: byId("questionTense"),
+  questionTheme: byId("questionTheme"),
   audioVoice: byId("audioVoice"),
   audioRate: byId("audioRate"),
   audioRateValue: byId("audioRateValue"),
@@ -1469,9 +1476,16 @@ const els = {
   quizJyutping: byId("quizJyutping"),
   quizEnglish: byId("quizEnglish"),
   quizLiteral: byId("quizLiteral"),
+  questionFormula: byId("questionFormula"),
+  questionHanzi: byId("questionHanzi"),
+  questionJyutping: byId("questionJyutping"),
+  questionEnglish: byId("questionEnglish"),
+  questionLiteral: byId("questionLiteral"),
   quizGrammarNotes: byId("quizGrammarNotes"),
   quizChoices: byId("quizChoices"),
   quizFeedback: byId("quizFeedback"),
+  toggleQuestionJyutping: byId("toggleQuestionJyutping"),
+  toggleQuestionEnglish: byId("toggleQuestionEnglish"),
   toneLabel: byId("toneLabel"),
   tonePrompt: byId("tonePrompt"),
   toneHanzi: byId("toneHanzi"),
@@ -1524,6 +1538,7 @@ applyVisibilityPrefs();
 rollWord();
 rollPattern();
 rollQuiz();
+rollQuestion();
 rollTonePair();
 refreshStats();
 renderKnownList();
@@ -1574,10 +1589,6 @@ function bindUI() {
 
   byId("markKnown").addEventListener("click", () => {
     if (!state.currentWord) return;
-    if (normalizePracticeLevel(state.prefs.level) >= 5) {
-      rollWord();
-      return;
-    }
     state.known.add(state.currentWord.id);
     saveJson(STORAGE_KEYS.known, [...state.known]);
     markReviewed();
@@ -1646,6 +1657,44 @@ function bindUI() {
   }
 
   byId("nextQuiz").addEventListener("click", rollQuiz);
+  if (byId("nextQuestion")) byId("nextQuestion").addEventListener("click", rollQuestion);
+  if (byId("playQuestionAudio")) {
+    byId("playQuestionAudio").addEventListener("click", () => {
+      if (!state.currentQuestion) return;
+      incrementMission("listens", 1);
+      speak(state.currentQuestion.hanzi);
+    });
+  }
+  if (els.questionLevel) {
+    els.questionLevel.addEventListener("change", () => {
+      state.prefs.questionLevel = els.questionLevel.value || "basic";
+      saveJson(STORAGE_KEYS.prefs, state.prefs);
+      state.rotation.questionSentences = [];
+      rollQuestion();
+    });
+  }
+  if (els.questionTense) {
+    els.questionTense.addEventListener("change", () => {
+      state.prefs.questionTense = els.questionTense.value || "mixed";
+      saveJson(STORAGE_KEYS.prefs, state.prefs);
+      state.rotation.questionSentences = [];
+      rollQuestion();
+    });
+  }
+  if (els.questionTheme) {
+    els.questionTheme.addEventListener("change", () => {
+      state.prefs.questionTheme = els.questionTheme.value || "mixed";
+      saveJson(STORAGE_KEYS.prefs, state.prefs);
+      state.rotation.questionSentences = [];
+      rollQuestion();
+    });
+  }
+  if (els.toggleQuestionJyutping) {
+    els.toggleQuestionJyutping.addEventListener("click", () => togglePref("showJyutping"));
+  }
+  if (els.toggleQuestionEnglish) {
+    els.toggleQuestionEnglish.addEventListener("click", () => togglePref("showEnglish"));
+  }
   if (byId("nextTone")) byId("nextTone").addEventListener("click", rollTonePair);
   if (byId("playToneA")) byId("playToneA").addEventListener("click", () => { incrementMission("listens", 1); playToneClip("a"); });
   if (byId("playToneB")) byId("playToneB").addEventListener("click", () => { incrementMission("listens", 1); playToneClip("b"); });
@@ -1817,34 +1866,6 @@ function switchTab(tabName) {
 
 function rollWord() {
   const level = normalizePracticeLevel(state.prefs.level);
-  if (level >= 5) {
-    const questionPool = getQuestionSentencePool(level);
-    if (!questionPool.length) return;
-    const q = takeFromRotation("words", questionPool, (s) => s.id);
-    const analysis = analyzeSentence({ hanzi: q.hanzi, jyutping: q.jyutping });
-    state.currentWord = {
-      id: q.id,
-      hanzi: q.hanzi,
-      jyutping: q.jyutping,
-      english: q.english,
-      category: "Question mode",
-      example: ""
-    };
-    els.wordCategory.textContent = `Question mode (L${level})`;
-    els.wordHanzi.textContent = q.hanzi || "-";
-    els.wordJyutping.textContent = q.jyutping || "-";
-    els.wordEnglish.textContent = q.english || "-";
-    if (els.wordLiteral) {
-      els.wordLiteral.textContent = `Literal: ${analysis.literal || "-"}`;
-      els.wordLiteral.classList.remove("hidden");
-    }
-    els.wordExample.textContent = "";
-    els.revealExample.textContent = "Show example";
-    els.revealExample.classList.add("hidden");
-    applyVisibilityPrefs();
-    refreshStats();
-    return;
-  }
   const words = (state.content.words || []).filter((w) => wordLevel(w) <= effectiveWordLevel(level));
   if (!words.length) return;
 
@@ -1965,6 +1986,21 @@ function renderQuizGrammar() {
     els.quizGrammarNotes.innerHTML = "";
   }
   els.quizLiteral.textContent = `Literal: ${analysis.literal}`;
+}
+
+function rollQuestion() {
+  if (!els.questionHanzi) return;
+  const pool = getFilteredQuestionSentences();
+  if (!pool.length) return;
+  state.currentQuestion = takeFromRotation("questionSentences", pool, (q) => q.id);
+  const analysis = analyzeSentence({ hanzi: state.currentQuestion.hanzi, jyutping: state.currentQuestion.jyutping });
+  const modeLabel = (state.prefs.questionLevel || "basic") === "advanced" ? "Advanced Questions" : "Basic Questions";
+  els.questionFormula.textContent = `${modeLabel} · ${state.currentQuestion.tense} · ${state.currentQuestion.theme}`;
+  els.questionHanzi.textContent = state.currentQuestion.hanzi;
+  els.questionJyutping.textContent = state.currentQuestion.jyutping;
+  els.questionEnglish.textContent = state.currentQuestion.english;
+  els.questionLiteral.textContent = `Literal: ${analysis.literal}`;
+  applyVisibilityPrefs();
 }
 
 function rollTonePair() {
@@ -2830,6 +2866,9 @@ function syncControlValues() {
   els.globalLevel.value = String(normalizePracticeLevel(state.prefs.level));
   els.globalTense.value = state.prefs.tense || "mixed";
   els.globalTheme.value = state.prefs.theme || "mixed";
+  if (els.questionLevel) els.questionLevel.value = state.prefs.questionLevel || "basic";
+  if (els.questionTense) els.questionTense.value = state.prefs.questionTense || "mixed";
+  if (els.questionTheme) els.questionTheme.value = state.prefs.questionTheme || "mixed";
   if (els.toneExerciseMode) els.toneExerciseMode.value = state.prefs.toneExerciseMode || "word";
   if (els.themeStyle) els.themeStyle.value = state.prefs.uiTheme || "classic";
   els.audioRate.value = String(state.prefs.voiceRate || 0.9);
@@ -2882,6 +2921,7 @@ function applyVisibilityPrefs() {
   els.wordJyutping.classList.toggle("hidden", !showJp);
   els.patternJyutping.classList.toggle("hidden", !showJp);
   els.quizJyutping.classList.toggle("hidden", !showJp);
+  if (els.questionJyutping) els.questionJyutping.classList.toggle("hidden", !showJp);
 
   els.wordEnglish.classList.toggle("hidden", !showEn);
   if (els.wordLiteral) {
@@ -2892,13 +2932,17 @@ function applyVisibilityPrefs() {
   els.quizEnglish.classList.toggle("hidden", !showEn);
   els.patternLiteral.classList.toggle("hidden", !showEn);
   els.quizLiteral.classList.toggle("hidden", !showEn);
+  if (els.questionEnglish) els.questionEnglish.classList.toggle("hidden", !showEn);
+  if (els.questionLiteral) els.questionLiteral.classList.toggle("hidden", !showEn);
 
   els.toggleWordJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
   els.togglePatternJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
   els.toggleQuizJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
+  if (els.toggleQuestionJyutping) els.toggleQuestionJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
   els.toggleWordEnglish.textContent = showEn ? "Hide English" : "Show English";
   els.togglePatternEnglish.textContent = showEn ? "Hide English" : "Show English";
   els.toggleQuizEnglish.textContent = showEn ? "Hide English" : "Show English";
+  if (els.toggleQuestionEnglish) els.toggleQuestionEnglish.textContent = showEn ? "Hide English" : "Show English";
   els.toggleGrammarLens.textContent = state.prefs.showGrammarLens ? "Grammar Lens: On" : "Grammar Lens: Off";
   applyToneVisibility();
 }
@@ -2939,7 +2983,7 @@ function togglePref(prefKey) {
 }
 
 function resetRotations() {
-  state.rotation = { words: [], patternSentences: [], quizSentences: [], tonePairs: [] };
+  state.rotation = { words: [], patternSentences: [], quizSentences: [], questionSentences: [], tonePairs: [] };
 }
 
 function takeFromRotation(key, pool, getId) {
@@ -2955,7 +2999,6 @@ function takeFromRotation(key, pool, getId) {
 
 function getFilteredSentences() {
   const level = normalizePracticeLevel(state.prefs.level);
-  if (level >= 5) return getQuestionSentencePool(level);
   const tense = state.prefs.tense || "mixed";
   const theme = state.prefs.theme || "mixed";
   let pool = ALL_SENTENCES.filter((s) => (
@@ -2978,13 +3021,31 @@ function isQuestionSentence(sentence) {
   return /[？?]/.test(h) || /[？?]/.test(e) || /咩|未|邊度|邊個|點|幾時/.test(h);
 }
 
-function getQuestionSentencePool(targetLevel = 6) {
-  const internalLevel = targetLevel >= 6 ? 7 : 6;
+function getQuestionSentencePool(mode = "basic") {
+  const internalLevel = mode === "advanced" ? 7 : 6;
   const exact = ALL_SENTENCES.filter((s) => s.level === internalLevel && isQuestionSentence(s));
   if (exact.length) return exact;
   const fallback = ALL_SENTENCES.filter((s) => s.level >= 6 && isQuestionSentence(s));
   if (fallback.length) return fallback;
   return ALL_SENTENCES.filter((s) => isQuestionSentence(s));
+}
+
+function getFilteredQuestionSentences() {
+  const mode = state.prefs.questionLevel || "basic";
+  const tense = state.prefs.questionTense || "mixed";
+  const theme = state.prefs.questionTheme || "mixed";
+  const base = getQuestionSentencePool(mode);
+  let pool = base.filter((s) => (
+    (tense === "mixed" || s.tense === tense)
+    && (theme === "mixed" || s.theme === theme)
+  ));
+  if (!pool.length) {
+    pool = base.filter((s) => tense === "mixed" || s.tense === tense);
+  }
+  if (!pool.length) {
+    pool = base;
+  }
+  return pool;
 }
 
 function buildWordExample(word) {
@@ -3624,8 +3685,7 @@ function capitalizeFirst(value) {
 
 function normalizePracticeLevel(value) {
   let n = Number(value) || 1;
-  if (n === 7) n = 6;
-  n = Math.max(1, Math.min(6, n));
+  n = Math.max(1, Math.min(4, n));
   return n;
 }
 
@@ -3634,8 +3694,6 @@ function sentenceMatchesSelectedLevel(sentenceLevel, selectedLevel) {
   if (selectedLevel === 2) return sentenceLevel === 3;
   if (selectedLevel === 3) return sentenceLevel === 4;
   if (selectedLevel === 4) return sentenceLevel === 5;
-  if (selectedLevel === 5) return sentenceLevel === 6;
-  if (selectedLevel === 6) return sentenceLevel === 7;
   return sentenceLevel === 1 || sentenceLevel === 2;
 }
 
@@ -3657,9 +3715,7 @@ function uiLevelFromSentenceLevel(sentenceLevel) {
   if (sentenceLevel <= 2) return 1;
   if (sentenceLevel === 3) return 2;
   if (sentenceLevel === 4) return 3;
-  if (sentenceLevel === 5) return 4;
-  if (sentenceLevel === 6) return 5;
-  return 6;
+  return 4;
 }
 
 function escapeHtml(value) {
