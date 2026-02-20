@@ -599,21 +599,29 @@ button:hover,
   max-height: 88vh;
   overflow-y: auto;
   border-radius: 18px;
-  background: linear-gradient(180deg, #fff4e4 0%, #fff8ec 42%, #ffffff 100%);
-  border: 2px solid #ffb061;
+  background: linear-gradient(165deg, #ff6a3d 0%, #ff3d7f 46%, #ff9f1c 100%);
+  border: 2px solid #ff7a2f;
   box-shadow: var(--shadow);
   padding: 16px;
 }
 
 #funModal .card-head h2 {
-  color: #d46b08;
+  color: #fff;
 }
 
 #funModal .mini-stats p,
 #funModal .mission-grid p,
 #funModal .formula {
-  background: #fff3e0;
-  border: 1px solid #ffc98f;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+}
+
+#funModal .goal-line,
+#funModal .example,
+#funModal .feedback,
+#funModal #bossPrompt,
+#funModal #bossProgress {
+  color: #fff;
 }
 
 #bossPrompt {
@@ -625,7 +633,8 @@ button:hover,
 #bossPrompt.hanzi-focus {
   font-size: 2.1rem;
   line-height: 1.2;
-  color: #a11b3b;
+  color: #fff;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.28);
 }
 
 .formula {
