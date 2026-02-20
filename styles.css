@@ -621,38 +621,11 @@ button:hover,
 #funModal .mini-stats p,
 #funModal .mission-grid p,
 #funModal .formula {
-  background: rgba(255, 255, 255, 0.96);
-  border: 1px solid #ffd7de;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #ffd4bb;
   border-radius: 12px;
-  color: #7a3b21;
-  box-shadow: 0 6px 14px rgba(212, 88, 133, 0.09);
-}
-
-#funModal .boss-wrap {
-  border-color: #ffc1cd;
-  background: rgba(255, 255, 255, 0.93);
-}
-
-#funModal .choice {
-  background: #fffdfd;
-  border-color: #ffc8d4;
-  color: #61333f;
-}
-
-#funModal .actions button {
-  background: linear-gradient(135deg, #ff98b6, #ffb874);
-  color: #fff;
-  border: 1px solid #ff9ec1;
-}
-
-#funModal .actions button.ghost-btn {
-  background: transparent;
-  border: none;
-  color: #ff4f85;
-}
-
-#funModal .actions button:hover {
-  filter: brightness(1.03);
+  color: #6f3720;
+  box-shadow: 0 4px 10px rgba(185, 92, 43, 0.08);
 }
 
 #funModal .goal-line,
@@ -661,6 +634,18 @@ button:hover,
 #funModal #bossPrompt,
 #funModal #bossProgress {
   color: #9c4f22;
+}
+
+#funModal .choice.is-correct {
+  border-color: #0a7d6f;
+  background: #e9fbf5;
+  color: #0b4f45;
+}
+
+#funModal .choice.is-wrong {
+  border-color: #b62a2a;
+  background: #ffecee;
+  color: #6f1f1f;
 }
 
 #bossPrompt {
