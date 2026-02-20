@@ -1574,7 +1574,7 @@ function bindUI() {
 
   byId("markKnown").addEventListener("click", () => {
     if (!state.currentWord) return;
-    if (normalizePracticeLevel(state.prefs.level) >= 6) {
+    if (normalizePracticeLevel(state.prefs.level) >= 5) {
       rollWord();
       return;
     }
@@ -1817,7 +1817,7 @@ function switchTab(tabName) {
 
 function rollWord() {
   const level = normalizePracticeLevel(state.prefs.level);
-  if (level >= 6) {
+  if (level >= 5) {
     const questionPool = getQuestionSentencePool(level);
     if (!questionPool.length) return;
     const q = takeFromRotation("words", questionPool, (s) => s.id);
@@ -1879,7 +1879,7 @@ function rollPattern() {
 
 function renderPatternControls() {
   const sentence = state.currentSentence;
-  els.patternFormula.textContent = `Level ${sentence.level} · ${sentence.tense} · ${sentence.theme}`;
+  els.patternFormula.textContent = `Level ${uiLevelFromSentenceLevel(sentence.level)} · ${sentence.tense} · ${sentence.theme}`;
   els.slotGrid.innerHTML = "";
 }
 
@@ -2955,7 +2955,7 @@ function takeFromRotation(key, pool, getId) {
 
 function getFilteredSentences() {
   const level = normalizePracticeLevel(state.prefs.level);
-  if (level >= 6) return getQuestionSentencePool(level);
+  if (level >= 5) return getQuestionSentencePool(level);
   const tense = state.prefs.tense || "mixed";
   const theme = state.prefs.theme || "mixed";
   let pool = ALL_SENTENCES.filter((s) => (
@@ -2979,7 +2979,8 @@ function isQuestionSentence(sentence) {
 }
 
 function getQuestionSentencePool(targetLevel = 6) {
-  const exact = ALL_SENTENCES.filter((s) => s.level === targetLevel && isQuestionSentence(s));
+  const internalLevel = targetLevel >= 6 ? 7 : 6;
+  const exact = ALL_SENTENCES.filter((s) => s.level === internalLevel && isQuestionSentence(s));
   if (exact.length) return exact;
   const fallback = ALL_SENTENCES.filter((s) => s.level >= 6 && isQuestionSentence(s));
   if (fallback.length) return fallback;
@@ -3623,26 +3624,42 @@ function capitalizeFirst(value) {
 
 function normalizePracticeLevel(value) {
   let n = Number(value) || 1;
-  if (n === 2) n = 1;
-  n = Math.max(1, Math.min(7, n));
+  if (n === 7) n = 6;
+  n = Math.max(1, Math.min(6, n));
   return n;
 }
 
 function sentenceMatchesSelectedLevel(sentenceLevel, selectedLevel) {
   if (selectedLevel === 1) return sentenceLevel === 1 || sentenceLevel === 2;
-  return sentenceLevel === selectedLevel;
+  if (selectedLevel === 2) return sentenceLevel === 3;
+  if (selectedLevel === 3) return sentenceLevel === 4;
+  if (selectedLevel === 4) return sentenceLevel === 5;
+  if (selectedLevel === 5) return sentenceLevel === 6;
+  if (selectedLevel === 6) return sentenceLevel === 7;
+  return sentenceLevel === 1 || sentenceLevel === 2;
 }
 
 function effectiveWordLevel(selectedLevel) {
   if (selectedLevel === 1) return 2;
-  if (selectedLevel >= 6) return 5;
-  return selectedLevel;
+  if (selectedLevel === 2) return 3;
+  if (selectedLevel === 3) return 4;
+  return 5;
 }
 
 function effectiveToneLevel(selectedLevel) {
   if (selectedLevel === 1) return 2;
-  if (selectedLevel >= 6) return 5;
-  return selectedLevel;
+  if (selectedLevel === 2) return 3;
+  if (selectedLevel === 3) return 4;
+  return 5;
+}
+
+function uiLevelFromSentenceLevel(sentenceLevel) {
+  if (sentenceLevel <= 2) return 1;
+  if (sentenceLevel === 3) return 2;
+  if (sentenceLevel === 4) return 3;
+  if (sentenceLevel === 5) return 4;
+  if (sentenceLevel === 6) return 5;
+  return 6;
 }
 
 function escapeHtml(value) {
