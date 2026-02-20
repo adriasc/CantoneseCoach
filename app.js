@@ -2639,16 +2639,35 @@ function startRealNoise(type) {
   stopSpeechNoise();
   const urls = REAL_NOISE_URLS[type] || REAL_NOISE_URLS["real-market"];
   const url = urls[randomInt(urls.length)] || urls[0];
-  if (!url) return;
+  if (!url) {
+    startSyntheticNoiseFallback(type);
+    return;
+  }
   const el = new Audio(url);
   el.loop = true;
   el.preload = "auto";
-  el.crossOrigin = "anonymous";
+  el.playsInline = true;
   el.volume = Math.max(0.03, Math.min(0.95, computeNoiseGain() / 2));
+  el.onerror = () => {
+    if (speechNoise.ambientEl === el) speechNoise.ambientEl = null;
+    startSyntheticNoiseFallback(type);
+  };
+  el.onstalled = () => {
+    if (speechNoise.ambientEl === el) speechNoise.ambientEl = null;
+    startSyntheticNoiseFallback(type);
+  };
   speechNoise.ambientEl = el;
   el.play().catch(() => {
-    speechNoise.ambientEl = null;
+    if (speechNoise.ambientEl === el) speechNoise.ambientEl = null;
+    startSyntheticNoiseFallback(type);
   });
+}
+
+function startSyntheticNoiseFallback(realType) {
+  const mapped = realType === "real-radio" ? "radio" : "street";
+  state.prefs.audioNoiseType = mapped;
+  startSpeechNoise();
+  state.prefs.audioNoiseType = realType;
 }
 
 function selectVoiceForSpeech(voices) {
