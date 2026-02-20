@@ -1422,6 +1422,7 @@ const els = {
   wordHanzi: byId("wordHanzi"),
   wordJyutping: byId("wordJyutping"),
   wordEnglish: byId("wordEnglish"),
+  wordLiteral: byId("wordLiteral"),
   wordExample: byId("wordExample"),
   revealExample: byId("revealExample"),
   globalLevel: byId("globalLevel"),
@@ -1831,7 +1832,11 @@ function rollWord() {
     els.wordCategory.textContent = "Question mode (L6)";
     els.wordHanzi.textContent = q.hanzi || "-";
     els.wordJyutping.textContent = q.jyutping || "-";
-    els.wordEnglish.textContent = `${q.english || "-"} · Literal: ${analysis.literal || "-"}`;
+    els.wordEnglish.textContent = q.english || "-";
+    if (els.wordLiteral) {
+      els.wordLiteral.textContent = `Literal: ${analysis.literal || "-"}`;
+      els.wordLiteral.classList.remove("hidden");
+    }
     els.wordExample.textContent = "";
     els.revealExample.textContent = "Show example";
     els.revealExample.classList.add("hidden");
@@ -1852,6 +1857,10 @@ function rollWord() {
   els.wordHanzi.textContent = state.currentWord.hanzi || "-";
   els.wordJyutping.textContent = state.currentWord.jyutping || "-";
   els.wordEnglish.textContent = state.currentWord.english || "-";
+  if (els.wordLiteral) {
+    els.wordLiteral.textContent = "";
+    els.wordLiteral.classList.add("hidden");
+  }
   els.wordExample.textContent = "";
   els.revealExample.textContent = "Show example";
   els.revealExample.classList.remove("hidden");
@@ -2873,6 +2882,10 @@ function applyVisibilityPrefs() {
   els.quizJyutping.classList.toggle("hidden", !showJp);
 
   els.wordEnglish.classList.toggle("hidden", !showEn);
+  if (els.wordLiteral) {
+    const hasLiteral = !!String(els.wordLiteral.textContent || "").trim();
+    els.wordLiteral.classList.toggle("hidden", !showEn || !hasLiteral);
+  }
   els.patternEnglish.classList.toggle("hidden", !showEn);
   els.quizEnglish.classList.toggle("hidden", !showEn);
   els.patternLiteral.classList.toggle("hidden", !showEn);
