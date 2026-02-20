@@ -2017,8 +2017,8 @@ function renderQuestionSentence() {
     const mapped = buildQuestionGlossMap(state.currentQuestion.hanzi);
     els.questionHanzi.innerHTML = mapped.hanziHtml || analysis.annotatedHanzi;
     els.questionJyutping.innerHTML = analysis.annotatedJyutping || escapeHtml(state.currentQuestion.jyutping);
-    els.questionEnglish.textContent = `Natural: ${state.currentQuestion.english}`;
-    els.questionLiteral.innerHTML = `Word-by-word: ${mapped.glossHtml || escapeHtml(analysis.literal)}`;
+    els.questionEnglish.textContent = state.currentQuestion.english;
+    els.questionLiteral.innerHTML = `Literal: ${mapped.glossHtml || escapeHtml(analysis.literal)}`;
   } else {
     els.questionHanzi.textContent = state.currentQuestion.hanzi;
     els.questionJyutping.textContent = state.currentQuestion.jyutping;
@@ -3383,11 +3383,11 @@ function buildGeneratedConditionalSentences() {
 
 function buildGeneratedQuestionSentences() {
   const subjects = [
-    { h: "你", j: "nei5", e: "you", be: "are", do: "do", has: "have" },
-    { h: "佢", j: "keoi5", e: "he/she", be: "is", do: "does", has: "has" },
-    { h: "你哋", j: "nei5 dei6", e: "you all", be: "are", do: "do", has: "have" },
-    { h: "我哋", j: "ngo5 dei6", e: "we", be: "are", do: "do", has: "have" },
-    { h: "你朋友", j: "nei5 pang4 jau5", e: "your friend", be: "is", do: "does", has: "has" }
+    { h: "你", j: "nei5", e: "you", be: "are", has: "have", pastBe: "were" },
+    { h: "佢", j: "keoi5", e: "he/she", be: "is", has: "has", pastBe: "was" },
+    { h: "你哋", j: "nei5 dei6", e: "you all", be: "are", has: "have", pastBe: "were" },
+    { h: "我哋", j: "ngo5 dei6", e: "we", be: "are", has: "have", pastBe: "were" },
+    { h: "你朋友", j: "nei5 pang4 jau5", e: "your friend", be: "is", has: "has", pastBe: "was" }
   ];
   const basicTemplates = [
     {
@@ -3395,28 +3395,28 @@ function buildGeneratedQuestionSentences() {
       theme: "daily",
       h: "而家做咩呀？",
       j: "ji4 gaa1 zou6 me1 aa3",
-      en: (sub) => `What is ${sub.e} doing now?`
+      en: (sub) => `What ${sub.be} ${sub.e} doing now?`
     },
     {
       tense: "present",
       theme: "home",
       h: "而家喺邊度呀？",
       j: "ji4 gaa1 hai2 bin1 dou6 aa3",
-      en: (sub) => `Where is ${sub.e} now?`
+      en: (sub) => `Where ${sub.be} ${sub.e} now?`
     },
     {
       tense: "present",
       theme: "friends",
       h: "而家同邊個一齊呀？",
       j: "ji4 gaa1 tung4 bin1 go3 jat1 cai4 aa3",
-      en: (sub) => `Who is ${sub.e} with now?`
+      en: (sub) => `Who ${sub.be} ${sub.e} with now?`
     },
     {
       tense: "present",
       theme: "daily",
       h: "今日幾點返屋企呀？",
       j: "gam1 jat6 gei2 dim2 faan1 uk1 kei2 aa3",
-      en: (sub) => `What time is ${sub.e} going home today?`
+      en: (sub) => `What time ${sub.be} ${sub.e} going home today?`
     },
     {
       tense: "past",
@@ -3430,7 +3430,7 @@ function buildGeneratedQuestionSentences() {
       theme: "friends",
       h: "尋日同邊個一齊呀？",
       j: "cam4 jat6 tung4 bin1 go3 jat1 cai4 aa3",
-      en: (sub) => `Who was ${sub.e} with yesterday?`
+      en: (sub) => `Who ${sub.pastBe} ${sub.e} with yesterday?`
     },
     {
       tense: "past",
@@ -3444,7 +3444,7 @@ function buildGeneratedQuestionSentences() {
       theme: "daily",
       h: "之前見過佢未呀？",
       j: "zi1 cin4 gin3 gwo3 keoi5 mei6 aa3",
-      en: (sub) => `Has ${sub.e} met him/her before?`
+      en: (sub) => `${capitalizeFirst(sub.has)} ${sub.e} met him/her before?`
     },
     {
       tense: "future",
@@ -3495,7 +3495,7 @@ function buildGeneratedQuestionSentences() {
       theme: "friends",
       h: "之前見面嗰陣，傾咗幾耐計呀？",
       j: "zi1 cin4 gin3 min6 go2 zan6, king1 zo2 gei2 noi6 gai2 aa3",
-      en: (sub) => `When ${sub.e} met before, how long did you chat?`
+      en: (sub) => `When ${sub.e} met before, how long did ${sub.e} chat?`
     },
     {
       tense: "present",
