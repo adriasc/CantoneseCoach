@@ -599,14 +599,14 @@ button:hover,
   max-height: 88vh;
   overflow-y: auto;
   border-radius: 18px;
-  background: linear-gradient(165deg, #ff6a3d 0%, #ff3d7f 46%, #ff9f1c 100%);
-  border: 2px solid #ff7a2f;
+  background: linear-gradient(165deg, #ffd9c8 0%, #ffcfe1 46%, #ffe3b8 100%);
+  border: 2px solid #ffbf9a;
   box-shadow: var(--shadow);
   padding: 16px;
 }
 
 #funModal .card-head h2 {
-  color: #fff;
+  color: #b95c2b;
 }
 
 #funModal .mini-stats p,
@@ -621,7 +621,7 @@ button:hover,
 #funModal .feedback,
 #funModal #bossPrompt,
 #funModal #bossProgress {
-  color: #fff;
+  color: #9c4f22;
 }
 
 #bossPrompt {
@@ -633,8 +633,8 @@ button:hover,
 #bossPrompt.hanzi-focus {
   font-size: 2.1rem;
   line-height: 1.2;
-  color: #fff;
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.28);
+  color: #b24b68;
+  text-shadow: none;
 }
 
 .formula {
