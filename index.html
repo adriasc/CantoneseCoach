@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v18.8.0</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v18.8.1</span></p>
         <h1>Cantonese Coach</h1>
       </div>
       <div class="streak" id="streakBadge">Streak: 0 days</div>
@@ -41,7 +41,7 @@
         <button id="toggleControlsCard" class="ghost-btn" type="button">Hide ▲</button>
       </div>
       <div class="slot-grid controls-grid">
-        <div>
+        <div id="globalLevelWrap" class="general-control">
           <label for="globalLevel">Level (general exercises)</label>
           <select id="globalLevel">
             <option value="1">Level 1 - short (old L1+L2)</option>
@@ -50,7 +50,7 @@
             <option value="4">Level 4 - long/conditional</option>
           </select>
         </div>
-        <div>
+        <div id="globalTenseWrap" class="general-control">
           <label for="globalTense">Verb Time</label>
           <select id="globalTense">
             <option value="mixed">Mixed</option>
@@ -60,9 +60,37 @@
             <option value="conditional">Conditional</option>
           </select>
         </div>
-        <div>
+        <div id="globalThemeWrap" class="general-control">
           <label for="globalTheme">Theme</label>
           <select id="globalTheme">
+            <option value="mixed">Mixed</option>
+            <option value="home">Home/Family</option>
+            <option value="friends">Friends</option>
+            <option value="travel">Travel/Going out</option>
+            <option value="daily">Daily routines</option>
+            <option value="holiday">Holiday plans</option>
+          </select>
+        </div>
+        <div id="questionLevelWrap" class="question-control hidden">
+          <label for="questionLevel">Question Level</label>
+          <select id="questionLevel">
+            <option value="basic">Basic Questions</option>
+            <option value="advanced">Advanced Questions</option>
+          </select>
+        </div>
+        <div id="questionTenseWrap" class="question-control hidden">
+          <label for="questionTense">Verb Time</label>
+          <select id="questionTense">
+            <option value="mixed">Mixed</option>
+            <option value="present">Present</option>
+            <option value="past">Past</option>
+            <option value="future">Future</option>
+            <option value="conditional">Conditional</option>
+          </select>
+        </div>
+        <div id="questionThemeWrap" class="question-control hidden">
+          <label for="questionTheme">Theme</label>
+          <select id="questionTheme">
             <option value="mixed">Mixed</option>
             <option value="home">Home/Family</option>
             <option value="friends">Friends</option>
@@ -242,37 +270,7 @@
     <section class="panel" id="panel-questions">
       <div class="card">
         <h2>Questions Practice</h2>
-        <p>Question-only training with natural English + literal structure.</p>
-        <div class="slot-grid">
-          <div>
-            <label for="questionLevel">Question Level</label>
-            <select id="questionLevel">
-              <option value="basic">Basic Questions</option>
-              <option value="advanced">Advanced Questions</option>
-            </select>
-          </div>
-          <div>
-            <label for="questionTense">Verb Time</label>
-            <select id="questionTense">
-              <option value="mixed">Mixed</option>
-              <option value="present">Present</option>
-              <option value="past">Past</option>
-              <option value="future">Future</option>
-              <option value="conditional">Conditional</option>
-            </select>
-          </div>
-          <div>
-            <label for="questionTheme">Theme</label>
-            <select id="questionTheme">
-              <option value="mixed">Mixed</option>
-              <option value="home">Home/Family</option>
-              <option value="friends">Friends</option>
-              <option value="travel">Travel/Going out</option>
-              <option value="daily">Daily routines</option>
-              <option value="holiday">Holiday plans</option>
-            </select>
-          </div>
-        </div>
+        <p>Question-only training with natural English + literal structure. Use Practice Controls above for filters.</p>
         <p class="formula" id="questionFormula"></p>
         <div class="result-box">
           <p class="hanzi" id="questionHanzi"></p>

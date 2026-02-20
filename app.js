@@ -1432,9 +1432,15 @@ const els = {
   globalLevel: byId("globalLevel"),
   globalTense: byId("globalTense"),
   globalTheme: byId("globalTheme"),
+  globalLevelWrap: byId("globalLevelWrap"),
+  globalTenseWrap: byId("globalTenseWrap"),
+  globalThemeWrap: byId("globalThemeWrap"),
   questionLevel: byId("questionLevel"),
   questionTense: byId("questionTense"),
   questionTheme: byId("questionTheme"),
+  questionLevelWrap: byId("questionLevelWrap"),
+  questionTenseWrap: byId("questionTenseWrap"),
+  questionThemeWrap: byId("questionThemeWrap"),
   audioVoice: byId("audioVoice"),
   audioRate: byId("audioRate"),
   audioRateValue: byId("audioRateValue"),
@@ -1535,6 +1541,7 @@ initVoiceControls();
 applyTheme(state.prefs.uiTheme || "classic");
 setControlsCollapsed(!!state.prefs.controlsCollapsed);
 applyVisibilityPrefs();
+setControlsMode("words");
 rollWord();
 rollPattern();
 rollQuiz();
@@ -1667,26 +1674,17 @@ function bindUI() {
   }
   if (els.questionLevel) {
     els.questionLevel.addEventListener("change", () => {
-      state.prefs.questionLevel = els.questionLevel.value || "basic";
-      saveJson(STORAGE_KEYS.prefs, state.prefs);
-      state.rotation.questionSentences = [];
-      rollQuestion();
+      markControlsDirty();
     });
   }
   if (els.questionTense) {
     els.questionTense.addEventListener("change", () => {
-      state.prefs.questionTense = els.questionTense.value || "mixed";
-      saveJson(STORAGE_KEYS.prefs, state.prefs);
-      state.rotation.questionSentences = [];
-      rollQuestion();
+      markControlsDirty();
     });
   }
   if (els.questionTheme) {
     els.questionTheme.addEventListener("change", () => {
-      state.prefs.questionTheme = els.questionTheme.value || "mixed";
-      saveJson(STORAGE_KEYS.prefs, state.prefs);
-      state.rotation.questionSentences = [];
-      rollQuestion();
+      markControlsDirty();
     });
   }
   if (els.toggleQuestionJyutping) {
@@ -1812,6 +1810,7 @@ function bindUI() {
     rollWord();
     rollPattern();
     rollQuiz();
+    rollQuestion();
     rollTonePair();
     refreshStats();
     renderKnownList();
@@ -1829,9 +1828,15 @@ function applyGlobalControls() {
   const prevTense = state.prefs.tense || "mixed";
   const prevTheme = state.prefs.theme || "mixed";
   const prevToneMode = state.prefs.toneExerciseMode || "word";
+  const prevQLevel = state.prefs.questionLevel || "basic";
+  const prevQTense = state.prefs.questionTense || "mixed";
+  const prevQTheme = state.prefs.questionTheme || "mixed";
   state.prefs.level = normalizePracticeLevel(els.globalLevel.value);
   state.prefs.tense = els.globalTense.value;
   state.prefs.theme = els.globalTheme.value;
+  state.prefs.questionLevel = els.questionLevel?.value || "basic";
+  state.prefs.questionTense = els.questionTense?.value || "mixed";
+  state.prefs.questionTheme = els.questionTheme?.value || "mixed";
   state.prefs.uiTheme = els.themeStyle?.value || "classic";
   state.prefs.toneExerciseMode = els.toneExerciseMode?.value || "word";
   state.prefs.audioNoiseOn = (els.audioNoiseOn?.value || "off") === "on";
@@ -1843,6 +1848,9 @@ function applyGlobalControls() {
     || prevTense !== state.prefs.tense
     || prevTheme !== state.prefs.theme;
   const toneModeChanged = prevToneMode !== state.prefs.toneExerciseMode;
+  const questionChanged = prevQLevel !== state.prefs.questionLevel
+    || prevQTense !== state.prefs.questionTense
+    || prevQTheme !== state.prefs.questionTheme;
 
   if (coreChanged) {
     resetRotations();
@@ -1850,9 +1858,14 @@ function applyGlobalControls() {
     rollPattern();
     rollQuiz();
     rollTonePair();
+    rollQuestion();
   } else if (toneModeChanged) {
     state.rotation.tonePairs = [];
     rollTonePair();
+  }
+  if (!coreChanged && questionChanged) {
+    state.rotation.questionSentences = [];
+    rollQuestion();
   }
   els.controlsMessage.textContent = "Settings applied.";
   els.controlsMessage.classList.remove("pending");
@@ -1862,6 +1875,17 @@ function applyGlobalControls() {
 function switchTab(tabName) {
   els.tabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.tab === tabName));
   els.panels.forEach((panel) => panel.classList.toggle("is-active", panel.id === `panel-${tabName}`));
+  setControlsMode(tabName);
+}
+
+function setControlsMode(tabName) {
+  const isQuestions = tabName === "questions";
+  [els.globalLevelWrap, els.globalTenseWrap, els.globalThemeWrap].forEach((node) => {
+    if (node) node.classList.toggle("hidden", isQuestions);
+  });
+  [els.questionLevelWrap, els.questionTenseWrap, els.questionThemeWrap].forEach((node) => {
+    if (node) node.classList.toggle("hidden", !isQuestions);
+  });
 }
 
 function rollWord() {
@@ -2783,6 +2807,7 @@ function importDataFile(event) {
       rollWord();
       rollPattern();
       rollQuiz();
+      rollQuestion();
       renderKnownList();
     } catch (err) {
       els.contentMessage.textContent = "Import failed. Please use valid JSON format.";
