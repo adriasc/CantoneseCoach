@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v18.3</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v18.4</span></p>
         <h1>Cantonese Coach</h1>
       </div>
       <div class="streak" id="streakBadge">Streak: 0 days</div>
@@ -139,6 +139,7 @@
           <p id="missionPatterns">Sentence drills: 0 / 3</p>
           <p id="missionHanzi">Hanzi tests: 0 / 3</p>
         </div>
+        <p class="goal-line" id="missionGoal">Goal today: complete all 4 targets, then pass Boss (4/5).</p>
         <div class="actions">
           <button id="toggleFixMode">Fix Mistakes: Off</button>
           <button id="startBoss">Start Boss Challenge</button>
@@ -296,6 +297,7 @@
     </section>
   </main>
 
+  <div id="fxLayer" class="fx-layer" aria-hidden="true"></div>
   <script src="app.js"></script>
 </body>
 </html>

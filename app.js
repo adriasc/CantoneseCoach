@@ -1423,6 +1423,7 @@ const els = {
   missionTones: byId("missionTones"),
   missionPatterns: byId("missionPatterns"),
   missionHanzi: byId("missionHanzi"),
+  missionGoal: byId("missionGoal"),
   mistakeCount: byId("mistakeCount"),
   toggleFixMode: byId("toggleFixMode"),
   startBoss: byId("startBoss"),
@@ -1433,6 +1434,7 @@ const els = {
   bossChoices: byId("bossChoices"),
   bossPlayAudio: byId("bossPlayAudio"),
   bossSkip: byId("bossSkip"),
+  fxLayer: byId("fxLayer"),
   contentMessage: byId("contentMessage")
 };
 
@@ -1442,6 +1444,7 @@ const speechNoise = {
   gain: null,
   playId: 0
 };
+let bossAdvanceTimer = null;
 
 bindUI();
 ensureDailyGameState();
@@ -1577,6 +1580,11 @@ function bindUI() {
   if (els.bossSkip) {
     els.bossSkip.addEventListener("click", () => {
       if (!state.game.boss.active) return;
+      if (bossAdvanceTimer) {
+        clearTimeout(bossAdvanceTimer);
+        bossAdvanceTimer = null;
+      }
+      state.game.boss.index += 1;
       nextBossQuestion();
     });
   }
@@ -2114,6 +2122,14 @@ function refreshGameUI() {
   els.missionTones.textContent = `Tone wins: ${m.tones} / ${m.targets.tones}`;
   els.missionPatterns.textContent = `Sentence drills: ${m.patterns} / ${m.targets.patterns}`;
   if (els.missionHanzi) els.missionHanzi.textContent = `Hanzi tests: ${m.hanzi} / ${m.targets.hanzi}`;
+  if (els.missionGoal) {
+    const doneCount = Number(m.listens >= m.targets.listens)
+      + Number(m.tones >= m.targets.tones)
+      + Number(m.patterns >= m.targets.patterns)
+      + Number(m.hanzi >= m.targets.hanzi);
+    const pct = Math.round((doneCount / 4) * 100);
+    els.missionGoal.textContent = `Goal today: complete all 4 targets, then pass Boss (4/5). Progress: ${doneCount}/4 (${pct}%).`;
+  }
 }
 
 function startBossChallenge() {
@@ -2152,19 +2168,24 @@ function startBossChallenge() {
     correct: hanziWord.english,
     choices: shuffle([hanziWord.english, ...hanziDistractors])
   });
-  state.game.boss = { active: true, index: 0, score: 0, questions: shuffle(questions), current: null };
+  state.game.boss = { active: true, index: 0, score: 0, questions: shuffle(questions), current: null, locked: false };
   if (els.funFeedback) els.funFeedback.textContent = "";
   nextBossQuestion();
 }
 
 function nextBossQuestion() {
   if (!state.game.boss.active) return;
+  if (bossAdvanceTimer) {
+    clearTimeout(bossAdvanceTimer);
+    bossAdvanceTimer = null;
+  }
   const b = state.game.boss;
   if (b.index >= b.questions.length) {
     finishBossChallenge();
     return;
   }
   b.current = b.questions[b.index];
+  b.locked = false;
   renderBossQuestion();
 }
 
@@ -2173,12 +2194,17 @@ function renderBossQuestion() {
   if (!b.active || !b.current) return;
   els.bossWrap.classList.remove("hidden");
   els.bossProgress.textContent = `Boss ${b.index + 1}/${b.questions.length} · Score ${b.score}`;
+  els.bossPrompt.classList.remove("hanzi-focus");
   if (b.current.type === "quiz") {
     els.bossPrompt.textContent = "Boss: listen and pick the correct English.";
+    if (els.funFeedback) els.funFeedback.textContent = "";
   } else if (b.current.type === "tone") {
     els.bossPrompt.textContent = "Boss: listen and pick the correct Jyutping.";
+    if (els.funFeedback) els.funFeedback.textContent = "";
   } else {
-    els.bossPrompt.textContent = `Boss Hanzi: ${b.current.hanzi} (choose English meaning).`;
+    els.bossPrompt.textContent = b.current.hanzi;
+    els.bossPrompt.classList.add("hanzi-focus");
+    if (els.funFeedback) els.funFeedback.textContent = "Boss Hanzi round: choose the English meaning.";
   }
   els.bossChoices.innerHTML = "";
   b.current.choices.forEach((choice) => {
@@ -2193,6 +2219,8 @@ function renderBossQuestion() {
 function answerBossQuestion(choice, btn) {
   const b = state.game.boss;
   if (!b.active || !b.current) return;
+  if (b.locked) return;
+  b.locked = true;
   const correct = b.current.type === "quiz"
     ? b.current.sentence.english
     : (b.current.type === "tone" ? b.current.item.jyutping : b.current.correct);
@@ -2209,21 +2237,73 @@ function answerBossQuestion(choice, btn) {
     if (b.current.type === "tone") incrementMission("tones", 1);
     if (b.current.type === "hanzi") incrementMission("hanzi", 1);
   }
-  setTimeout(() => {
+  bossAdvanceTimer = setTimeout(() => {
+    bossAdvanceTimer = null;
     b.index += 1;
     nextBossQuestion();
-  }, 1400);
+  }, 1100);
 }
 
 function finishBossChallenge() {
   const b = state.game.boss;
   const pass = b.score >= 4;
   awardXp(pass ? 80 : 20, pass ? `Boss passed (${b.score}/5)! +80 XP` : `Boss done (${b.score}/5). +20 XP`);
+  if (pass) playConfettiBurst();
+  else playFailStorm();
   b.active = false;
   b.current = null;
+  b.locked = false;
   els.bossWrap.classList.add("hidden");
   saveGameState();
   refreshGameUI();
+}
+
+function playConfettiBurst() {
+  if (!els.fxLayer) return;
+  const colors = ["#ff3d7f", "#ff8a00", "#ffd166", "#06d6a0", "#4cc9f0", "#f72585"];
+  for (let i = 0; i < 60; i += 1) {
+    const p = document.createElement("span");
+    p.className = "confetti-piece";
+    p.style.left = `${Math.random() * 100}%`;
+    p.style.animationDelay = `${Math.random() * 180}ms`;
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    p.style.transform = `translateY(-8vh) rotate(${Math.floor(Math.random() * 180)}deg)`;
+    els.fxLayer.appendChild(p);
+    setTimeout(() => p.remove(), 1800);
+  }
+}
+
+function playFailStorm() {
+  if (!els.fxLayer) return;
+  const flash = document.createElement("div");
+  flash.className = "lightning-flash";
+  els.fxLayer.appendChild(flash);
+  setTimeout(() => flash.remove(), 500);
+  playThunderSound();
+}
+
+function playThunderSound() {
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtx) return;
+  if (!speechNoise.ctx) speechNoise.ctx = new AudioCtx();
+  const ctx = speechNoise.ctx;
+  if (ctx.state === "suspended") {
+    ctx.resume().then(() => playThunderSound()).catch(() => {});
+    return;
+  }
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = "triangle";
+  osc.frequency.setValueAtTime(110, now);
+  osc.frequency.exponentialRampToValueAtTime(44, now + 0.75);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.16, now + 0.03);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.9);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(now);
+  osc.stop(now + 0.95);
 }
 
 function markReviewed() {

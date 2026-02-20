@@ -545,6 +545,13 @@ button:hover,
   padding: 7px 9px;
 }
 
+.goal-line {
+  margin: 10px 0 0;
+  color: #7a2235;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
 .boss-wrap {
   margin-top: 10px;
   border: 2px solid #d6e4ff;
@@ -582,9 +589,33 @@ button:hover,
   max-height: 88vh;
   overflow-y: auto;
   border-radius: 18px;
-  background: var(--soft);
+  background: linear-gradient(180deg, #fff3ed 0%, #fff8f0 42%, #ffffff 100%);
+  border: 2px solid #ffb188;
   box-shadow: var(--shadow);
   padding: 16px;
+}
+
+#funModal .card-head h2 {
+  color: #8f1f3e;
+}
+
+#funModal .mini-stats p,
+#funModal .mission-grid p,
+#funModal .formula {
+  background: #fff2e6;
+  border: 1px solid #ffd0b3;
+}
+
+#bossPrompt {
+  font-size: 1.18rem;
+  font-weight: 700;
+  color: #2a2d4f;
+}
+
+#bossPrompt.hanzi-focus {
+  font-size: 2.1rem;
+  line-height: 1.2;
+  color: #a11b3b;
 }
 
 .formula {
@@ -667,6 +698,43 @@ button:hover,
 
 .hidden {
   display: none;
+}
+
+.fx-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 40;
+}
+
+.confetti-piece {
+  position: absolute;
+  width: 10px;
+  height: 14px;
+  opacity: 0.95;
+  border-radius: 2px;
+  animation: confetti-fall 1600ms linear forwards;
+}
+
+.lightning-flash {
+  position: absolute;
+  inset: 0;
+  background: rgba(235, 247, 255, 0.8);
+  animation: lightning-pop 440ms ease-out forwards;
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(-8vh) rotate(0deg); opacity: 0.95; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+
+@keyframes lightning-pop {
+  0% { opacity: 0; }
+  15% { opacity: 1; }
+  35% { opacity: 0.2; }
+  55% { opacity: 0.85; }
+  100% { opacity: 0; }
 }
 
 pre {
