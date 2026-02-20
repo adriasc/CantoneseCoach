@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v17.7</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v18.0</span></p>
         <h1>Cantonese Coach</h1>
       </div>
       <div class="streak" id="streakBadge">Streak: 0 days</div>
@@ -118,6 +118,34 @@
         <button id="testVoice">Test Voice</button>
       </div>
       <p class="example" id="controlsMessage"></p>
+    </section>
+
+    <section class="card" id="funLoopCard">
+      <h2>Fun Loop</h2>
+      <div class="mini-stats">
+        <p id="xpLine">XP: 0 · Level 1</p>
+        <p id="comboLine">Combo: x0</p>
+        <p id="mistakeCount">Mistakes: 0</p>
+      </div>
+      <div class="mission-grid">
+        <p id="missionListens">Listen: 0 / 10</p>
+        <p id="missionTones">Tone wins: 0 / 5</p>
+        <p id="missionPatterns">Sentence drills: 0 / 3</p>
+      </div>
+      <div class="actions">
+        <button id="toggleFixMode">Fix Mistakes: Off</button>
+        <button id="startBoss">Start Boss Challenge</button>
+      </div>
+      <p class="feedback" id="funFeedback"></p>
+      <div class="boss-wrap hidden" id="bossWrap">
+        <p class="formula" id="bossProgress">Boss 1/5</p>
+        <p id="bossPrompt"></p>
+        <div class="choices" id="bossChoices"></div>
+        <div class="actions">
+          <button id="bossPlayAudio">Play challenge audio</button>
+          <button id="bossSkip">Skip</button>
+        </div>
+      </div>
     </section>
 
     <section class="panel is-active" id="panel-words">

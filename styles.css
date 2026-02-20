@@ -529,6 +529,30 @@ button:hover,
   font-weight: 600;
 }
 
+.mission-grid {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.mission-grid p {
+  margin: 0;
+  background: #edf3ff;
+  border-radius: 10px;
+  padding: 7px 9px;
+}
+
+.boss-wrap {
+  margin-top: 10px;
+  border: 2px solid #d6e4ff;
+  border-radius: 12px;
+  padding: 10px;
+  background: #f6f9ff;
+}
+
 .formula {
   font-family: "Menlo", "Courier New", monospace;
   background: #e7f0ff;

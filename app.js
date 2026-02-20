@@ -3,7 +3,8 @@ const STORAGE_KEYS = {
   known: "cancoach_known_v1",
   streak: "cancoach_streak_v1",
   reviewed: "cancoach_reviewed_v1",
-  prefs: "cancoach_prefs_v1"
+  prefs: "cancoach_prefs_v1",
+  game: "cancoach_game_v1"
 };
 
 const USER_CORE_WORDS = [
@@ -1255,6 +1256,23 @@ const TONE_SENTENCE_BANK = [
   }
 ];
 
+function defaultMission() {
+  return { listens: 0, tones: 0, patterns: 0, targets: { listens: 10, tones: 5, patterns: 3 }, awarded: false };
+}
+
+function defaultGameState() {
+  return {
+    date: todayString(),
+    xp: 0,
+    combo: 0,
+    bestCombo: 0,
+    mistakes: [],
+    fixMode: false,
+    mission: defaultMission(),
+    boss: { active: false, index: 0, score: 0, questions: [], current: null }
+  };
+}
+
 const state = {
   content: loadContent(),
   known: new Set(loadJson(STORAGE_KEYS.known, [])),
@@ -1289,7 +1307,8 @@ const state = {
   currentToneKind: "word",
   currentToneSide: null,
   toneLabelMap: { a: "a", b: "b" },
-  toneScore: { correct: 0, total: 0 }
+  toneScore: { correct: 0, total: 0 },
+  game: loadJson(STORAGE_KEYS.game, defaultGameState())
 };
 
 const els = {
@@ -1352,6 +1371,21 @@ const els = {
   toneChoices: byId("toneChoices"),
   toneFeedback: byId("toneFeedback"),
   toneScore: byId("toneScore"),
+  xpLine: byId("xpLine"),
+  comboLine: byId("comboLine"),
+  missionListens: byId("missionListens"),
+  missionTones: byId("missionTones"),
+  missionPatterns: byId("missionPatterns"),
+  mistakeCount: byId("mistakeCount"),
+  toggleFixMode: byId("toggleFixMode"),
+  startBoss: byId("startBoss"),
+  funFeedback: byId("funFeedback"),
+  bossWrap: byId("bossWrap"),
+  bossProgress: byId("bossProgress"),
+  bossPrompt: byId("bossPrompt"),
+  bossChoices: byId("bossChoices"),
+  bossPlayAudio: byId("bossPlayAudio"),
+  bossSkip: byId("bossSkip"),
   contentMessage: byId("contentMessage")
 };
 
@@ -1362,6 +1396,7 @@ const speechNoise = {
 };
 
 bindUI();
+ensureDailyGameState();
 syncControlValues();
 initVoiceControls();
 applyTheme(state.prefs.uiTheme || "classic");
@@ -1372,6 +1407,7 @@ rollPattern();
 rollQuiz();
 rollTonePair();
 refreshStats();
+refreshGameUI();
 registerServiceWorker();
 
 function bindUI() {
@@ -1407,7 +1443,10 @@ function bindUI() {
     rollWord();
   });
 
-  byId("newPattern").addEventListener("click", rollPattern);
+  byId("newPattern").addEventListener("click", () => {
+    incrementMission("patterns", 1);
+    rollPattern();
+  });
 
   byId("playPatternAudio").addEventListener("click", () => {
     const built = buildPatternSentence();
@@ -1458,6 +1497,30 @@ function bindUI() {
   if (byId("playToneA")) byId("playToneA").addEventListener("click", () => playToneClip("a"));
   if (byId("playToneB")) byId("playToneB").addEventListener("click", () => playToneClip("b"));
   if (byId("playToneRandom")) byId("playToneRandom").addEventListener("click", () => playToneClip("random"));
+  if (els.toggleFixMode) {
+    els.toggleFixMode.addEventListener("click", () => {
+      state.game.fixMode = !state.game.fixMode;
+      saveGameState();
+      refreshGameUI();
+      rollQuiz();
+      rollTonePair();
+    });
+  }
+  if (els.startBoss) els.startBoss.addEventListener("click", startBossChallenge);
+  if (els.bossSkip) {
+    els.bossSkip.addEventListener("click", () => {
+      if (!state.game.boss.active) return;
+      nextBossQuestion();
+    });
+  }
+  if (els.bossPlayAudio) {
+    els.bossPlayAudio.addEventListener("click", () => {
+      const q = state.game.boss.current;
+      if (!q) return;
+      if (q.type === "quiz") speak(q.sentence.hanzi);
+      if (q.type === "tone") speak(q.item.hanzi);
+    });
+  }
 
   els.globalLevel.addEventListener("change", markControlsDirty);
   els.globalTense.addEventListener("change", markControlsDirty);
@@ -1631,7 +1694,7 @@ function buildPatternSentence() {
 }
 
 function rollQuiz() {
-  const quiz = getFilteredSentences();
+  const quiz = state.game.fixMode ? getFixQuizPool() : getFilteredSentences();
   if (!quiz.length) return;
   state.currentQuiz = takeFromRotation("quizSentences", quiz, (q) => q.id);
   els.quizFeedback.textContent = "";
@@ -1662,6 +1725,7 @@ function rollQuiz() {
       });
       if (!ok) btn.classList.add("is-wrong");
       else btn.classList.add("is-correct");
+      handleQuizResult(ok, state.currentQuiz);
       markReviewed();
     });
     els.quizChoices.appendChild(btn);
@@ -1687,8 +1751,15 @@ function renderQuizGrammar() {
 
 function rollTonePair() {
   if (!els.toneLabel || !els.toneChoices) return;
-  const mode = resolveToneExerciseMode();
-  const pool = mode === "sentence" ? getFilteredToneSentencePairs() : getFilteredTonePairs();
+  let mode = resolveToneExerciseMode();
+  let pool = mode === "sentence" ? getFilteredToneSentencePairs() : getFilteredTonePairs();
+  if (state.game.fixMode) {
+    const fixTone = getFixTonePool();
+    if (fixTone.pool.length) {
+      mode = fixTone.mode;
+      pool = fixTone.pool;
+    }
+  }
   if (!pool.length) return;
   state.currentToneKind = mode;
   state.currentTonePair = takeFromRotation("tonePairs", pool, (pair) => pair.id);
@@ -1763,6 +1834,8 @@ function checkToneAnswer(selected, clickedBtn) {
   });
   if (!ok && clickedBtn) clickedBtn.classList.add("is-wrong");
   else if (ok && clickedBtn) clickedBtn.classList.add("is-correct");
+  handleToneResult(ok, state.currentTonePair, state.currentToneKind);
+  if (ok) incrementMission("tones", 1);
   markReviewed();
   updateToneScore();
 }
@@ -1842,6 +1915,219 @@ function resolveToneExerciseMode() {
   return Math.random() < 0.5 ? "word" : "sentence";
 }
 
+function ensureDailyGameState() {
+  const today = todayString();
+  if (state.game.date === today) return;
+  state.game.date = today;
+  state.game.mission = defaultMission();
+  state.game.combo = 0;
+  state.game.boss = { active: false, index: 0, score: 0, questions: [], current: null };
+  saveGameState();
+}
+
+function saveGameState() {
+  saveJson(STORAGE_KEYS.game, state.game);
+}
+
+function currentLevelFromXp() {
+  return Math.floor((Number(state.game.xp) || 0) / 100) + 1;
+}
+
+function incrementMission(key, amount) {
+  ensureDailyGameState();
+  if (!state.game.mission || !Object.prototype.hasOwnProperty.call(state.game.mission, key)) return;
+  state.game.mission[key] += amount;
+  maybeRewardMission();
+  saveGameState();
+  refreshGameUI();
+}
+
+function maybeRewardMission() {
+  const m = state.game.mission;
+  const done = m.listens >= m.targets.listens && m.tones >= m.targets.tones && m.patterns >= m.targets.patterns;
+  if (done && !m.awarded) {
+    m.awarded = true;
+    awardXp(50, "Daily mission complete: +50 XP");
+  }
+}
+
+function awardXp(amount, note = "") {
+  state.game.xp += amount;
+  state.game.level = currentLevelFromXp();
+  if (note && els.funFeedback) els.funFeedback.textContent = note;
+  saveGameState();
+  refreshGameUI();
+}
+
+function addMistake(key) {
+  if (!key) return;
+  if (!state.game.mistakes.includes(key)) state.game.mistakes.push(key);
+  saveGameState();
+  refreshGameUI();
+}
+
+function clearMistake(key) {
+  const idx = state.game.mistakes.indexOf(key);
+  if (idx >= 0) state.game.mistakes.splice(idx, 1);
+  saveGameState();
+  refreshGameUI();
+}
+
+function handleQuizResult(ok, quizItem) {
+  const key = `quiz:${quizItem.id}`;
+  if (ok) {
+    state.game.combo += 1;
+    state.game.bestCombo = Math.max(state.game.bestCombo, state.game.combo);
+    awardXp(10 + Math.min(10, state.game.combo), state.game.combo % 5 === 0 ? `Combo x${state.game.combo}!` : "");
+    clearMistake(key);
+  } else {
+    state.game.combo = 0;
+    addMistake(key);
+    if (els.funFeedback) els.funFeedback.textContent = "Saved to Mistake Bank.";
+  }
+  saveGameState();
+  refreshGameUI();
+}
+
+function handleToneResult(ok, tonePair, toneKind) {
+  const prefix = toneKind === "sentence" ? "tonesentence" : "toneword";
+  const key = `${prefix}:${tonePair.id}`;
+  if (ok) {
+    state.game.combo += 1;
+    state.game.bestCombo = Math.max(state.game.bestCombo, state.game.combo);
+    awardXp(12 + Math.min(10, state.game.combo), state.game.combo % 5 === 0 ? `Combo x${state.game.combo}!` : "");
+    clearMistake(key);
+  } else {
+    state.game.combo = 0;
+    addMistake(key);
+    if (els.funFeedback) els.funFeedback.textContent = "Tone mistake saved.";
+  }
+  saveGameState();
+  refreshGameUI();
+}
+
+function getFixQuizPool() {
+  const ids = state.game.mistakes
+    .filter((m) => m.startsWith("quiz:"))
+    .map((m) => m.split(":")[1]);
+  const pool = ALL_SENTENCES.filter((s) => ids.includes(s.id));
+  return pool.length ? pool : getFilteredSentences();
+}
+
+function getFixTonePool() {
+  const wordIds = state.game.mistakes.filter((m) => m.startsWith("toneword:")).map((m) => m.split(":")[1]);
+  const sentenceIds = state.game.mistakes.filter((m) => m.startsWith("tonesentence:")).map((m) => m.split(":")[1]);
+  const wordPool = TONE_PAIR_BANK.filter((p) => wordIds.includes(p.id));
+  const sentencePool = TONE_SENTENCE_BANK.filter((p) => sentenceIds.includes(p.id));
+  if (sentencePool.length) return { mode: "sentence", pool: sentencePool };
+  if (wordPool.length) return { mode: "word", pool: wordPool };
+  return { mode: resolveToneExerciseMode(), pool: [] };
+}
+
+function refreshGameUI() {
+  if (!els.xpLine) return;
+  ensureDailyGameState();
+  const lvl = currentLevelFromXp();
+  els.xpLine.textContent = `XP: ${state.game.xp} · Level ${lvl}`;
+  els.comboLine.textContent = `Combo: x${state.game.combo}`;
+  els.mistakeCount.textContent = `Mistakes: ${state.game.mistakes.length}`;
+  els.toggleFixMode.textContent = `Fix Mistakes: ${state.game.fixMode ? "On" : "Off"}`;
+  const m = state.game.mission;
+  els.missionListens.textContent = `Listen: ${m.listens} / ${m.targets.listens}`;
+  els.missionTones.textContent = `Tone wins: ${m.tones} / ${m.targets.tones}`;
+  els.missionPatterns.textContent = `Sentence drills: ${m.patterns} / ${m.targets.patterns}`;
+}
+
+function startBossChallenge() {
+  const quizPool = getFilteredSentences();
+  const tonePool = getFilteredTonePairs();
+  if (!quizPool.length || !tonePool.length) return;
+  const questions = [];
+  const qPick = shuffle(quizPool.slice()).slice(0, 3);
+  qPick.forEach((sentence) => {
+    questions.push({
+      type: "quiz",
+      sentence,
+      choices: shuffle([sentence.english, ...pickDistractors(sentence.id, sentence.english, 3)])
+    });
+  });
+  const tPick = shuffle(tonePool.slice()).slice(0, 2);
+  tPick.forEach((pair) => {
+    const side = Math.random() < 0.5 ? "a" : "b";
+    const target = pair[side];
+    questions.push({
+      type: "tone",
+      item: target,
+      pair,
+      side,
+      choices: shuffle([pair.a.jyutping, pair.b.jyutping])
+    });
+  });
+  state.game.boss = { active: true, index: 0, score: 0, questions: shuffle(questions), current: null };
+  nextBossQuestion();
+}
+
+function nextBossQuestion() {
+  if (!state.game.boss.active) return;
+  const b = state.game.boss;
+  if (b.index >= b.questions.length) {
+    finishBossChallenge();
+    return;
+  }
+  b.current = b.questions[b.index];
+  renderBossQuestion();
+}
+
+function renderBossQuestion() {
+  const b = state.game.boss;
+  if (!b.active || !b.current) return;
+  els.bossWrap.classList.remove("hidden");
+  els.bossProgress.textContent = `Boss ${b.index + 1}/${b.questions.length} · Score ${b.score}`;
+  if (b.current.type === "quiz") {
+    els.bossPrompt.textContent = "Boss: listen and pick the correct English.";
+  } else {
+    els.bossPrompt.textContent = "Boss: listen and pick the correct Jyutping.";
+  }
+  els.bossChoices.innerHTML = "";
+  b.current.choices.forEach((choice) => {
+    const btn = document.createElement("button");
+    btn.className = "choice";
+    btn.textContent = choice;
+    btn.addEventListener("click", () => answerBossQuestion(choice, btn));
+    els.bossChoices.appendChild(btn);
+  });
+}
+
+function answerBossQuestion(choice, btn) {
+  const b = state.game.boss;
+  if (!b.active || !b.current) return;
+  const correct = b.current.type === "quiz" ? b.current.sentence.english : b.current.item.jyutping;
+  const ok = choice === correct;
+  const buttons = [...els.bossChoices.querySelectorAll("button")];
+  buttons.forEach((button) => {
+    button.disabled = true;
+    if (button.textContent === correct) button.classList.add("is-correct");
+  });
+  if (!ok) btn.classList.add("is-wrong");
+  else btn.classList.add("is-correct");
+  if (ok) b.score += 1;
+  setTimeout(() => {
+    b.index += 1;
+    nextBossQuestion();
+  }, 350);
+}
+
+function finishBossChallenge() {
+  const b = state.game.boss;
+  const pass = b.score >= 4;
+  awardXp(pass ? 80 : 20, pass ? `Boss passed (${b.score}/5)! +80 XP` : `Boss done (${b.score}/5). +20 XP`);
+  b.active = false;
+  b.current = null;
+  els.bossWrap.classList.add("hidden");
+  saveGameState();
+  refreshGameUI();
+}
+
 function markReviewed() {
   const today = todayString();
   if (state.reviewed.date !== today) {
@@ -1869,6 +2155,7 @@ function refreshStats() {
 }
 
 function speak(text) {
+  incrementMission("listens", 1);
   const utterance = new SpeechSynthesisUtterance(text);
   const voices = (state.availableVoices && state.availableVoices.length)
     ? state.availableVoices
