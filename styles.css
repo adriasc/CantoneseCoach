@@ -488,6 +488,21 @@ button:hover,
   border-radius: 6px;
 }
 
+.tok-gloss {
+  font-size: 0.93rem;
+  font-style: normal;
+  border-bottom: 2px solid transparent;
+}
+
+.tok-map-0 { background: #fff2f2; border-bottom-color: #e95d5d; }
+.tok-map-1 { background: #fff6e8; border-bottom-color: #e08f25; }
+.tok-map-2 { background: #f4ffe8; border-bottom-color: #82aa22; }
+.tok-map-3 { background: #e8fff8; border-bottom-color: #1ea482; }
+.tok-map-4 { background: #e9f4ff; border-bottom-color: #2e84c7; }
+.tok-map-5 { background: #eff0ff; border-bottom-color: #5968d6; }
+.tok-map-6 { background: #f8ecff; border-bottom-color: #9556c8; }
+.tok-map-7 { background: #ffeefa; border-bottom-color: #cb4b9c; }
+
 .tok-verb {
   border: 2px solid #0f9d8b;
   background: #e9fbf8;

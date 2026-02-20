@@ -1464,6 +1464,7 @@ const els = {
   toggleQuizEnglish: byId("toggleQuizEnglish"),
   toggleToneJyutping: byId("toggleToneJyutping"),
   toggleToneEnglish: byId("toggleToneEnglish"),
+  toggleQuestionGrammarLens: byId("toggleQuestionGrammarLens"),
   knownWords: byId("knownWords"),
   reviewedWords: byId("reviewedWords"),
   toggleKnownList: byId("toggleKnownList"),
@@ -1783,13 +1784,10 @@ function bindUI() {
       setControlsCollapsed(next);
     });
   }
-  els.toggleGrammarLens.addEventListener("click", () => {
-    state.prefs.showGrammarLens = !state.prefs.showGrammarLens;
-    saveJson(STORAGE_KEYS.prefs, state.prefs);
-    applyVisibilityPrefs();
-    renderPatternSentence();
-    renderQuizGrammar();
-  });
+  els.toggleGrammarLens.addEventListener("click", toggleGrammarLensState);
+  if (els.toggleQuestionGrammarLens) {
+    els.toggleQuestionGrammarLens.addEventListener("click", toggleGrammarLensState);
+  }
 
   byId("importFile").addEventListener("change", importDataFile);
 
@@ -2012,19 +2010,32 @@ function renderQuizGrammar() {
   els.quizLiteral.textContent = `Literal: ${analysis.literal}`;
 }
 
+function renderQuestionSentence() {
+  if (!state.currentQuestion || !els.questionHanzi) return;
+  const analysis = analyzeSentence({ hanzi: state.currentQuestion.hanzi, jyutping: state.currentQuestion.jyutping });
+  if (state.prefs.showGrammarLens) {
+    const mapped = buildQuestionGlossMap(state.currentQuestion.hanzi);
+    els.questionHanzi.innerHTML = mapped.hanziHtml || analysis.annotatedHanzi;
+    els.questionJyutping.innerHTML = analysis.annotatedJyutping || escapeHtml(state.currentQuestion.jyutping);
+    els.questionEnglish.textContent = `Natural: ${state.currentQuestion.english}`;
+    els.questionLiteral.innerHTML = `Word-by-word: ${mapped.glossHtml || escapeHtml(analysis.literal)}`;
+  } else {
+    els.questionHanzi.textContent = state.currentQuestion.hanzi;
+    els.questionJyutping.textContent = state.currentQuestion.jyutping;
+    els.questionEnglish.textContent = state.currentQuestion.english;
+    els.questionLiteral.textContent = `Literal: ${analysis.literal}`;
+  }
+  applyVisibilityPrefs();
+}
+
 function rollQuestion() {
   if (!els.questionHanzi) return;
   const pool = getFilteredQuestionSentences();
   if (!pool.length) return;
   state.currentQuestion = takeFromRotation("questionSentences", pool, (q) => q.id);
-  const analysis = analyzeSentence({ hanzi: state.currentQuestion.hanzi, jyutping: state.currentQuestion.jyutping });
   const modeLabel = (state.prefs.questionLevel || "basic") === "advanced" ? "Advanced Questions" : "Basic Questions";
   els.questionFormula.textContent = `${modeLabel} · ${state.currentQuestion.tense} · ${state.currentQuestion.theme}`;
-  els.questionHanzi.textContent = state.currentQuestion.hanzi;
-  els.questionJyutping.textContent = state.currentQuestion.jyutping;
-  els.questionEnglish.textContent = state.currentQuestion.english;
-  els.questionLiteral.textContent = `Literal: ${analysis.literal}`;
-  applyVisibilityPrefs();
+  renderQuestionSentence();
 }
 
 function rollTonePair() {
@@ -2969,7 +2980,19 @@ function applyVisibilityPrefs() {
   els.toggleQuizEnglish.textContent = showEn ? "Hide English" : "Show English";
   if (els.toggleQuestionEnglish) els.toggleQuestionEnglish.textContent = showEn ? "Hide English" : "Show English";
   els.toggleGrammarLens.textContent = state.prefs.showGrammarLens ? "Grammar Lens: On" : "Grammar Lens: Off";
+  if (els.toggleQuestionGrammarLens) {
+    els.toggleQuestionGrammarLens.textContent = state.prefs.showGrammarLens ? "Grammar Lens: On" : "Grammar Lens: Off";
+  }
   applyToneVisibility();
+}
+
+function toggleGrammarLensState() {
+  state.prefs.showGrammarLens = !state.prefs.showGrammarLens;
+  saveJson(STORAGE_KEYS.prefs, state.prefs);
+  applyVisibilityPrefs();
+  renderPatternSentence();
+  renderQuizGrammar();
+  renderQuestionSentence();
 }
 
 function applyToneVisibility() {
@@ -3700,6 +3723,35 @@ function cleanLiteral(text) {
     .replace(/\s+([，。！？,.!?])/g, "$1")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function buildQuestionGlossMap(hanzi) {
+  const tokens = tokenizeSentence(hanzi);
+  const colorCycle = 8;
+  let colorIndex = 0;
+  const hanziParts = [];
+  const glossParts = [];
+  tokens.forEach((token) => {
+    if (isPunctuation(token)) {
+      hanziParts.push(escapeHtml(token));
+      return;
+    }
+    const marker = ASPECT_MARKERS[token];
+    const isVerb = isVerbToken(token);
+    const classes = ["tok", `tok-map-${colorIndex % colorCycle}`];
+    if (isVerb) classes.push("tok-verb");
+    if (marker?.role === "past") classes.push("tok-past");
+    if (marker?.role === "prog") classes.push("tok-prog");
+    if (marker?.role === "future") classes.push("tok-future");
+    hanziParts.push(`<span class="${classes.join(" ")}">${escapeHtml(token)}</span>`);
+    const gloss = literalForToken(token);
+    glossParts.push(`<span class="tok tok-gloss tok-map-${colorIndex % colorCycle}">${escapeHtml(gloss)}</span>`);
+    colorIndex += 1;
+  });
+  return {
+    hanziHtml: hanziParts.join(""),
+    glossHtml: glossParts.join(" ")
+  };
 }
 
 function capitalizeFirst(value) {
