@@ -3370,23 +3370,30 @@ function buildGeneratedQuestionSentences() {
     {
       tense: "present",
       theme: "daily",
-      h: "而家食緊飯呀？",
-      j: "ji4 gaa1 sik6 gan2 faan6 aa3",
-      en: (sub) => `${capitalizeFirst(sub.be)} ${sub.e} eating now?`
+      h: "而家做咩呀？",
+      j: "ji4 gaa1 zou6 me1 aa3",
+      en: (sub) => `What is ${sub.e} doing now?`
     },
     {
       tense: "present",
       theme: "home",
-      h: "喺屋企做咩呀？",
-      j: "hai2 uk1 kei2 zou6 me1 aa3",
-      en: (sub) => `What ${sub.be} ${sub.e} doing at home?`
+      h: "而家喺邊度呀？",
+      j: "ji4 gaa1 hai2 bin1 dou6 aa3",
+      en: (sub) => `Where is ${sub.e} now?`
     },
     {
       tense: "present",
       theme: "friends",
-      h: "而家同邊個傾緊計呀？",
-      j: "ji4 gaa1 tung4 bin1 go3 king1 gan2 gai2 aa3",
-      en: (sub) => `Who ${sub.be} ${sub.e} chatting with now?`
+      h: "而家同邊個一齊呀？",
+      j: "ji4 gaa1 tung4 bin1 go3 jat1 cai4 aa3",
+      en: (sub) => `Who is ${sub.e} with now?`
+    },
+    {
+      tense: "present",
+      theme: "daily",
+      h: "今日幾點返屋企呀？",
+      j: "gam1 jat6 gei2 dim2 faan1 uk1 kei2 aa3",
+      en: (sub) => `What time is ${sub.e} going home today?`
     },
     {
       tense: "past",
@@ -3397,52 +3404,45 @@ function buildGeneratedQuestionSentences() {
     },
     {
       tense: "past",
-      theme: "travel",
-      h: "上次去咗邊度呀？",
-      j: "soeng6 ci3 heoi3 zo2 bin1 dou6 aa3",
-      en: (sub) => `Where did ${sub.e} go last time?`
+      theme: "friends",
+      h: "尋日同邊個一齊呀？",
+      j: "cam4 jat6 tung4 bin1 go3 jat1 cai4 aa3",
+      en: (sub) => `Who was ${sub.e} with yesterday?`
     },
     {
       tense: "past",
-      theme: "friends",
-      h: "見過佢未呀？",
-      j: "gin3 gwo3 keoi5 mei6 aa3",
-      en: (sub) => `${capitalizeFirst(sub.has)} ${sub.e} met him/her before?`
+      theme: "travel",
+      h: "尋日去咗邊度呀？",
+      j: "cam4 jat6 heoi3 zo2 bin1 dou6 aa3",
+      en: (sub) => `Where did ${sub.e} go yesterday?`
+    },
+    {
+      tense: "past",
+      theme: "daily",
+      h: "之前見過佢未呀？",
+      j: "zi1 cin4 gin3 gwo3 keoi5 mei6 aa3",
+      en: (sub) => `Has ${sub.e} met him/her before?`
     },
     {
       tense: "future",
       theme: "daily",
-      h: "聽日會唔會返工呀？",
-      j: "ting1 jat6 wui5 m4 wui5 faan1 gung1 aa3",
-      en: (sub) => `Will ${sub.e} go to work tomorrow?`
+      h: "聽日幾點出門呀？",
+      j: "ting1 jat6 gei2 dim2 ceot1 mun4 aa3",
+      en: (sub) => `What time will ${sub.e} go out tomorrow?`
     },
     {
       tense: "future",
-      theme: "holiday",
-      h: "下次會唔會去旅行呀？",
-      j: "haa6 ci3 wui5 m4 wui5 heoi3 leoi5 hang4 aa3",
-      en: (sub) => `Will ${sub.e} travel next time?`
+      theme: "travel",
+      h: "聽日會去邊度呀？",
+      j: "ting1 jat6 wui5 heoi3 bin1 dou6 aa3",
+      en: (sub) => `Where will ${sub.e} go tomorrow?`
     },
     {
       tense: "future",
       theme: "home",
-      h: "今晚會唔會煮飯呀？",
-      j: "gam1 maan5 wui5 m4 wui5 zyu2 faan6 aa3",
-      en: (sub) => `Will ${sub.e} cook tonight?`
-    },
-    {
-      tense: "conditional",
-      theme: "friends",
-      h: "如果落雨，仲會唔會出街呀？",
-      j: "jyu4 gwo2 lok6 jyu5, zung6 wui5 m4 wui5 ceot1 gaai1 aa3",
-      en: (sub) => `If it rains, will ${sub.e} still go out?`
-    },
-    {
-      tense: "conditional",
-      theme: "travel",
-      h: "如果有平機票，會去邊度呀？",
-      j: "jyu4 gwo2 jau5 peng4 gei1 piu3, wui5 heoi3 bin1 dou6 aa3",
-      en: (sub) => `If there are cheap tickets, where will ${sub.e} go?`
+      h: "今晚會唔會喺屋企食飯呀？",
+      j: "gam1 maan5 wui5 m4 wui5 hai2 uk1 kei2 sik6 faan6 aa3",
+      en: (sub) => `Will ${sub.e} eat at home tonight?`
     }
   ];
   const advancedTemplates = [

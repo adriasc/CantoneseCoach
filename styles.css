@@ -340,6 +340,27 @@ h1 {
   margin-top: 0;
 }
 
+.controls-divider {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 2px 0 4px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.controls-divider::before,
+.controls-divider::after {
+  content: "";
+  height: 1px;
+  background: rgba(54, 81, 115, 0.35);
+  flex: 1;
+}
+
 .chip {
   margin: 0;
   background: #dff8f4;
@@ -411,7 +432,8 @@ button:hover,
 #nextWord,
 #nextQuiz,
 #newPattern,
-#nextTone {
+#nextTone,
+#nextQuestion {
   background: var(--accent);
 }
 
