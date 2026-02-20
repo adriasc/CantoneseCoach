@@ -1,0 +1,14 @@
+Put your real ambient audio files in this folder.
+
+Required file names (recommended):
+- wet-market-1.mp3
+- wet-market-2.mp3
+- radio-chatter-1.mp3
+- radio-chatter-2.mp3
+
+These are used by Noise Type:
+- Real wet market (beta)
+- Real radio chatter (beta)
+
+You can use one file only if you want.
+If a file is missing, the app will try fallback sources.

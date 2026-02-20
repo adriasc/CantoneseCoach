@@ -1206,10 +1206,14 @@ const ALL_SENTENCES = SENTENCE_BANK
 
 const REAL_NOISE_URLS = {
   "real-market": [
+    "audio/wet-market-1.mp3",
+    "audio/wet-market-2.mp3",
     "https://www.bigsoundbank.com/UPLOAD/mp3/0183.mp3",
     "https://www.bigsoundbank.com/UPLOAD/mp3/0184.mp3"
   ],
   "real-radio": [
+    "audio/radio-chatter-1.mp3",
+    "audio/radio-chatter-2.mp3",
     "https://www.bigsoundbank.com/UPLOAD/mp3/3515.mp3",
     "https://www.bigsoundbank.com/UPLOAD/mp3/3516.mp3"
   ]
@@ -1506,6 +1510,7 @@ const speechNoise = {
   source: null,
   gain: null,
   ambientEl: null,
+  stopTimer: null,
   playId: 0
 };
 let bossAdvanceTimer = null;
@@ -2499,6 +2504,10 @@ function speak(text) {
   const utterance = new SpeechSynthesisUtterance(text);
   const playId = Date.now() + randomUnit();
   speechNoise.playId = playId;
+  if (speechNoise.stopTimer) {
+    clearTimeout(speechNoise.stopTimer);
+    speechNoise.stopTimer = null;
+  }
   const voices = (state.availableVoices && state.availableVoices.length)
     ? state.availableVoices
     : window.speechSynthesis.getVoices();
@@ -2509,12 +2518,25 @@ function speak(text) {
   utterance.pitch = 1;
   utterance.onstart = () => {
     if (speechNoise.playId === playId) startSpeechNoise();
+    const chars = String(text || "").length;
+    const approxMs = Math.max(1500, Math.min(10000, Math.round((chars / Math.max(0.6, utterance.rate)) * 170)));
+    speechNoise.stopTimer = setTimeout(() => {
+      if (speechNoise.playId === playId) stopSpeechNoise();
+    }, approxMs + 500);
   };
   utterance.onend = () => {
     if (speechNoise.playId === playId) stopSpeechNoise();
+    if (speechNoise.stopTimer) {
+      clearTimeout(speechNoise.stopTimer);
+      speechNoise.stopTimer = null;
+    }
   };
   utterance.onerror = () => {
     if (speechNoise.playId === playId) stopSpeechNoise();
+    if (speechNoise.stopTimer) {
+      clearTimeout(speechNoise.stopTimer);
+      speechNoise.stopTimer = null;
+    }
   };
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(utterance);
@@ -2617,6 +2639,10 @@ function fillNoiseBuffer(data, noiseType, sampleRate) {
 }
 
 function stopSpeechNoise() {
+  if (speechNoise.stopTimer) {
+    clearTimeout(speechNoise.stopTimer);
+    speechNoise.stopTimer = null;
+  }
   if (speechNoise.ambientEl) {
     try {
       speechNoise.ambientEl.pause();
