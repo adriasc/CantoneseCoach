@@ -1215,7 +1215,7 @@ const REAL_NOISE_URLS = {
   ]
 };
 
-const TONE_PAIR_BANK = [
+const BASE_TONE_PAIR_BANK = [
   { id: "t1", level: 1, a: { hanzi: "買", jyutping: "maai5", english: "buy" }, b: { hanzi: "賣", jyutping: "maai6", english: "sell" } },
   { id: "t2", level: 1, a: { hanzi: "識", jyutping: "sik1", english: "know (a skill/person)" }, b: { hanzi: "食", jyutping: "sik6", english: "eat" } },
   { id: "t3", level: 1, a: { hanzi: "早", jyutping: "zou2", english: "early" }, b: { hanzi: "做", jyutping: "zou6", english: "do / make" } },
@@ -1230,7 +1230,36 @@ const TONE_PAIR_BANK = [
   { id: "t12", level: 5, a: { hanzi: "富", jyutping: "fu3", english: "rich" }, b: { hanzi: "苦", jyutping: "fu2", english: "bitter / hardship" } }
 ];
 
-const TONE_SENTENCE_BANK = [
+const EXTRA_TONE_PAIR_BANK = [
+  { id: "t13", level: 1, a: { hanzi: "巴", jyutping: "baa1", english: "bar / bus (short sound)" }, b: { hanzi: "把", jyutping: "baa2", english: "to hold / classifier" } },
+  { id: "t14", level: 1, a: { hanzi: "班", jyutping: "baan1", english: "class / team" }, b: { hanzi: "版", jyutping: "baan2", english: "edition / version" } },
+  { id: "t15", level: 1, a: { hanzi: "燈", jyutping: "dang1", english: "lamp / light" }, b: { hanzi: "等", jyutping: "dang2", english: "wait" } },
+  { id: "t16", level: 1, a: { hanzi: "東", jyutping: "dung1", english: "east" }, b: { hanzi: "懂", jyutping: "dung2", english: "understand" } },
+  { id: "t17", level: 1, a: { hanzi: "高", jyutping: "gou1", english: "tall / high" }, b: { hanzi: "稿", jyutping: "gou2", english: "draft / manuscript" } },
+  { id: "t18", level: 1, a: { hanzi: "官", jyutping: "gun1", english: "official" }, b: { hanzi: "管", jyutping: "gun2", english: "manage / tube" } },
+  { id: "t19", level: 1, a: { hanzi: "花", jyutping: "faa1", english: "flower" }, b: { hanzi: "化", jyutping: "faa3", english: "change / transform" } },
+  { id: "t20", level: 1, a: { hanzi: "開", jyutping: "hoi1", english: "open" }, b: { hanzi: "海", jyutping: "hoi2", english: "sea" } },
+  { id: "t21", level: 2, a: { hanzi: "詩", jyutping: "si1", english: "poem" }, b: { hanzi: "試", jyutping: "si3", english: "try / test" } },
+  { id: "t22", level: 2, a: { hanzi: "師", jyutping: "si1", english: "teacher / master" }, b: { hanzi: "時", jyutping: "si4", english: "time" } },
+  { id: "t23", level: 2, a: { hanzi: "市", jyutping: "si5", english: "market / city" }, b: { hanzi: "事", jyutping: "si6", english: "matter / thing" } },
+  { id: "t24", level: 2, a: { hanzi: "收", jyutping: "sau1", english: "receive / collect" }, b: { hanzi: "守", jyutping: "sau2", english: "guard / keep" } },
+  { id: "t25", level: 2, a: { hanzi: "九", jyutping: "gau2", english: "nine" }, b: { hanzi: "救", jyutping: "gau3", english: "save / rescue" } },
+  { id: "t26", level: 2, a: { hanzi: "米", jyutping: "mai5", english: "rice" }, b: { hanzi: "迷", jyutping: "mai4", english: "become fascinated / lost" } },
+  { id: "t27", level: 2, a: { hanzi: "車", jyutping: "ce1", english: "car / vehicle" }, b: { hanzi: "扯", jyutping: "ce2", english: "pull / tug" } },
+  { id: "t28", level: 3, a: { hanzi: "書", jyutping: "syu1", english: "book" }, b: { hanzi: "薯", jyutping: "syu4", english: "potato" } },
+  { id: "t29", level: 3, a: { hanzi: "心", jyutping: "sam1", english: "heart / mind" }, b: { hanzi: "審", jyutping: "sam2", english: "examine" } },
+  { id: "t30", level: 3, a: { hanzi: "精", jyutping: "zing1", english: "spirit / refined" }, b: { hanzi: "整", jyutping: "zing2", english: "fix / make" } },
+  { id: "t31", level: 3, a: { hanzi: "紙", jyutping: "zi2", english: "paper" }, b: { hanzi: "字", jyutping: "zi6", english: "character / word" } },
+  { id: "t32", level: 3, a: { hanzi: "邊", jyutping: "bin1", english: "side / which" }, b: { hanzi: "變", jyutping: "bin3", english: "change" } },
+  { id: "t33", level: 4, a: { hanzi: "清", jyutping: "cing1", english: "clear" }, b: { hanzi: "請", jyutping: "cing2", english: "please / invite" } },
+  { id: "t34", level: 4, a: { hanzi: "天", jyutping: "tin1", english: "sky / day" }, b: { hanzi: "填", jyutping: "tin4", english: "fill in" } },
+  { id: "t35", level: 4, a: { hanzi: "講", jyutping: "gong2", english: "speak" }, b: { hanzi: "鋼", jyutping: "gong3", english: "steel" } },
+  { id: "t36", level: 4, a: { hanzi: "口", jyutping: "hau2", english: "mouth" }, b: { hanzi: "後", jyutping: "hau6", english: "after / behind" } }
+];
+
+const TONE_PAIR_BANK = BASE_TONE_PAIR_BANK.concat(EXTRA_TONE_PAIR_BANK);
+
+const BASE_TONE_SENTENCE_BANK = [
   {
     id: "ts1",
     level: 3,
@@ -1268,6 +1297,23 @@ const TONE_SENTENCE_BANK = [
     b: { hanzi: "呢杯咖啡好苦。", jyutping: "ni1 bui1 gaa3 fe1 hou2 fu2", english: "This coffee is very bitter." }
   }
 ];
+
+const EXTRA_TONE_SENTENCE_BANK = [
+  { id: "ts7", level: 3, a: { hanzi: "我開門。", jyutping: "ngo5 hoi1 mun4", english: "I open the door." }, b: { hanzi: "我去海邊。", jyutping: "ngo5 heoi3 hoi2 bin1", english: "I go to the seaside." } },
+  { id: "ts8", level: 3, a: { hanzi: "我等你。", jyutping: "ngo5 dang2 nei5", english: "I wait for you." }, b: { hanzi: "我開燈。", jyutping: "ngo5 hoi1 dang1", english: "I turn on the light." } },
+  { id: "ts9", level: 3, a: { hanzi: "我想試。", jyutping: "ngo5 soeng2 si3", english: "I want to try." }, b: { hanzi: "我寫詩。", jyutping: "ngo5 se2 si1", english: "I write poems." } },
+  { id: "ts10", level: 3, a: { hanzi: "你去市埸。", jyutping: "nei5 heoi3 si5 coeng4", english: "You go to the market." }, b: { hanzi: "呢件事好難。", jyutping: "ni1 gin6 si6 hou2 naan4", english: "This matter is hard." } },
+  { id: "ts11", level: 3, a: { hanzi: "我收信。", jyutping: "ngo5 sau1 seon3", english: "I receive mail." }, b: { hanzi: "我守門。", jyutping: "ngo5 sau2 mun4", english: "I guard the door." } },
+  { id: "ts12", level: 3, a: { hanzi: "我有米。", jyutping: "ngo5 jau5 mai5", english: "I have rice." }, b: { hanzi: "我唔係迷路。", jyutping: "ngo5 m4 hai6 mai4 lou6", english: "I am not lost." } },
+  { id: "ts13", level: 4, a: { hanzi: "我識整嘢。", jyutping: "ngo5 sik1 zing2 je5", english: "I know how to fix things." }, b: { hanzi: "佢好精。", jyutping: "keoi5 hou2 zing1", english: "He/She is very sharp." } },
+  { id: "ts14", level: 4, a: { hanzi: "呢張紙好薄。", jyutping: "ni1 zoeng1 zi2 hou2 bok6", english: "This paper is thin." }, b: { hanzi: "呢個字好難。", jyutping: "ni1 go3 zi6 hou2 naan4", english: "This character is hard." } },
+  { id: "ts15", level: 4, a: { hanzi: "你喺邊度？", jyutping: "nei5 hai2 bin1 dou6", english: "Where are you?" }, b: { hanzi: "計劃變咗。", jyutping: "gai3 waak6 bin3 zo2", english: "The plan changed." } },
+  { id: "ts16", level: 4, a: { hanzi: "你可以請佢。", jyutping: "nei5 ho2 ji5 cing2 keoi5", english: "You can invite him/her." }, b: { hanzi: "啲水好清。", jyutping: "di1 seoi2 hou2 cing1", english: "The water is very clear." } },
+  { id: "ts17", level: 5, a: { hanzi: "你要填表。", jyutping: "nei5 jiu3 tin4 biu2", english: "You need to fill in the form." }, b: { hanzi: "今天天氣好。", jyutping: "gam1 tin1 tin1 hei3 hou2", english: "The weather is good today." } },
+  { id: "ts18", level: 5, a: { hanzi: "佢講中文。", jyutping: "keoi5 gong2 zung1 man4", english: "He/She speaks Chinese." }, b: { hanzi: "呢塊鋼好重。", jyutping: "ni1 faai3 gong3 hou2 zung6", english: "This steel piece is heavy." } }
+];
+
+const TONE_SENTENCE_BANK = BASE_TONE_SENTENCE_BANK.concat(EXTRA_TONE_SENTENCE_BANK);
 
 function defaultMission() {
   return { listens: 0, tones: 0, patterns: 0, hanzi: 0, targets: { listens: 10, tones: 5, patterns: 3, hanzi: 3 }, awarded: false };
@@ -1340,7 +1386,7 @@ const state = {
     theme: "mixed",
     uiTheme: "classic",
     controlsCollapsed: false,
-    toneExerciseMode: "auto",
+    toneExerciseMode: "word",
     showJyutping: true,
     showEnglish: true,
     toneShowJyutping: false,
@@ -1588,7 +1634,7 @@ function bindUI() {
   }
   if (els.toneExerciseMode) {
     els.toneExerciseMode.addEventListener("change", () => {
-      state.prefs.toneExerciseMode = els.toneExerciseMode.value || "auto";
+      state.prefs.toneExerciseMode = els.toneExerciseMode.value || "word";
       saveJson(STORAGE_KEYS.prefs, state.prefs);
       resetRotations();
       rollTonePair();
@@ -1721,6 +1767,8 @@ function bindUI() {
 
 function markControlsDirty() {
   els.controlsMessage.textContent = "Pending changes. Press Apply Settings.";
+  els.controlsMessage.classList.remove("applied");
+  els.controlsMessage.classList.add("pending");
 }
 
 function applyGlobalControls() {
@@ -1728,7 +1776,7 @@ function applyGlobalControls() {
   state.prefs.tense = els.globalTense.value;
   state.prefs.theme = els.globalTheme.value;
   state.prefs.uiTheme = els.themeStyle?.value || "classic";
-  state.prefs.toneExerciseMode = els.toneExerciseMode?.value || "auto";
+  state.prefs.toneExerciseMode = els.toneExerciseMode?.value || "word";
   state.prefs.audioNoiseOn = (els.audioNoiseOn?.value || "off") === "on";
   state.prefs.audioNoiseLevel = Number(els.audioNoiseLevel?.value || 0.25) || 0.25;
   state.prefs.audioNoiseType = els.audioNoiseType?.value || "white";
@@ -1740,6 +1788,8 @@ function applyGlobalControls() {
   rollQuiz();
   rollTonePair();
   els.controlsMessage.textContent = "Settings applied.";
+  els.controlsMessage.classList.remove("pending");
+  els.controlsMessage.classList.add("applied");
 }
 
 function switchTab(tabName) {
@@ -1752,6 +1802,7 @@ function rollWord() {
     const questionPool = getQuestionSentencePool();
     if (!questionPool.length) return;
     const q = takeFromRotation("words", questionPool, (s) => s.id);
+    const analysis = analyzeSentence({ hanzi: q.hanzi, jyutping: q.jyutping });
     state.currentWord = {
       id: q.id,
       hanzi: q.hanzi,
@@ -1763,9 +1814,10 @@ function rollWord() {
     els.wordCategory.textContent = "Question mode (L6)";
     els.wordHanzi.textContent = q.hanzi || "-";
     els.wordJyutping.textContent = q.jyutping || "-";
-    els.wordEnglish.textContent = q.english || "-";
-    els.wordExample.textContent = "Level 6 shows only questions.";
+    els.wordEnglish.textContent = `${q.english || "-"} · Literal: ${analysis.literal || "-"}`;
+    els.wordExample.textContent = "";
     els.revealExample.textContent = "Show example";
+    els.revealExample.classList.add("hidden");
     applyVisibilityPrefs();
     refreshStats();
     return;
@@ -1785,6 +1837,7 @@ function rollWord() {
   els.wordEnglish.textContent = state.currentWord.english || "-";
   els.wordExample.textContent = "";
   els.revealExample.textContent = "Show example";
+  els.revealExample.classList.remove("hidden");
   applyVisibilityPrefs();
   refreshStats();
 }
@@ -2043,14 +2096,10 @@ function getFilteredToneSentencePairs() {
 }
 
 function resolveToneExerciseMode() {
-  const mode = state.prefs.toneExerciseMode || "auto";
+  const mode = state.prefs.toneExerciseMode || "word";
   const level = Number(state.prefs.level) || 2;
-  if (mode === "word") return "word";
-  if (mode === "sentence") return level >= 3 ? "sentence" : "word";
-  if (level <= 2) return "word";
-  const hasSentencePool = getFilteredToneSentencePairs().length > 0;
-  if (!hasSentencePool) return "word";
-  return randomUnit() < 0.5 ? "word" : "sentence";
+  if (mode === "sentence" && level >= 3) return "sentence";
+  return "word";
 }
 
 function ensureDailyGameState() {
@@ -2713,7 +2762,7 @@ function syncControlValues() {
   els.globalLevel.value = String(state.prefs.level || 2);
   els.globalTense.value = state.prefs.tense || "mixed";
   els.globalTheme.value = state.prefs.theme || "mixed";
-  if (els.toneExerciseMode) els.toneExerciseMode.value = state.prefs.toneExerciseMode || "auto";
+  if (els.toneExerciseMode) els.toneExerciseMode.value = state.prefs.toneExerciseMode || "word";
   if (els.themeStyle) els.themeStyle.value = state.prefs.uiTheme || "classic";
   els.audioRate.value = String(state.prefs.voiceRate || 0.9);
   els.audioRateValue.textContent = `${Number(state.prefs.voiceRate || 0.9).toFixed(2)}x`;

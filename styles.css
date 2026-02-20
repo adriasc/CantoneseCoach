@@ -520,6 +520,16 @@ button:hover,
   color: var(--muted);
 }
 
+#controlsMessage.pending {
+  color: #c62828;
+  font-weight: 800;
+}
+
+#controlsMessage.applied {
+  color: #1b7f4c;
+  font-weight: 700;
+}
+
 .mini-stats {
   display: flex;
   flex-wrap: wrap;
