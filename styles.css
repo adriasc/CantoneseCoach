@@ -577,10 +577,19 @@ button:hover,
 }
 
 #closeFunLoop {
-  min-width: 42px;
-  padding: 8px 12px;
-  font-size: 1.25rem;
+  min-width: auto;
+  padding: 2px 6px;
+  font-size: 2rem;
+  border: none;
+  background: transparent;
+  color: #ff4f85;
   line-height: 1;
+  box-shadow: none;
+}
+
+#closeFunLoop:hover {
+  color: #ff2c6f;
+  transform: scale(1.04);
 }
 
 .modal {
@@ -612,8 +621,38 @@ button:hover,
 #funModal .mini-stats p,
 #funModal .mission-grid p,
 #funModal .formula {
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #ffd7de;
+  border-radius: 12px;
+  color: #7a3b21;
+  box-shadow: 0 6px 14px rgba(212, 88, 133, 0.09);
+}
+
+#funModal .boss-wrap {
+  border-color: #ffc1cd;
+  background: rgba(255, 255, 255, 0.93);
+}
+
+#funModal .choice {
+  background: #fffdfd;
+  border-color: #ffc8d4;
+  color: #61333f;
+}
+
+#funModal .actions button {
+  background: linear-gradient(135deg, #ff98b6, #ffb874);
+  color: #fff;
+  border: 1px solid #ff9ec1;
+}
+
+#funModal .actions button.ghost-btn {
+  background: transparent;
+  border: none;
+  color: #ff4f85;
+}
+
+#funModal .actions button:hover {
+  filter: brightness(1.03);
 }
 
 #funModal .goal-line,
