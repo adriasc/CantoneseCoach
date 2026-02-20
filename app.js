@@ -1383,7 +1383,7 @@ const state = {
   reviewed: loadJson(STORAGE_KEYS.reviewed, { date: todayString(), count: 0 }),
   streak: loadJson(STORAGE_KEYS.streak, { lastDate: null, days: 0 }),
   prefs: loadJson(STORAGE_KEYS.prefs, {
-    level: 2,
+    level: 1,
     tense: "mixed",
     theme: "mixed",
     uiTheme: "classic",
@@ -1574,7 +1574,7 @@ function bindUI() {
 
   byId("markKnown").addEventListener("click", () => {
     if (!state.currentWord) return;
-    if ((Number(state.prefs.level) || 2) === 6) {
+    if (normalizePracticeLevel(state.prefs.level) >= 6) {
       rollWord();
       return;
     }
@@ -1776,11 +1776,11 @@ function markControlsDirty() {
 }
 
 function applyGlobalControls() {
-  const prevLevel = Number(state.prefs.level) || 2;
+  const prevLevel = normalizePracticeLevel(state.prefs.level);
   const prevTense = state.prefs.tense || "mixed";
   const prevTheme = state.prefs.theme || "mixed";
   const prevToneMode = state.prefs.toneExerciseMode || "word";
-  state.prefs.level = Number(els.globalLevel.value) || 2;
+  state.prefs.level = normalizePracticeLevel(els.globalLevel.value);
   state.prefs.tense = els.globalTense.value;
   state.prefs.theme = els.globalTheme.value;
   state.prefs.uiTheme = els.themeStyle?.value || "classic";
@@ -1816,8 +1816,9 @@ function switchTab(tabName) {
 }
 
 function rollWord() {
-  if ((Number(state.prefs.level) || 2) === 6) {
-    const questionPool = getQuestionSentencePool();
+  const level = normalizePracticeLevel(state.prefs.level);
+  if (level >= 6) {
+    const questionPool = getQuestionSentencePool(level);
     if (!questionPool.length) return;
     const q = takeFromRotation("words", questionPool, (s) => s.id);
     const analysis = analyzeSentence({ hanzi: q.hanzi, jyutping: q.jyutping });
@@ -1829,7 +1830,7 @@ function rollWord() {
       category: "Question mode",
       example: ""
     };
-    els.wordCategory.textContent = "Question mode (L6)";
+    els.wordCategory.textContent = `Question mode (L${level})`;
     els.wordHanzi.textContent = q.hanzi || "-";
     els.wordJyutping.textContent = q.jyutping || "-";
     els.wordEnglish.textContent = q.english || "-";
@@ -1844,7 +1845,7 @@ function rollWord() {
     refreshStats();
     return;
   }
-  const words = (state.content.words || []).filter((w) => wordLevel(w) <= state.prefs.level);
+  const words = (state.content.words || []).filter((w) => wordLevel(w) <= effectiveWordLevel(level));
   if (!words.length) return;
 
   const unknown = words.filter((w) => !state.known.has(w.id));
@@ -2110,20 +2111,20 @@ function pickDistractors(correctId, correctEnglish, amount) {
 }
 
 function getFilteredTonePairs() {
-  const level = Number(state.prefs.level) || 2;
+  const level = effectiveToneLevel(normalizePracticeLevel(state.prefs.level));
   const pool = TONE_PAIR_BANK.filter((pair) => pair.level <= level);
   return pool.length ? pool : TONE_PAIR_BANK.slice(0, 3);
 }
 
 function getFilteredToneSentencePairs() {
-  const level = Number(state.prefs.level) || 2;
+  const level = effectiveToneLevel(normalizePracticeLevel(state.prefs.level));
   const pool = TONE_SENTENCE_BANK.filter((pair) => pair.level <= level && pair.level >= 3);
   return pool.length ? pool : [];
 }
 
 function resolveToneExerciseMode() {
   const mode = state.prefs.toneExerciseMode || "word";
-  const level = Number(state.prefs.level) || 2;
+  const level = effectiveToneLevel(normalizePracticeLevel(state.prefs.level));
   if (mode === "sentence" && level >= 3) return "sentence";
   return "word";
 }
@@ -2268,8 +2269,9 @@ function refreshGameUI() {
 function startBossChallenge() {
   const quizPool = getFilteredSentences();
   const tonePool = getFilteredTonePairs();
+  const level = normalizePracticeLevel(state.prefs.level);
   const hanziPool = (state.content.words || [])
-    .filter((w) => wordLevel(w) <= (Number(state.prefs.level) || 2))
+    .filter((w) => wordLevel(w) <= effectiveWordLevel(level))
     .filter((w) => !!String(w.hanzi || "").trim() && !!String(w.english || "").trim());
   if (!quizPool.length || !tonePool.length || !hanziPool.length) return;
   const questions = [];
@@ -2825,7 +2827,7 @@ function jyutpingForWord(hanzi) {
 }
 
 function syncControlValues() {
-  els.globalLevel.value = String(state.prefs.level || 2);
+  els.globalLevel.value = String(normalizePracticeLevel(state.prefs.level));
   els.globalTense.value = state.prefs.tense || "mixed";
   els.globalTheme.value = state.prefs.theme || "mixed";
   if (els.toneExerciseMode) els.toneExerciseMode.value = state.prefs.toneExerciseMode || "word";
@@ -2952,20 +2954,20 @@ function takeFromRotation(key, pool, getId) {
 }
 
 function getFilteredSentences() {
-  const level = Number(state.prefs.level) || 2;
-  if (level === 6) return getQuestionSentencePool();
+  const level = normalizePracticeLevel(state.prefs.level);
+  if (level >= 6) return getQuestionSentencePool(level);
   const tense = state.prefs.tense || "mixed";
   const theme = state.prefs.theme || "mixed";
   let pool = ALL_SENTENCES.filter((s) => (
-    s.level === level
+    sentenceMatchesSelectedLevel(s.level, level)
     && (tense === "mixed" || s.tense === tense)
     && (theme === "mixed" || s.theme === theme)
   ));
   if (!pool.length) {
-    pool = ALL_SENTENCES.filter((s) => s.level === level && (tense === "mixed" || s.tense === tense));
+    pool = ALL_SENTENCES.filter((s) => sentenceMatchesSelectedLevel(s.level, level) && (tense === "mixed" || s.tense === tense));
   }
   if (!pool.length) {
-    pool = ALL_SENTENCES.filter((s) => s.level === level);
+    pool = ALL_SENTENCES.filter((s) => sentenceMatchesSelectedLevel(s.level, level));
   }
   return pool;
 }
@@ -2976,9 +2978,11 @@ function isQuestionSentence(sentence) {
   return /[？?]/.test(h) || /[？?]/.test(e) || /咩|未|邊度|邊個|點|幾時/.test(h);
 }
 
-function getQuestionSentencePool() {
-  const l6 = ALL_SENTENCES.filter((s) => s.level === 6 && isQuestionSentence(s));
-  if (l6.length) return l6;
+function getQuestionSentencePool(targetLevel = 6) {
+  const exact = ALL_SENTENCES.filter((s) => s.level === targetLevel && isQuestionSentence(s));
+  if (exact.length) return exact;
+  const fallback = ALL_SENTENCES.filter((s) => s.level >= 6 && isQuestionSentence(s));
+  if (fallback.length) return fallback;
   return ALL_SENTENCES.filter((s) => isQuestionSentence(s));
 }
 
@@ -3007,7 +3011,7 @@ function wordLevel(word) {
   const len = normalizeHanzi(word?.hanzi).length;
   if (len >= 4) level += 2;
   else if (len >= 3) level += 1;
-  return Math.min(level, 6);
+  return Math.min(level, 7);
 }
 
 function buildGeneratedAspectSentences() {
@@ -3275,7 +3279,7 @@ function buildGeneratedQuestionSentences() {
     { h: "我哋", j: "ngo5 dei6", e: "we", be: "are", do: "do", has: "have" },
     { h: "你朋友", j: "nei5 pang4 jau5", e: "your friend", be: "is", do: "does", has: "has" }
   ];
-  const templates = [
+  const basicTemplates = [
     {
       tense: "present",
       theme: "daily",
@@ -3354,13 +3358,70 @@ function buildGeneratedQuestionSentences() {
       en: (sub) => `If there are cheap tickets, where will ${sub.e} go?`
     }
   ];
+  const advancedTemplates = [
+    {
+      tense: "conditional",
+      theme: "daily",
+      h: "如果聽日早上落大雨，仲會唔會照常返工呀？",
+      j: "jyu4 gwo2 ting1 jat6 zou2 soeng6 lok6 daai6 jyu5, zung6 wui5 m4 wui5 ziu3 soeng4 faan1 gung1 aa3",
+      en: (sub) => `If it rains heavily tomorrow morning, will ${sub.e} still go to work as usual?`
+    },
+    {
+      tense: "conditional",
+      theme: "travel",
+      h: "如果班機延誤，會點樣改行程呀？",
+      j: "jyu4 gwo2 baan1 gei1 jin4 ng6, wui5 dim2 joeng6 goi2 hang4 cing4 aa3",
+      en: (sub) => `If the flight is delayed, how will ${sub.e} change the itinerary?`
+    },
+    {
+      tense: "future",
+      theme: "holiday",
+      h: "下次去旅行之前，會唔會先訂好酒店同交通呀？",
+      j: "haa6 ci3 heoi3 leoi5 hang4 zi1 cin4, wui5 m4 wui5 sin1 deng6 hou2 zau2 dim3 tung4 gaau1 tung1 aa3",
+      en: (sub) => `Before the next trip, will ${sub.e} book the hotel and transport in advance?`
+    },
+    {
+      tense: "past",
+      theme: "friends",
+      h: "之前見面嗰陣，傾咗幾耐計呀？",
+      j: "zi1 cin4 gin3 min6 go2 zan6, king1 zo2 gei2 noi6 gai2 aa3",
+      en: (sub) => `When ${sub.e} met before, how long did you chat?`
+    },
+    {
+      tense: "present",
+      theme: "home",
+      h: "而家屋企咁嘈，仲可唔可以專心讀書呀？",
+      j: "ji4 gaa1 uk1 kei2 gam3 cou4, zung6 ho2 m4 ho2 ji5 zyun1 sam1 duk6 syu1 aa3",
+      en: (sub) => `With the house so noisy now, can ${sub.e} still focus on studying?`
+    },
+    {
+      tense: "conditional",
+      theme: "friends",
+      h: "如果朋友突然改時間，會唔會等佢哋呀？",
+      j: "jyu4 gwo2 pang4 jau5 dat6 jin4 goi2 si4 gaan3, wui5 m4 wui5 dang2 keoi5 dei6 aa3",
+      en: (sub) => `If your friends suddenly change the time, will ${sub.e} wait for them?`
+    }
+  ];
   const out = [];
   let idCounter = 7000;
-  templates.forEach((tpl) => {
+  basicTemplates.forEach((tpl) => {
     subjects.forEach((sub) => {
       out.push({
         id: `gq${idCounter++}`,
         level: 6,
+        tense: tpl.tense,
+        theme: tpl.theme,
+        hanzi: `${sub.h}${tpl.h}`,
+        jyutping: `${sub.j} ${tpl.j}`.trim(),
+        english: tpl.en(sub)
+      });
+    });
+  });
+  advancedTemplates.forEach((tpl) => {
+    subjects.forEach((sub) => {
+      out.push({
+        id: `gq${idCounter++}`,
+        level: 7,
         tense: tpl.tense,
         theme: tpl.theme,
         hanzi: `${sub.h}${tpl.h}`,
@@ -3558,6 +3619,30 @@ function capitalizeFirst(value) {
   const text = String(value || "");
   if (!text) return text;
   return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+function normalizePracticeLevel(value) {
+  let n = Number(value) || 1;
+  if (n === 2) n = 1;
+  n = Math.max(1, Math.min(7, n));
+  return n;
+}
+
+function sentenceMatchesSelectedLevel(sentenceLevel, selectedLevel) {
+  if (selectedLevel === 1) return sentenceLevel === 1 || sentenceLevel === 2;
+  return sentenceLevel === selectedLevel;
+}
+
+function effectiveWordLevel(selectedLevel) {
+  if (selectedLevel === 1) return 2;
+  if (selectedLevel >= 6) return 5;
+  return selectedLevel;
+}
+
+function effectiveToneLevel(selectedLevel) {
+  if (selectedLevel === 1) return 2;
+  if (selectedLevel >= 6) return 5;
+  return selectedLevel;
 }
 
 function escapeHtml(value) {
