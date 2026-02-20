@@ -553,6 +553,31 @@ button:hover,
   background: #f6f9ff;
 }
 
+.fun-tab {
+  background: #5e3a7f;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: rgba(5, 11, 28, 0.58);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.modal-card {
+  width: min(720px, 96vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  border-radius: 18px;
+  background: var(--soft);
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
 .formula {
   font-family: "Menlo", "Courier New", monospace;
   background: #e7f0ff;

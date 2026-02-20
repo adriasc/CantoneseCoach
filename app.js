@@ -1273,6 +1273,39 @@ function defaultGameState() {
   };
 }
 
+function normalizeGameState(input) {
+  const base = defaultGameState();
+  const safe = input && typeof input === "object" ? input : {};
+  const missionIn = safe.mission && typeof safe.mission === "object" ? safe.mission : {};
+  const targetsIn = missionIn.targets && typeof missionIn.targets === "object" ? missionIn.targets : {};
+  return {
+    date: typeof safe.date === "string" ? safe.date : base.date,
+    xp: Number(safe.xp) || 0,
+    combo: Number(safe.combo) || 0,
+    bestCombo: Number(safe.bestCombo) || 0,
+    mistakes: Array.isArray(safe.mistakes) ? safe.mistakes.filter((m) => typeof m === "string") : [],
+    fixMode: !!safe.fixMode,
+    mission: {
+      listens: Number(missionIn.listens) || 0,
+      tones: Number(missionIn.tones) || 0,
+      patterns: Number(missionIn.patterns) || 0,
+      targets: {
+        listens: Number(targetsIn.listens) || base.mission.targets.listens,
+        tones: Number(targetsIn.tones) || base.mission.targets.tones,
+        patterns: Number(targetsIn.patterns) || base.mission.targets.patterns
+      },
+      awarded: !!missionIn.awarded
+    },
+    boss: {
+      active: !!(safe.boss && safe.boss.active),
+      index: Number(safe.boss?.index) || 0,
+      score: Number(safe.boss?.score) || 0,
+      questions: Array.isArray(safe.boss?.questions) ? safe.boss.questions : [],
+      current: safe.boss?.current || null
+    }
+  };
+}
+
 const state = {
   content: loadContent(),
   known: new Set(loadJson(STORAGE_KEYS.known, [])),
@@ -1308,7 +1341,7 @@ const state = {
   currentToneSide: null,
   toneLabelMap: { a: "a", b: "b" },
   toneScore: { correct: 0, total: 0 },
-  game: loadJson(STORAGE_KEYS.game, defaultGameState())
+  game: normalizeGameState(loadJson(STORAGE_KEYS.game, defaultGameState()))
 };
 
 const els = {
@@ -1371,6 +1404,9 @@ const els = {
   toneChoices: byId("toneChoices"),
   toneFeedback: byId("toneFeedback"),
   toneScore: byId("toneScore"),
+  openFunLoop: byId("openFunLoop"),
+  closeFunLoop: byId("closeFunLoop"),
+  funModal: byId("funModal"),
   xpLine: byId("xpLine"),
   comboLine: byId("comboLine"),
   missionListens: byId("missionListens"),
@@ -1412,8 +1448,22 @@ registerServiceWorker();
 
 function bindUI() {
   els.tabs.forEach((tab) => {
-    tab.addEventListener("click", () => switchTab(tab.dataset.tab));
+    tab.addEventListener("click", () => {
+      if (!tab.dataset.tab) return;
+      switchTab(tab.dataset.tab);
+    });
   });
+  if (els.openFunLoop && els.funModal) {
+    els.openFunLoop.addEventListener("click", () => els.funModal.classList.remove("hidden"));
+  }
+  if (els.closeFunLoop && els.funModal) {
+    els.closeFunLoop.addEventListener("click", () => els.funModal.classList.add("hidden"));
+  }
+  if (els.funModal) {
+    els.funModal.addEventListener("click", (event) => {
+      if (event.target === els.funModal) els.funModal.classList.add("hidden");
+    });
+  }
 
   byId("nextWord").addEventListener("click", () => {
     markReviewed();
@@ -1443,18 +1493,19 @@ function bindUI() {
     rollWord();
   });
 
-  byId("newPattern").addEventListener("click", () => {
-    incrementMission("patterns", 1);
-    rollPattern();
-  });
+  byId("newPattern").addEventListener("click", rollPattern);
 
   byId("playPatternAudio").addEventListener("click", () => {
     const built = buildPatternSentence();
+    incrementMission("patterns", 1);
     speak(built.hanzi);
   });
 
   byId("playQuizAudio").addEventListener("click", () => {
-    if (state.currentQuiz) speak(state.currentQuiz.hanzi);
+    if (state.currentQuiz) {
+      incrementMission("listens", 1);
+      speak(state.currentQuiz.hanzi);
+    }
   });
 
   byId("showQuizText").addEventListener("click", () => {
@@ -1494,9 +1545,9 @@ function bindUI() {
 
   byId("nextQuiz").addEventListener("click", rollQuiz);
   if (byId("nextTone")) byId("nextTone").addEventListener("click", rollTonePair);
-  if (byId("playToneA")) byId("playToneA").addEventListener("click", () => playToneClip("a"));
-  if (byId("playToneB")) byId("playToneB").addEventListener("click", () => playToneClip("b"));
-  if (byId("playToneRandom")) byId("playToneRandom").addEventListener("click", () => playToneClip("random"));
+  if (byId("playToneA")) byId("playToneA").addEventListener("click", () => { incrementMission("listens", 1); playToneClip("a"); });
+  if (byId("playToneB")) byId("playToneB").addEventListener("click", () => { incrementMission("listens", 1); playToneClip("b"); });
+  if (byId("playToneRandom")) byId("playToneRandom").addEventListener("click", () => { incrementMission("listens", 1); playToneClip("random"); });
   if (els.toggleFixMode) {
     els.toggleFixMode.addEventListener("click", () => {
       state.game.fixMode = !state.game.fixMode;
@@ -1517,6 +1568,7 @@ function bindUI() {
     els.bossPlayAudio.addEventListener("click", () => {
       const q = state.game.boss.current;
       if (!q) return;
+      incrementMission("listens", 1);
       if (q.type === "quiz") speak(q.sentence.hanzi);
       if (q.type === "tone") speak(q.item.hanzi);
     });
@@ -1556,7 +1608,7 @@ function bindUI() {
       state.prefs.audioNoiseLevel = Number(els.audioNoiseLevel.value) || 0.25;
       saveJson(STORAGE_KEYS.prefs, state.prefs);
       if (els.audioNoiseValue) els.audioNoiseValue.textContent = state.prefs.audioNoiseLevel.toFixed(2);
-      if (speechNoise.gain) speechNoise.gain.gain.value = Math.max(0.05, Math.min(0.8, state.prefs.audioNoiseLevel));
+      if (speechNoise.gain) speechNoise.gain.gain.value = computeNoiseGain();
     });
   }
   els.testVoice.addEventListener("click", () => {
@@ -1916,6 +1968,7 @@ function resolveToneExerciseMode() {
 }
 
 function ensureDailyGameState() {
+  state.game = normalizeGameState(state.game);
   const today = todayString();
   if (state.game.date === today) return;
   state.game.date = today;
@@ -2114,7 +2167,7 @@ function answerBossQuestion(choice, btn) {
   setTimeout(() => {
     b.index += 1;
     nextBossQuestion();
-  }, 350);
+  }, 1400);
 }
 
 function finishBossChallenge() {
@@ -2155,7 +2208,6 @@ function refreshStats() {
 }
 
 function speak(text) {
-  incrementMission("listens", 1);
   const utterance = new SpeechSynthesisUtterance(text);
   const voices = (state.availableVoices && state.availableVoices.length)
     ? state.availableVoices
@@ -2181,7 +2233,8 @@ function startSpeechNoise() {
     speechNoise.ctx = new AudioCtx();
   }
   if (speechNoise.ctx.state === "suspended") {
-    speechNoise.ctx.resume().catch(() => {});
+    speechNoise.ctx.resume().then(() => startSpeechNoise()).catch(() => {});
+    return;
   }
 
   stopSpeechNoise();
@@ -2196,15 +2249,7 @@ function startSpeechNoise() {
   source.loop = true;
 
   const gain = speechNoise.ctx.createGain();
-  const base = Math.max(0.05, Math.min(0.8, Number(state.prefs.audioNoiseLevel) || 0.25));
-  const boostByType = {
-    white: 1,
-    radio: 1.35,
-    street: 1.85,
-    people: 2.25
-  };
-  const boost = boostByType[state.prefs.audioNoiseType] || 1;
-  gain.gain.value = Math.min(1.5, base * boost);
+  gain.gain.value = computeNoiseGain();
 
   source.connect(gain);
   gain.connect(speechNoise.ctx.destination);
@@ -2212,6 +2257,18 @@ function startSpeechNoise() {
 
   speechNoise.source = source;
   speechNoise.gain = gain;
+}
+
+function computeNoiseGain() {
+  const base = Math.max(0.05, Math.min(0.8, Number(state.prefs.audioNoiseLevel) || 0.25));
+  const boostByType = {
+    white: 1.2,
+    radio: 1.6,
+    street: 2.2,
+    people: 2.7
+  };
+  const boost = boostByType[state.prefs.audioNoiseType] || 1.2;
+  return Math.min(1.8, base * boost);
 }
 
 function fillNoiseBuffer(data, noiseType, sampleRate) {
