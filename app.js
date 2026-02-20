@@ -1425,14 +1425,8 @@ const els = {
   missionHanzi: byId("missionHanzi"),
   mistakeCount: byId("mistakeCount"),
   toggleFixMode: byId("toggleFixMode"),
-  startHanziTest: byId("startHanziTest"),
   startBoss: byId("startBoss"),
   funFeedback: byId("funFeedback"),
-  hanziWrap: byId("hanziWrap"),
-  hanziProgress: byId("hanziProgress"),
-  hanziPrompt: byId("hanziPrompt"),
-  hanziChoices: byId("hanziChoices"),
-  hanziNext: byId("hanziNext"),
   bossWrap: byId("bossWrap"),
   bossProgress: byId("bossProgress"),
   bossPrompt: byId("bossPrompt"),
@@ -1445,7 +1439,8 @@ const els = {
 const speechNoise = {
   ctx: null,
   source: null,
-  gain: null
+  gain: null,
+  playId: 0
 };
 
 bindUI();
@@ -1579,14 +1574,6 @@ function bindUI() {
     });
   }
   if (els.startBoss) els.startBoss.addEventListener("click", startBossChallenge);
-  if (els.startHanziTest) els.startHanziTest.addEventListener("click", startHanziTest);
-  if (els.hanziNext) {
-    els.hanziNext.addEventListener("click", () => {
-      if (!state.game.hanzi.active) return;
-      state.game.hanzi.index += 1;
-      nextHanziQuestion();
-    });
-  }
   if (els.bossSkip) {
     els.bossSkip.addEventListener("click", () => {
       if (!state.game.boss.active) return;
@@ -1597,6 +1584,10 @@ function bindUI() {
     els.bossPlayAudio.addEventListener("click", () => {
       const q = state.game.boss.current;
       if (!q) return;
+      if (q.type === "hanzi") {
+        if (els.funFeedback) els.funFeedback.textContent = "Hanzi step has no audio. Choose the meaning.";
+        return;
+      }
       incrementMission("listens", 1);
       if (q.type === "quiz") speak(q.sentence.hanzi);
       if (q.type === "tone") speak(q.item.hanzi);
@@ -2128,9 +2119,12 @@ function refreshGameUI() {
 function startBossChallenge() {
   const quizPool = getFilteredSentences();
   const tonePool = getFilteredTonePairs();
-  if (!quizPool.length || !tonePool.length) return;
+  const hanziPool = (state.content.words || [])
+    .filter((w) => wordLevel(w) <= (Number(state.prefs.level) || 2))
+    .filter((w) => !!String(w.hanzi || "").trim() && !!String(w.english || "").trim());
+  if (!quizPool.length || !tonePool.length || !hanziPool.length) return;
   const questions = [];
-  const qPick = shuffle(quizPool.slice()).slice(0, 3);
+  const qPick = shuffle(quizPool.slice()).slice(0, 2);
   qPick.forEach((sentence) => {
     questions.push({
       type: "quiz",
@@ -2150,7 +2144,16 @@ function startBossChallenge() {
       choices: shuffle([pair.a.jyutping, pair.b.jyutping])
     });
   });
+  const hanziWord = shuffle(hanziPool.slice())[0];
+  const hanziDistractors = shuffle(hanziPool.filter((w) => w.id !== hanziWord.id).map((w) => w.english)).slice(0, 3);
+  questions.push({
+    type: "hanzi",
+    hanzi: hanziWord.hanzi,
+    correct: hanziWord.english,
+    choices: shuffle([hanziWord.english, ...hanziDistractors])
+  });
   state.game.boss = { active: true, index: 0, score: 0, questions: shuffle(questions), current: null };
+  if (els.funFeedback) els.funFeedback.textContent = "";
   nextBossQuestion();
 }
 
@@ -2172,8 +2175,10 @@ function renderBossQuestion() {
   els.bossProgress.textContent = `Boss ${b.index + 1}/${b.questions.length} · Score ${b.score}`;
   if (b.current.type === "quiz") {
     els.bossPrompt.textContent = "Boss: listen and pick the correct English.";
-  } else {
+  } else if (b.current.type === "tone") {
     els.bossPrompt.textContent = "Boss: listen and pick the correct Jyutping.";
+  } else {
+    els.bossPrompt.textContent = `Boss Hanzi: ${b.current.hanzi} (choose English meaning).`;
   }
   els.bossChoices.innerHTML = "";
   b.current.choices.forEach((choice) => {
@@ -2188,7 +2193,9 @@ function renderBossQuestion() {
 function answerBossQuestion(choice, btn) {
   const b = state.game.boss;
   if (!b.active || !b.current) return;
-  const correct = b.current.type === "quiz" ? b.current.sentence.english : b.current.item.jyutping;
+  const correct = b.current.type === "quiz"
+    ? b.current.sentence.english
+    : (b.current.type === "tone" ? b.current.item.jyutping : b.current.correct);
   const ok = choice === correct;
   const buttons = [...els.bossChoices.querySelectorAll("button")];
   buttons.forEach((button) => {
@@ -2200,6 +2207,7 @@ function answerBossQuestion(choice, btn) {
   if (ok) {
     b.score += 1;
     if (b.current.type === "tone") incrementMission("tones", 1);
+    if (b.current.type === "hanzi") incrementMission("hanzi", 1);
   }
   setTimeout(() => {
     b.index += 1;
@@ -2214,79 +2222,6 @@ function finishBossChallenge() {
   b.active = false;
   b.current = null;
   els.bossWrap.classList.add("hidden");
-  saveGameState();
-  refreshGameUI();
-}
-
-function startHanziTest() {
-  const pool = (state.content.words || [])
-    .filter((w) => wordLevel(w) <= (Number(state.prefs.level) || 2))
-    .filter((w) => !!String(w.hanzi || "").trim() && !!String(w.english || "").trim());
-  if (!pool.length) return;
-  const picked = shuffle(pool.slice()).slice(0, 3);
-  const questions = picked.map((word) => {
-    const distractors = shuffle(pool.filter((w) => w.id !== word.id).map((w) => w.english)).slice(0, 3);
-    return {
-      hanzi: word.hanzi,
-      correct: word.english,
-      choices: shuffle([word.english, ...distractors])
-    };
-  });
-  state.game.hanzi = { active: true, index: 0, score: 0, questions, current: null };
-  nextHanziQuestion();
-}
-
-function nextHanziQuestion() {
-  const h = state.game.hanzi;
-  if (!h.active) return;
-  if (h.index >= h.questions.length) {
-    finishHanziTest();
-    return;
-  }
-  h.current = h.questions[h.index];
-  renderHanziQuestion();
-}
-
-function renderHanziQuestion() {
-  const h = state.game.hanzi;
-  if (!h.active || !h.current || !els.hanziWrap) return;
-  els.hanziWrap.classList.remove("hidden");
-  els.hanziProgress.textContent = `Hanzi ${h.index + 1}/${h.questions.length} · Score ${h.score}`;
-  els.hanziPrompt.textContent = h.current.hanzi;
-  els.hanziChoices.innerHTML = "";
-  h.current.choices.forEach((choice) => {
-    const btn = document.createElement("button");
-    btn.className = "choice";
-    btn.textContent = choice;
-    btn.addEventListener("click", () => answerHanziQuestion(choice, btn));
-    els.hanziChoices.appendChild(btn);
-  });
-}
-
-function answerHanziQuestion(choice, btn) {
-  const h = state.game.hanzi;
-  if (!h.active || !h.current) return;
-  const ok = choice === h.current.correct;
-  const buttons = [...els.hanziChoices.querySelectorAll("button")];
-  buttons.forEach((button) => {
-    button.disabled = true;
-    if (button.textContent === h.current.correct) button.classList.add("is-correct");
-  });
-  if (!ok) btn.classList.add("is-wrong");
-  else btn.classList.add("is-correct");
-  if (ok) {
-    h.score += 1;
-    incrementMission("hanzi", 1);
-    awardXp(8, "");
-  }
-}
-
-function finishHanziTest() {
-  const h = state.game.hanzi;
-  awardXp(h.score >= 2 ? 20 : 8, `Hanzi test done: ${h.score}/3`);
-  h.active = false;
-  h.current = null;
-  if (els.hanziWrap) els.hanziWrap.classList.add("hidden");
   saveGameState();
   refreshGameUI();
 }
@@ -2319,6 +2254,8 @@ function refreshStats() {
 
 function speak(text) {
   const utterance = new SpeechSynthesisUtterance(text);
+  const playId = Date.now() + Math.random();
+  speechNoise.playId = playId;
   const voices = (state.availableVoices && state.availableVoices.length)
     ? state.availableVoices
     : window.speechSynthesis.getVoices();
@@ -2327,10 +2264,16 @@ function speak(text) {
   if (selected) utterance.voice = selected;
   utterance.rate = Math.min(1.2, Math.max(0.6, Number(state.prefs.voiceRate) || 0.9));
   utterance.pitch = 1;
-  utterance.onend = () => stopSpeechNoise();
-  utterance.onerror = () => stopSpeechNoise();
+  utterance.onstart = () => {
+    if (speechNoise.playId === playId) startSpeechNoise();
+  };
+  utterance.onend = () => {
+    if (speechNoise.playId === playId) stopSpeechNoise();
+  };
+  utterance.onerror = () => {
+    if (speechNoise.playId === playId) stopSpeechNoise();
+  };
   window.speechSynthesis.cancel();
-  startSpeechNoise();
   window.speechSynthesis.speak(utterance);
 }
 

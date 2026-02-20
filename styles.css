@@ -554,7 +554,16 @@ button:hover,
 }
 
 .fun-tab {
-  background: #5e3a7f;
+  background: linear-gradient(135deg, #ff8a00, #ff3d7f);
+  color: #fff;
+  font-weight: 700;
+}
+
+#closeFunLoop {
+  min-width: 42px;
+  padding: 8px 12px;
+  font-size: 1.25rem;
+  line-height: 1;
 }
 
 .modal {
