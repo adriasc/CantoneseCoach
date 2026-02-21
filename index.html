@@ -19,10 +19,13 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.0.0</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.1.0</span></p>
         <h1>Cantonese Coach</h1>
       </div>
-      <div class="streak" id="streakBadge">Streak: 0 days</div>
+      <div class="topbar-right">
+        <div class="streak" id="streakBadge">Streak: 0 days</div>
+        <button id="openSettings" class="gear-btn" type="button" aria-label="Open audio and display settings">⚙</button>
+      </div>
     </header>
 
     <nav class="tabs">
@@ -99,60 +102,70 @@
             <option value="holiday">Holiday plans</option>
           </select>
         </div>
-        <div class="controls-divider" aria-hidden="true">
-          <span>Audio & Display</span>
-        </div>
-        <div>
-          <label for="audioVoice">Audio Voice</label>
-          <select id="audioVoice">
-            <option value="auto">Auto (best Cantonese)</option>
-          </select>
-        </div>
-        <div>
-          <label for="audioRate">Audio Speed (<span id="audioRateValue">0.90x</span>)</label>
-          <input id="audioRate" type="range" min="0.6" max="1.2" step="0.05" value="0.9">
-        </div>
-        <div>
-          <label for="themeStyle">Theme Style</label>
-          <select id="themeStyle">
-            <option value="classic">Classic Pastel</option>
-            <option value="harbour">HK Harbour Pastel</option>
-            <option value="neon">HK Neon Soft</option>
-            <option value="neon-strong">HK Neon Strong</option>
-            <option value="neon-extreme">HK Neon Extreme</option>
-            <option value="ink">Ink Newspaper</option>
-            <option value="poster">HK Poster Pop</option>
-          </select>
-        </div>
-        <div>
-          <label for="audioNoiseOn">Voice Noise (real-world practice)</label>
-          <select id="audioNoiseOn">
-            <option value="off">Off</option>
-            <option value="on">On</option>
-          </select>
-        </div>
-        <div>
-          <label for="audioNoiseType">Noise Type</label>
-          <select id="audioNoiseType">
-            <option value="white">White noise</option>
-            <option value="street">Street</option>
-            <option value="radio">Radio</option>
-            <option value="people">People talking</option>
-            <option value="real-market">Real wet market (beta)</option>
-            <option value="real-radio">Real radio chatter (beta)</option>
-          </select>
-        </div>
-        <div>
-          <label for="audioNoiseLevel">Noise Level (<span id="audioNoiseValue">0.25</span>)</label>
-          <input id="audioNoiseLevel" type="range" min="0.05" max="0.80" step="0.01" value="0.25">
-        </div>
       </div>
       <div class="actions">
         <button id="applyControls">Apply Settings</button>
-        <button id="testVoice">Test Voice</button>
       </div>
       <p class="example" id="controlsMessage"></p>
     </section>
+
+    <div class="modal hidden" id="settingsModal">
+      <div class="modal-card">
+        <div class="card-head">
+          <h2>Audio & Display</h2>
+          <button id="closeSettings" class="ghost-btn" type="button">✕</button>
+        </div>
+        <div class="slot-grid">
+          <div>
+            <label for="audioVoice">Audio Voice</label>
+            <select id="audioVoice">
+              <option value="auto">Auto (best Cantonese)</option>
+            </select>
+          </div>
+          <div>
+            <label for="audioRate">Audio Speed (<span id="audioRateValue">0.90x</span>)</label>
+            <input id="audioRate" type="range" min="0.6" max="1.2" step="0.05" value="0.9">
+          </div>
+          <div>
+            <label for="themeStyle">Theme Style</label>
+            <select id="themeStyle">
+              <option value="classic">Classic Pastel</option>
+              <option value="harbour">HK Harbour Pastel</option>
+              <option value="neon">HK Neon Soft</option>
+              <option value="neon-strong">HK Neon Strong</option>
+              <option value="neon-extreme">HK Neon Extreme</option>
+              <option value="ink">Ink Newspaper</option>
+              <option value="poster">HK Poster Pop</option>
+            </select>
+          </div>
+          <div>
+            <label for="audioNoiseOn">Voice Noise (real-world practice)</label>
+            <select id="audioNoiseOn">
+              <option value="off">Off</option>
+              <option value="on">On</option>
+            </select>
+          </div>
+          <div>
+            <label for="audioNoiseType">Noise Type</label>
+            <select id="audioNoiseType">
+              <option value="white">White noise</option>
+              <option value="street">Street</option>
+              <option value="radio">Radio</option>
+              <option value="people">People talking</option>
+              <option value="real-market">Real wet market (beta)</option>
+              <option value="real-radio">Real radio chatter (beta)</option>
+            </select>
+          </div>
+          <div>
+            <label for="audioNoiseLevel">Noise Level (<span id="audioNoiseValue">0.25</span>)</label>
+            <input id="audioNoiseLevel" type="range" min="0.05" max="0.80" step="0.01" value="0.25">
+          </div>
+        </div>
+        <div class="actions">
+          <button id="testVoice">Test Voice</button>
+        </div>
+      </div>
+    </div>
 
     <div class="modal hidden" id="funModal">
       <div class="modal-card">
@@ -199,7 +212,6 @@
         <p class="literal hidden" id="wordLiteral"></p>
         <div class="actions">
           <button id="playWordAudio">Play audio</button>
-          <button id="toggleWordGrammarLens">Grammar Lens: Off</button>
           <button id="revealExample">Show example</button>
           <div class="inline-pair">
             <button id="toggleWordJyutping">Hide Jyutping</button>
@@ -238,12 +250,12 @@
         </div>
         <div class="actions">
           <button id="playPatternAudio">Play sentence</button>
+          <button id="newPattern">Next pattern</button>
           <button id="toggleGrammarLens">Grammar Lens: Off</button>
           <div class="inline-pair">
             <button id="togglePatternJyutping">Hide Jyutping</button>
             <button id="togglePatternEnglish">Hide English</button>
           </div>
-          <button id="newPattern">Next pattern</button>
         </div>
       </div>
     </section>
@@ -259,13 +271,13 @@
         <div class="grammar-notes" id="quizGrammarNotes"></div>
         <div class="actions">
           <button id="playQuizAudio">Play clip</button>
+          <button id="nextQuiz">Next quiz</button>
           <button id="toggleQuizGrammarLens">Grammar Lens: Off</button>
           <button id="showQuizText">Show Chinese</button>
           <div class="inline-pair">
             <button id="toggleQuizJyutping">Show/Hide Jyutping</button>
             <button id="toggleQuizEnglish">Show/Hide English</button>
           </div>
-          <button id="nextQuiz">Next quiz</button>
         </div>
         <div class="choices" id="quizChoices"></div>
         <p class="feedback" id="quizFeedback"></p>
@@ -285,12 +297,12 @@
         </div>
         <div class="actions">
           <button id="playQuestionAudio">Play question</button>
+          <button id="nextQuestion">Next question</button>
           <button id="toggleQuestionGrammarLens">Grammar Lens: Off</button>
           <div class="inline-pair">
             <button id="toggleQuestionJyutping">Hide Jyutping</button>
             <button id="toggleQuestionEnglish">Hide English</button>
           </div>
-          <button id="nextQuestion">Next question</button>
         </div>
       </div>
     </section>

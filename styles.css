@@ -233,6 +233,12 @@ body[data-theme="poster"] .bg-shape {
   gap: 10px;
 }
 
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .eyebrow {
   margin: 0;
   color: var(--muted);
@@ -322,6 +328,16 @@ h1 {
 
 .ghost-btn {
   background: #365173;
+}
+
+.gear-btn {
+  min-width: 42px;
+  min-height: 42px;
+  border-radius: 999px;
+  font-size: 1.15rem;
+  background: #2f5b7a;
+  color: #fff;
+  padding: 0;
 }
 
 .controls-card.is-collapsed .controls-grid,
@@ -455,6 +471,20 @@ button:hover,
 #playToneB,
 #playToneRandom {
   background: #365173;
+}
+
+#playWordAudio,
+#playPatternAudio,
+#playQuizAudio,
+#playQuestionAudio,
+#playToneA,
+#playToneB,
+#playToneRandom {
+  background: linear-gradient(135deg, #0fa97b, #1493b8);
+  min-height: 46px;
+  padding: 11px 15px;
+  font-size: 1.02rem;
+  font-weight: 800;
 }
 
 #applyControls {

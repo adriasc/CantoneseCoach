@@ -792,6 +792,11 @@ const CORE_WORD_JYUTPING = {
 };
 
 const EXTRA_TOKEN_JYUTPING = {
+  "幾點": "gei2 dim2",
+  "幾": "gei2",
+  "點": "dim2",
+  "邊": "bin1",
+  "邊度": "bin1 dou6",
   "巴士": "baa1 si2",
   "飛機": "fei1 gei1",
   "音樂": "jam1 ngok6",
@@ -893,6 +898,11 @@ const EXTRA_TOKEN_JYUTPING = {
 };
 
 const EXTRA_TOKEN_MEANINGS = {
+  "幾點": "what time",
+  "幾": "how many / how much",
+  "點": "dot / point / o'clock",
+  "邊": "which / side",
+  "邊度": "where",
   "功課": "homework",
   "電話": "phone",
   "巴士": "bus",
@@ -1458,7 +1468,6 @@ const els = {
   controlsMessage: byId("controlsMessage"),
   toggleWordJyutping: byId("toggleWordJyutping"),
   toggleWordEnglish: byId("toggleWordEnglish"),
-  toggleWordGrammarLens: byId("toggleWordGrammarLens"),
   togglePatternJyutping: byId("togglePatternJyutping"),
   togglePatternEnglish: byId("togglePatternEnglish"),
   toggleQuizJyutping: byId("toggleQuizJyutping"),
@@ -1506,6 +1515,9 @@ const els = {
   openFunLoop: byId("openFunLoop"),
   closeFunLoop: byId("closeFunLoop"),
   funModal: byId("funModal"),
+  openSettings: byId("openSettings"),
+  closeSettings: byId("closeSettings"),
+  settingsModal: byId("settingsModal"),
   xpLine: byId("xpLine"),
   comboLine: byId("comboLine"),
   missionListens: byId("missionListens"),
@@ -1577,6 +1589,20 @@ function bindUI() {
       if (event.target === els.funModal) els.funModal.classList.add("hidden");
     });
   }
+  if (els.openSettings && els.settingsModal) {
+    els.openSettings.addEventListener("click", () => {
+      syncControlValues();
+      els.settingsModal.classList.remove("hidden");
+    });
+  }
+  if (els.closeSettings && els.settingsModal) {
+    els.closeSettings.addEventListener("click", () => els.settingsModal.classList.add("hidden"));
+  }
+  if (els.settingsModal) {
+    els.settingsModal.addEventListener("click", (event) => {
+      if (event.target === els.settingsModal) els.settingsModal.classList.add("hidden");
+    });
+  }
 
   byId("nextWord").addEventListener("click", () => {
     markReviewed();
@@ -1593,7 +1619,9 @@ function bindUI() {
       els.revealExample.textContent = "Show example";
       return;
     }
-    els.wordExample.textContent = buildWordExample(state.currentWord);
+    const exampleHanzi = buildWordExample(state.currentWord);
+    const exampleEnglish = buildWordExampleEnglish(state.currentWord, exampleHanzi);
+    els.wordExample.textContent = `${exampleHanzi} | ${exampleEnglish}`;
     els.revealExample.textContent = "Hide example";
   });
 
@@ -1639,9 +1667,6 @@ function bindUI() {
 
   els.toggleWordJyutping.addEventListener("click", () => togglePref("showJyutping"));
   els.toggleWordEnglish.addEventListener("click", () => togglePref("showEnglish"));
-  if (els.toggleWordGrammarLens) {
-    els.toggleWordGrammarLens.addEventListener("click", toggleGrammarLensState);
-  }
   els.togglePatternJyutping.addEventListener("click", () => togglePref("showJyutping"));
   els.togglePatternEnglish.addEventListener("click", () => togglePref("showEnglish"));
   els.toggleQuizJyutping.addEventListener("click", () => togglePref("showJyutping"));
@@ -1743,7 +1768,13 @@ function bindUI() {
   els.globalLevel.addEventListener("change", markControlsDirty);
   els.globalTense.addEventListener("change", markControlsDirty);
   els.globalTheme.addEventListener("change", markControlsDirty);
-  if (els.themeStyle) els.themeStyle.addEventListener("change", markControlsDirty);
+  if (els.themeStyle) {
+    els.themeStyle.addEventListener("change", () => {
+      state.prefs.uiTheme = els.themeStyle.value || "classic";
+      saveJson(STORAGE_KEYS.prefs, state.prefs);
+      applyTheme(state.prefs.uiTheme);
+    });
+  }
   els.audioVoice.addEventListener("change", () => {
     state.prefs.voiceURI = els.audioVoice.value || "auto";
     saveJson(STORAGE_KEYS.prefs, state.prefs);
@@ -1917,23 +1948,12 @@ function rollWord() {
 function renderWordCard() {
   if (!state.currentWord) return;
   const word = state.currentWord;
-  const analysis = analyzeSentence({ hanzi: word.hanzi, jyutping: word.jyutping });
-  if (state.prefs.showGrammarLens) {
-    els.wordHanzi.innerHTML = analysis.annotatedHanzi || escapeHtml(word.hanzi || "-");
-    els.wordJyutping.innerHTML = analysis.annotatedJyutping || escapeHtml(word.jyutping || "-");
-    els.wordEnglish.textContent = word.english || "-";
-    if (els.wordLiteral) {
-      els.wordLiteral.innerHTML = `Literal: ${analysis.literalHtml || escapeHtml(analysis.literal || "-")}`;
-      els.wordLiteral.classList.remove("hidden");
-    }
-  } else {
-    els.wordHanzi.textContent = word.hanzi || "-";
-    els.wordJyutping.textContent = word.jyutping || "-";
-    els.wordEnglish.textContent = word.english || "-";
-    if (els.wordLiteral) {
-      els.wordLiteral.textContent = "";
-      els.wordLiteral.classList.add("hidden");
-    }
+  els.wordHanzi.textContent = word.hanzi || "-";
+  els.wordJyutping.textContent = word.jyutping || "-";
+  els.wordEnglish.textContent = word.english || "-";
+  if (els.wordLiteral) {
+    els.wordLiteral.textContent = "";
+    els.wordLiteral.classList.add("hidden");
   }
 }
 
@@ -3006,9 +3026,6 @@ function applyVisibilityPrefs() {
   els.toggleQuizEnglish.textContent = showEn ? "Hide English" : "Show English";
   if (els.toggleQuestionEnglish) els.toggleQuestionEnglish.textContent = showEn ? "Hide English" : "Show English";
   els.toggleGrammarLens.textContent = state.prefs.showGrammarLens ? "Grammar Lens: On" : "Grammar Lens: Off";
-  if (els.toggleWordGrammarLens) {
-    els.toggleWordGrammarLens.textContent = state.prefs.showGrammarLens ? "Grammar Lens: On" : "Grammar Lens: Off";
-  }
   if (els.toggleQuizGrammarLens) {
     els.toggleQuizGrammarLens.textContent = state.prefs.showGrammarLens ? "Grammar Lens: On" : "Grammar Lens: Off";
   }
@@ -3022,7 +3039,6 @@ function toggleGrammarLensState() {
   state.prefs.showGrammarLens = !state.prefs.showGrammarLens;
   saveJson(STORAGE_KEYS.prefs, state.prefs);
   applyVisibilityPrefs();
-  renderWordCard();
   renderPatternSentence();
   renderQuizGrammar();
   renderQuestionSentence();
@@ -3140,6 +3156,20 @@ function buildWordExample(word) {
   if (word.category === "adjective") return `呢個好${word.hanzi}。`;
   if (word.category === "place") return `我喺${word.hanzi}。`;
   return `${word.hanzi}。`;
+}
+
+function buildWordExampleEnglish(word, exampleHanzi) {
+  if (!word) return "";
+  const exact = ALL_SENTENCES.find((s) => normalizeHanzi(s.hanzi) === normalizeHanzi(exampleHanzi));
+  if (exact?.english) return exact.english;
+  const key = normalizeHanzi(word.hanzi);
+  const fromSentence = ALL_SENTENCES.find((s) => normalizeHanzi(s.hanzi).includes(key));
+  if (fromSentence?.english) return fromSentence.english;
+  if (word.example) {
+    const fromExampleSentence = ALL_SENTENCES.find((s) => normalizeHanzi(s.hanzi) === normalizeHanzi(word.example));
+    if (fromExampleSentence?.english) return fromExampleSentence.english;
+  }
+  return word.english || "";
 }
 
 function wordLevel(word) {
@@ -3585,7 +3615,6 @@ function analyzeSentence(sentenceInput) {
   const literalHtmlParts = [];
   const markerByIndex = {};
   const classByIndex = {};
-  const mapClassByIndex = {};
   let mapIndex = 0;
 
   tokens.forEach((token, idx) => {
@@ -3609,7 +3638,6 @@ function analyzeSentence(sentenceInput) {
     const marker = markerByIndex[idx];
     const isVerb = isVerbToken(token);
     const mapClass = `tok-map-${mapIndex % 8}`;
-    mapClassByIndex[idx] = mapClass;
     mapIndex += 1;
     let cls = `tok ${mapClass}`;
     const role = marker?.role;
@@ -3625,15 +3653,7 @@ function analyzeSentence(sentenceInput) {
     return `<span class="${cls}">${escapeHtml(token)}</span>`;
   });
 
-  const highlights = [];
-  tokens.forEach((token, idx) => {
-    if (isPunctuation(token)) return;
-    const jp = jyutpingForToken(token);
-    if (!jp || jp === token || jp === "to-confirm") return;
-    const baseCls = classByIndex[idx] || `tok ${mapClassByIndex[idx] || ""}`.trim();
-    highlights.push({ jp, cls: `${baseCls} tok-jp`.trim() });
-  });
-  const annotatedJyutping = highlightJyutpingLine(originalJyutping, highlights);
+  const annotatedJyutping = buildAnnotatedJyutping(tokens, classByIndex, originalJyutping);
 
   return {
     annotatedHanzi: annotated.join(""),
@@ -3731,29 +3751,26 @@ function jyutpingForToken(token) {
   return normalized;
 }
 
-function highlightJyutpingLine(baseJyutping, highlights) {
-  if (!baseJyutping) return "";
-  let out = escapeHtml(baseJyutping);
-  const used = new Set();
-  highlights.forEach((h, idx) => {
-    const key = `${h.jp}|${h.cls}`;
-    const count = used.has(key) ? 2 : 1;
-    used.add(key);
-    out = wrapNthOccurrence(out, escapeHtml(h.jp), `<span class="${h.cls}">`, "</span>", count);
+function buildAnnotatedJyutping(tokens, classByIndex, baseJyutping) {
+  if (!Array.isArray(tokens) || !tokens.length) return escapeHtml(baseJyutping || "");
+  const parts = [];
+  let hasAtLeastOneMapped = false;
+  tokens.forEach((token, idx) => {
+    if (isPunctuation(token)) {
+      parts.push(escapeHtml(token));
+      return;
+    }
+    const jp = jyutpingForToken(token);
+    if (!jp || jp === token || jp === "to-confirm") {
+      parts.push(escapeHtml(jp || token));
+      return;
+    }
+    const cls = `${classByIndex[idx] || "tok"} tok-jp`;
+    parts.push(`<span class="${cls}">${escapeHtml(jp)}</span>`);
+    hasAtLeastOneMapped = true;
   });
-  return out;
-}
-
-function wrapNthOccurrence(text, needle, open, close, n) {
-  if (!needle) return text;
-  let from = 0;
-  let found = -1;
-  for (let i = 0; i < n; i += 1) {
-    found = text.indexOf(needle, from);
-    if (found < 0) return text;
-    from = found + needle.length;
-  }
-  return text.slice(0, found) + open + needle + close + text.slice(found + needle.length);
+  if (!hasAtLeastOneMapped) return escapeHtml(baseJyutping || "");
+  return cleanLiteral(parts.join(" "));
 }
 
 function cleanLiteral(text) {
