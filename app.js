@@ -1434,7 +1434,6 @@ const state = {
   toneScore: { correct: 0, total: 0 },
   game: normalizeGameState(loadJson(STORAGE_KEYS.game, defaultGameState()))
 };
-state.prefs.wordFilter = normalizeWordFilterValue(state.prefs.wordFilter || "mixed");
 
 const els = {
   tabs: [...document.querySelectorAll(".tab")],
@@ -1865,7 +1864,9 @@ function bindUI() {
 }
 
 function markControlsDirty() {
-  setControlsMessage("Pending changes. Press Apply Settings.", "pending", "pending");
+  els.controlsMessage.textContent = "Pending changes. Press Apply Settings.";
+  els.controlsMessage.classList.remove("applied");
+  els.controlsMessage.classList.add("pending");
 }
 
 function applyGlobalControls() {
@@ -1879,7 +1880,7 @@ function applyGlobalControls() {
   const prevQTheme = state.prefs.questionTheme || "mixed";
   state.prefs.level = normalizePracticeLevel(els.globalLevel.value);
   state.prefs.tense = els.globalTense.value;
-  state.prefs.wordFilter = normalizeWordFilterValue(els.wordFilter?.value || "mixed");
+  state.prefs.wordFilter = els.wordFilter?.value || "mixed";
   state.prefs.theme = els.globalTheme.value;
   state.prefs.questionLevel = els.questionLevel?.value || "basic";
   state.prefs.questionTense = els.questionTense?.value || "mixed";
@@ -1915,7 +1916,9 @@ function applyGlobalControls() {
     state.rotation.questionSentences = [];
     rollQuestion();
   }
-  setControlsMessage("Settings applied.", "applied", "applied");
+  els.controlsMessage.textContent = "Settings applied.";
+  els.controlsMessage.classList.remove("pending");
+  els.controlsMessage.classList.add("applied");
 }
 
 function switchTab(tabName) {
@@ -1959,22 +1962,25 @@ function setControlsMode(tabName) {
   if (els.wordFilter) els.wordFilter.disabled = !isWords || isTones;
 
   if (isTones) {
-    setControlsMessage("Practice controls are inactive in Tones. Use Tone Exercise below.", "applied", "tones_hint");
-    return;
-  }
-  if (isWords) {
-    setControlsMessage("In Words, use Word Filter. Level and Theme are inactive.", "applied", "words_hint");
-    return;
-  }
-
-  const scope = String(els.controlsMessage.dataset.scope || "");
-  if (scope === "words_hint" || scope === "tones_hint") {
-    setControlsMessage("", "", "");
+    els.controlsMessage.textContent = "Practice controls are inactive in Tones. Use Tone Exercise below.";
+    els.controlsMessage.classList.remove("pending");
+    els.controlsMessage.classList.add("applied");
+  } else if (isWords) {
+    els.controlsMessage.textContent = "In Words, use Word Filter. Level and Theme are inactive.";
+    els.controlsMessage.classList.remove("pending");
+    els.controlsMessage.classList.add("applied");
+  } else {
+    const msg = String(els.controlsMessage.textContent || "");
+    if (msg.includes("In Words, use Word Filter") || msg.includes("inactive in Tones")) {
+      els.controlsMessage.textContent = "";
+      els.controlsMessage.classList.remove("pending");
+      els.controlsMessage.classList.remove("applied");
+    }
   }
 }
 
 function rollWord() {
-  const wordFilter = normalizeWordFilterValue(state.prefs.wordFilter || "mixed");
+  const wordFilter = state.prefs.wordFilter || "mixed";
   const wordsAll = (state.content.words || []);
   const words = wordFilter === "mixed"
     ? wordsAll
@@ -3020,8 +3026,7 @@ function jyutpingForWord(hanzi) {
 function syncControlValues() {
   els.globalLevel.value = String(normalizePracticeLevel(state.prefs.level));
   els.globalTense.value = state.prefs.tense || "mixed";
-  state.prefs.wordFilter = normalizeWordFilterValue(state.prefs.wordFilter || "mixed");
-  if (els.wordFilter) els.wordFilter.value = state.prefs.wordFilter;
+  if (els.wordFilter) els.wordFilter.value = state.prefs.wordFilter || "mixed";
   els.globalTheme.value = state.prefs.theme || "mixed";
   if (els.questionLevel) els.questionLevel.value = state.prefs.questionLevel || "basic";
   if (els.questionTense) els.questionTense.value = state.prefs.questionTense || "mixed";
@@ -3041,18 +3046,6 @@ function initVoiceControls() {
   if (window.speechSynthesis) {
     window.speechSynthesis.onvoiceschanged = refreshVoiceOptions;
   }
-}
-
-function setControlsMessage(text, style, scope) {
-  if (!els.controlsMessage) return;
-  els.controlsMessage.textContent = text || "";
-  els.controlsMessage.classList.remove("pending");
-  els.controlsMessage.classList.remove("applied");
-  if (style === "pending" || style === "applied") {
-    els.controlsMessage.classList.add(style);
-  }
-  if (scope) els.controlsMessage.dataset.scope = scope;
-  else delete els.controlsMessage.dataset.scope;
 }
 
 function refreshVoiceOptions() {
@@ -3245,81 +3238,10 @@ function getFilteredQuestionSentences() {
   return pool;
 }
 
-function normalizeWordFilterValue(rawFilter) {
-  const validWordFilters = new Set([
-    "mixed",
-    "past_markers",
-    "future_markers",
-    "present_markers",
-    "conditional_markers",
-    "verbs",
-    "nouns",
-    "time",
-    "grammar",
-    "adjectives",
-    "adverbs",
-    "pronouns",
-    "places",
-    "conjunctions",
-    "prepositions",
-    "measure_words",
-    "particles",
-    "aspect_markers"
-  ]);
-  const normalized = String(rawFilter || "mixed")
-    .toLowerCase()
-    .trim()
-    .replace(/[\s-]+/g, "_");
-  const aliasMap = {
-    verb: "verbs",
-    noun: "nouns",
-    adjective: "adjectives",
-    adverb: "adverbs",
-    pronoun: "pronouns",
-    place: "places",
-    conjunction: "conjunctions",
-    preposition: "prepositions",
-    measure: "measure_words",
-    measureword: "measure_words",
-    measurewords: "measure_words",
-    particle: "particles",
-    aspect: "aspect_markers",
-    aspectmarker: "aspect_markers",
-    aspectmarkers: "aspect_markers",
-    past: "past_markers",
-    future: "future_markers",
-    present: "present_markers",
-    conditional: "conditional_markers"
-  };
-  const mapped = aliasMap[normalized] || normalized;
-  return validWordFilters.has(mapped) ? mapped : "mixed";
-}
-
-function normalizeWordCategory(rawCategory) {
-  const value = String(rawCategory || "")
-    .toLowerCase()
-    .trim()
-    .replace(/[_-]+/g, " ");
-  if (["verb", "verbs", "aux verb", "auxiliary verb", "auxiliary verbs"].includes(value)) return "verb";
-  if (["noun", "nouns", "substantiu", "substantius", "substantive", "substantives"].includes(value)) return "noun";
-  if (["adjective", "adjectives"].includes(value)) return "adjective";
-  if (["adverb", "adverbs"].includes(value)) return "adverb";
-  if (["pronoun", "pronouns"].includes(value)) return "pronoun";
-  if (["place", "places", "location", "locations"].includes(value)) return "place";
-  if (["conjunction", "conjunctions"].includes(value)) return "conjunction";
-  if (["preposition", "prepositions"].includes(value)) return "preposition";
-  if (["measure", "measure word", "measure words", "classifier", "classifiers"].includes(value)) return "measure";
-  if (["particle", "particles", "final particle", "final particles"].includes(value)) return "particle";
-  if (["aspect", "aspect marker", "aspect markers"].includes(value)) return "aspect";
-  if (["grammar", "subject", "subjects"].includes(value)) return "grammar";
-  return value;
-}
-
 function wordMatchesFilter(word, selectedFilter) {
-  const filter = normalizeWordFilterValue(selectedFilter);
-  if (!word || filter === "mixed") return true;
+  if (!word || selectedFilter === "mixed") return true;
   const key = normalizeHanzi(word.hanzi);
-  const category = normalizeWordCategory(word.category);
+  const category = String(word.category || "").toLowerCase();
 
   const markerMap = {
     past_markers: new Set(["咗", "過", "完", "已經", "尋日", "上次", "之前"]),
@@ -3327,24 +3249,37 @@ function wordMatchesFilter(word, selectedFilter) {
     present_markers: new Set(["緊", "住", "而家", "今日"]),
     conditional_markers: new Set(["如果", "只要", "就算", "一...就", "因為", "所以"])
   };
-  if (markerMap[filter]) return markerMap[filter].has(key);
+  if (markerMap[selectedFilter]) return markerMap[selectedFilter].has(key);
 
   const categoryMap = {
+    verb: new Set(["verb"]),
     verbs: new Set(["verb"]),
+    noun: new Set(["noun", "food", "drink", "language"]),
     nouns: new Set(["noun", "food", "drink", "language"]),
     time: new Set(["time"]),
     grammar: new Set(["grammar"]),
+    adjective: new Set(["adjective"]),
     adjectives: new Set(["adjective"]),
+    adverb: new Set(["adverb"]),
     adverbs: new Set(["adverb"]),
+    pronoun: new Set(["pronoun"]),
     pronouns: new Set(["pronoun"]),
+    place: new Set(["place"]),
     places: new Set(["place"]),
+    conjunction: new Set(["conjunction"]),
     conjunctions: new Set(["conjunction"]),
+    preposition: new Set(["preposition"]),
     prepositions: new Set(["preposition"]),
+    measure_word: new Set(["measure"]),
+    measure: new Set(["measure"]),
     measure_words: new Set(["measure"]),
-    particles: new Set(["particle"]),
+    particle: new Set(["particle", "final-particle"]),
+    particles: new Set(["particle", "final-particle"]),
+    aspect_marker: new Set(["aspect"]),
+    aspect: new Set(["aspect"]),
     aspect_markers: new Set(["aspect"])
   };
-  if (categoryMap[filter]) return categoryMap[filter].has(category);
+  if (categoryMap[selectedFilter]) return categoryMap[selectedFilter].has(category);
 
   return false;
 }
