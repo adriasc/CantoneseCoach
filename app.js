@@ -1459,6 +1459,7 @@ const els = {
   questionLevelWrap: byId("questionLevelWrap"),
   questionTenseWrap: byId("questionTenseWrap"),
   questionThemeWrap: byId("questionThemeWrap"),
+  toneModeWrap: byId("toneModeWrap"),
   audioVoice: byId("audioVoice"),
   audioRate: byId("audioRate"),
   audioRateValue: byId("audioRateValue"),
@@ -1698,10 +1699,7 @@ function bindUI() {
   }
   if (els.toneExerciseMode) {
     els.toneExerciseMode.addEventListener("change", () => {
-      state.prefs.toneExerciseMode = els.toneExerciseMode.value || "word";
-      saveJson(STORAGE_KEYS.prefs, state.prefs);
-      resetRotations();
-      rollTonePair();
+      markControlsDirty();
     });
   }
 
@@ -1932,13 +1930,16 @@ function setControlsMode(tabName) {
   const isWords = tabName === "words";
   const isTones = tabName === "tones";
   [els.globalLevelWrap, els.globalTenseWrap, els.globalThemeWrap].forEach((node) => {
-    if (node) node.classList.toggle("hidden", isQuestions);
+    if (node) node.classList.toggle("hidden", isQuestions || isTones);
   });
   if (els.wordFilterWrap) {
     els.wordFilterWrap.classList.toggle("hidden", !isWords || isQuestions);
   }
+  if (els.toneModeWrap) {
+    els.toneModeWrap.classList.toggle("hidden", !isTones);
+  }
   if (els.globalTenseWrap) {
-    els.globalTenseWrap.classList.toggle("hidden", isWords || isQuestions);
+    els.globalTenseWrap.classList.toggle("hidden", isWords || isQuestions || isTones);
   }
   [els.questionLevelWrap, els.questionTenseWrap, els.questionThemeWrap].forEach((node) => {
     if (node) node.classList.toggle("hidden", !isQuestions);
@@ -1960,9 +1961,10 @@ function setControlsMode(tabName) {
   if (els.globalTheme) els.globalTheme.disabled = isWords || isTones;
   if (els.globalTense) els.globalTense.disabled = isTones;
   if (els.wordFilter) els.wordFilter.disabled = !isWords || isTones;
+  if (els.toneExerciseMode) els.toneExerciseMode.disabled = !isTones;
 
   if (isTones) {
-    els.controlsMessage.textContent = "Practice controls are inactive in Tones. Use Tone Exercise below.";
+    els.controlsMessage.textContent = "In Tones, choose Tone Exercise here, then press Apply Settings.";
     els.controlsMessage.classList.remove("pending");
     els.controlsMessage.classList.add("applied");
   } else if (isWords) {
@@ -1971,7 +1973,9 @@ function setControlsMode(tabName) {
     els.controlsMessage.classList.add("applied");
   } else {
     const msg = String(els.controlsMessage.textContent || "");
-    if (msg.includes("In Words, use Word Filter") || msg.includes("inactive in Tones")) {
+    if (msg.includes("In Words, use Word Filter")
+      || msg.includes("inactive in Tones")
+      || msg.includes("In Tones, choose Tone Exercise here")) {
       els.controlsMessage.textContent = "";
       els.controlsMessage.classList.remove("pending");
       els.controlsMessage.classList.remove("applied");

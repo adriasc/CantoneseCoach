@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.2.5</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.2.6</span></p>
         <h1>Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -124,6 +124,13 @@
             <option value="travel">Travel/Going out</option>
             <option value="daily">Daily routines</option>
             <option value="holiday">Holiday plans</option>
+          </select>
+        </div>
+        <div id="toneModeWrap" class="tone-control hidden">
+          <label for="toneExerciseMode">Tone Exercise</label>
+          <select id="toneExerciseMode">
+            <option value="word">Word pairs</option>
+            <option value="sentence">Sentence pairs (L3+)</option>
           </select>
         </div>
       </div>
@@ -335,15 +342,6 @@
       <div class="card">
         <h2>Tone Contrast Drills</h2>
         <p>Press A, B, or Random. Then choose the Jyutping or sentence you just heard.</p>
-        <div class="slot-grid">
-          <div>
-            <label for="toneExerciseMode">Tone Exercise</label>
-            <select id="toneExerciseMode">
-              <option value="word">Word pairs</option>
-              <option value="sentence">Sentence pairs (L3+)</option>
-            </select>
-          </div>
-        </div>
         <p class="formula" id="toneLabel"></p>
         <p class="example" id="tonePrompt">Step 1: Play a clip. Step 2: Choose meaning below.</p>
         <div class="result-box">
