@@ -1400,6 +1400,7 @@ const state = {
   prefs: loadJson(STORAGE_KEYS.prefs, {
     level: 1,
     tense: "mixed",
+    wordFilter: "mixed",
     theme: "mixed",
     questionLevel: "basic",
     questionTense: "mixed",
@@ -1449,6 +1450,8 @@ const els = {
   globalTheme: byId("globalTheme"),
   globalLevelWrap: byId("globalLevelWrap"),
   globalTenseWrap: byId("globalTenseWrap"),
+  wordFilter: byId("wordFilter"),
+  wordFilterWrap: byId("wordFilterWrap"),
   globalThemeWrap: byId("globalThemeWrap"),
   questionLevel: byId("questionLevel"),
   questionTense: byId("questionTense"),
@@ -1772,6 +1775,7 @@ function bindUI() {
 
   els.globalLevel.addEventListener("change", markControlsDirty);
   els.globalTense.addEventListener("change", markControlsDirty);
+  if (els.wordFilter) els.wordFilter.addEventListener("change", markControlsDirty);
   els.globalTheme.addEventListener("change", markControlsDirty);
   if (els.themeStyle) {
     els.themeStyle.addEventListener("change", () => {
@@ -1868,6 +1872,7 @@ function markControlsDirty() {
 function applyGlobalControls() {
   const prevLevel = normalizePracticeLevel(state.prefs.level);
   const prevTense = state.prefs.tense || "mixed";
+  const prevWordFilter = state.prefs.wordFilter || "mixed";
   const prevTheme = state.prefs.theme || "mixed";
   const prevToneMode = state.prefs.toneExerciseMode || "word";
   const prevQLevel = state.prefs.questionLevel || "basic";
@@ -1875,6 +1880,7 @@ function applyGlobalControls() {
   const prevQTheme = state.prefs.questionTheme || "mixed";
   state.prefs.level = normalizePracticeLevel(els.globalLevel.value);
   state.prefs.tense = els.globalTense.value;
+  state.prefs.wordFilter = els.wordFilter?.value || "mixed";
   state.prefs.theme = els.globalTheme.value;
   state.prefs.questionLevel = els.questionLevel?.value || "basic";
   state.prefs.questionTense = els.questionTense?.value || "mixed";
@@ -1888,6 +1894,7 @@ function applyGlobalControls() {
   applyTheme(state.prefs.uiTheme);
   const coreChanged = prevLevel !== state.prefs.level
     || prevTense !== state.prefs.tense
+    || prevWordFilter !== state.prefs.wordFilter
     || prevTheme !== state.prefs.theme;
   const toneModeChanged = prevToneMode !== state.prefs.toneExerciseMode;
   const questionChanged = prevQLevel !== state.prefs.questionLevel
@@ -1927,6 +1934,12 @@ function setControlsMode(tabName) {
   [els.globalLevelWrap, els.globalTenseWrap, els.globalThemeWrap].forEach((node) => {
     if (node) node.classList.toggle("hidden", isQuestions);
   });
+  if (els.wordFilterWrap) {
+    els.wordFilterWrap.classList.toggle("hidden", !isWords || isQuestions);
+  }
+  if (els.globalTenseWrap) {
+    els.globalTenseWrap.classList.toggle("hidden", isWords || isQuestions);
+  }
   [els.questionLevelWrap, els.questionTenseWrap, els.questionThemeWrap].forEach((node) => {
     if (node) node.classList.toggle("hidden", !isQuestions);
   });
@@ -1940,16 +1953,20 @@ function setControlsMode(tabName) {
   if (els.globalTenseWrap) {
     els.globalTenseWrap.classList.toggle("inactive-control", isTones);
   }
+  if (els.wordFilterWrap) {
+    els.wordFilterWrap.classList.toggle("inactive-control", isTones || !isWords);
+  }
   if (els.globalLevel) els.globalLevel.disabled = isWords || isTones;
   if (els.globalTheme) els.globalTheme.disabled = isWords || isTones;
   if (els.globalTense) els.globalTense.disabled = isTones;
+  if (els.wordFilter) els.wordFilter.disabled = !isWords || isTones;
 
   if (isTones) {
     els.controlsMessage.textContent = "Practice controls are inactive in Tones. Use Tone Exercise below.";
     els.controlsMessage.classList.remove("pending");
     els.controlsMessage.classList.add("applied");
   } else if (isWords) {
-    els.controlsMessage.textContent = "In Words, only Verb Time is active. Level and Theme are inactive.";
+    els.controlsMessage.textContent = "In Words, use Word Filter. Level and Theme are inactive.";
     els.controlsMessage.classList.remove("pending");
     els.controlsMessage.classList.add("applied");
   }
@@ -1957,10 +1974,10 @@ function setControlsMode(tabName) {
 
 function rollWord() {
   const level = normalizePracticeLevel(state.prefs.level);
-  const tense = state.prefs.tense || "mixed";
+  const wordFilter = state.prefs.wordFilter || "mixed";
   const wordsByLevel = (state.content.words || []).filter((w) => wordLevel(w) <= effectiveWordLevel(level));
-  const tenseFiltered = tense === "mixed" ? wordsByLevel : wordsByLevel.filter((w) => wordMatchesSelectedTense(w, tense));
-  const words = tenseFiltered.length ? tenseFiltered : wordsByLevel;
+  const filterMatches = wordsByLevel.filter((w) => wordMatchesFilter(w, wordFilter));
+  const words = wordFilter === "mixed" ? wordsByLevel : (filterMatches.length ? filterMatches : wordsByLevel);
   if (!words.length) return;
 
   const unknown = words.filter((w) => !state.known.has(w.id));
@@ -2988,6 +3005,7 @@ function jyutpingForWord(hanzi) {
 function syncControlValues() {
   els.globalLevel.value = String(normalizePracticeLevel(state.prefs.level));
   els.globalTense.value = state.prefs.tense || "mixed";
+  if (els.wordFilter) els.wordFilter.value = state.prefs.wordFilter || "mixed";
   els.globalTheme.value = state.prefs.theme || "mixed";
   if (els.questionLevel) els.questionLevel.value = state.prefs.questionLevel || "basic";
   if (els.questionTense) els.questionTense.value = state.prefs.questionTense || "mixed";
@@ -3199,30 +3217,36 @@ function getFilteredQuestionSentences() {
   return pool;
 }
 
-function wordMatchesSelectedTense(word, selectedTense) {
-  if (!word || selectedTense === "mixed") return true;
+function wordMatchesFilter(word, selectedFilter) {
+  if (!word || selectedFilter === "mixed") return true;
   const key = normalizeHanzi(word.hanzi);
   const category = String(word.category || "").toLowerCase();
-  const isVerb = category === "verb";
-  const isAspect = category === "aspect";
-  const isTime = category === "time";
-  const isConjunction = category === "conjunction";
 
-  if (selectedTense === "past") {
-    return isVerb || isAspect || (isTime && new Set(["尋日", "上次", "之前"]).has(key))
-      || new Set(["咗", "過", "完", "已經"]).has(key);
-  }
-  if (selectedTense === "future") {
-    return isVerb || isAspect || (isTime && new Set(["聽日", "下次", "之後", "稍後", "遲啲"]).has(key))
-      || new Set(["會", "將會"]).has(key);
-  }
-  if (selectedTense === "present") {
-    return isVerb || isAspect || (isTime && new Set(["今日", "而家"]).has(key))
-      || new Set(["緊", "住"]).has(key);
-  }
-  if (selectedTense === "conditional") {
-    return isVerb || isConjunction || new Set(["如果", "只要", "就算", "一...就", "因為", "所以"]).has(key);
-  }
+  const markerMap = {
+    past_markers: new Set(["咗", "過", "完", "已經", "尋日", "上次", "之前"]),
+    future_markers: new Set(["會", "將會", "聽日", "後天", "下次", "之後", "稍後", "遲啲"]),
+    present_markers: new Set(["緊", "住", "而家", "今日"]),
+    conditional_markers: new Set(["如果", "只要", "就算", "一...就", "因為", "所以"])
+  };
+  if (markerMap[selectedFilter]) return markerMap[selectedFilter].has(key);
+
+  const categoryMap = {
+    verbs: new Set(["verb"]),
+    nouns: new Set(["noun", "food", "drink", "language"]),
+    time: new Set(["time"]),
+    grammar: new Set(["grammar"]),
+    adjectives: new Set(["adjective"]),
+    adverbs: new Set(["adverb"]),
+    pronouns: new Set(["pronoun"]),
+    places: new Set(["place"]),
+    conjunctions: new Set(["conjunction"]),
+    prepositions: new Set(["preposition"]),
+    measure_words: new Set(["measure"]),
+    particles: new Set(["particle", "final-particle"]),
+    aspect_markers: new Set(["aspect"])
+  };
+  if (categoryMap[selectedFilter]) return categoryMap[selectedFilter].has(category);
+
   return true;
 }
 
