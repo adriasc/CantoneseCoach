@@ -1938,6 +1938,11 @@ function setControlsMode(tabName) {
   if (els.toneModeWrap) {
     els.toneModeWrap.classList.toggle("hidden", !isTones);
   }
+  if (isTones && state.prefs.controlsCollapsed) {
+    state.prefs.controlsCollapsed = false;
+    saveJson(STORAGE_KEYS.prefs, state.prefs);
+    setControlsCollapsed(false);
+  }
   if (els.globalTenseWrap) {
     els.globalTenseWrap.classList.toggle("hidden", isWords || isQuestions || isTones);
   }
