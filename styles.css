@@ -139,6 +139,7 @@ body {
   color: var(--ink);
   background: radial-gradient(circle at 15% 20%, var(--bg-a) 0%, var(--bg-b) 34%, var(--bg-c) 78%);
   min-height: 100vh;
+  touch-action: manipulation;
 }
 
 .bg-shape {

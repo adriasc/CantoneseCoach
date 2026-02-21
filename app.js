@@ -1208,11 +1208,16 @@ const GENERATED_SENTENCES = buildGeneratedAspectSentences();
 const GENERATED_FUTURE_SENTENCES = buildGeneratedFutureSentences();
 const GENERATED_CONDITIONAL_SENTENCES = buildGeneratedConditionalSentences();
 const GENERATED_QUESTION_SENTENCES = buildGeneratedQuestionSentences();
+const GENERATED_LEVEL3_SENTENCES = buildGeneratedLevel3ExpandedSentences();
+const GENERATED_LEVEL4_LONG_SENTENCES = buildGeneratedLevel4LongSentences();
 const ALL_SENTENCES = SENTENCE_BANK
   .concat(GENERATED_SENTENCES)
   .concat(GENERATED_FUTURE_SENTENCES)
   .concat(GENERATED_CONDITIONAL_SENTENCES)
-  .concat(GENERATED_QUESTION_SENTENCES);
+  .concat(GENERATED_LEVEL3_SENTENCES)
+  .concat(GENERATED_LEVEL4_LONG_SENTENCES)
+  .concat(GENERATED_QUESTION_SENTENCES)
+  .map((s) => ({ ...s, english: normalizeEnglishSentence(s.english) }));
 
 const REAL_NOISE_URLS = {
   "real-market": [
@@ -1927,7 +1932,10 @@ function setControlsMode(tabName) {
 
 function rollWord() {
   const level = normalizePracticeLevel(state.prefs.level);
-  const words = (state.content.words || []).filter((w) => wordLevel(w) <= effectiveWordLevel(level));
+  const tense = state.prefs.tense || "mixed";
+  const wordsByLevel = (state.content.words || []).filter((w) => wordLevel(w) <= effectiveWordLevel(level));
+  const tenseFiltered = tense === "mixed" ? wordsByLevel : wordsByLevel.filter((w) => wordMatchesSelectedTense(w, tense));
+  const words = tenseFiltered.length ? tenseFiltered : wordsByLevel;
   if (!words.length) return;
 
   const unknown = words.filter((w) => !state.known.has(w.id));
@@ -2131,9 +2139,12 @@ function renderToneChoices() {
   if (!pair || !els.toneChoices) return;
   const toneA = toneItemForLabel("a");
   const toneB = toneItemForLabel("b");
-  const options = state.currentToneKind === "sentence"
-    ? [toneA.jyutping, toneB.jyutping]
-    : [toneA.jyutping, toneB.jyutping];
+  const options = [toneA.jyutping, toneB.jyutping];
+  const selected = normalizePracticeLevel(state.prefs.level);
+  if (state.currentToneKind === "word" && selected !== 1) {
+    const extra = pickThirdToneOption(options);
+    if (extra) options.push(extra);
+  }
   shuffle(options);
   els.toneChoices.innerHTML = "";
   options.forEach((option) => {
@@ -2143,6 +2154,16 @@ function renderToneChoices() {
     btn.addEventListener("click", () => checkToneAnswer(option, btn));
     els.toneChoices.appendChild(btn);
   });
+}
+
+function pickThirdToneOption(existingOptions) {
+  const normalizedExisting = new Set(existingOptions.map((o) => String(o || "").trim()));
+  const candidates = getFilteredTonePairs()
+    .flatMap((pair) => [pair.a?.jyutping, pair.b?.jyutping])
+    .filter((jp) => jp && !normalizedExisting.has(String(jp).trim()));
+  if (!candidates.length) return "";
+  const unique = Array.from(new Set(candidates));
+  return unique[randomInt(unique.length)];
 }
 
 function checkToneAnswer(selected, clickedBtn) {
@@ -2228,21 +2249,45 @@ function pickDistractors(correctId, correctEnglish, amount) {
 }
 
 function getFilteredTonePairs() {
-  const level = effectiveToneLevel(normalizePracticeLevel(state.prefs.level));
-  const pool = TONE_PAIR_BANK.filter((pair) => pair.level <= level);
-  return pool.length ? pool : TONE_PAIR_BANK.slice(0, 3);
+  const selected = normalizePracticeLevel(state.prefs.level);
+  if (selected === "mixed") return TONE_PAIR_BANK.slice();
+  if (selected === 1) {
+    const p1 = TONE_PAIR_BANK.filter((pair) => pair.level === 1);
+    return p1.length ? p1 : TONE_PAIR_BANK.slice(0, 3);
+  }
+  if (selected === 2) {
+    const p2 = TONE_PAIR_BANK.filter((pair) => pair.level === 2 || pair.level === 3);
+    return p2.length ? p2 : TONE_PAIR_BANK.slice(0, 3);
+  }
+  if (selected === 3) {
+    const p3 = TONE_PAIR_BANK.filter((pair) => pair.level === 4);
+    return p3.length ? p3 : TONE_PAIR_BANK.slice(0, 3);
+  }
+  const p4 = TONE_PAIR_BANK.filter((pair) => pair.level === 5);
+  return p4.length ? p4 : TONE_PAIR_BANK.slice(0, 3);
 }
 
 function getFilteredToneSentencePairs() {
-  const level = effectiveToneLevel(normalizePracticeLevel(state.prefs.level));
-  const pool = TONE_SENTENCE_BANK.filter((pair) => pair.level <= level && pair.level >= 3);
-  return pool.length ? pool : [];
+  const selected = normalizePracticeLevel(state.prefs.level);
+  if (selected === "mixed") return TONE_SENTENCE_BANK.slice();
+  if (selected === 1) return [];
+  if (selected === 2) {
+    const p2 = TONE_SENTENCE_BANK.filter((pair) => pair.level === 3);
+    return p2.length ? p2 : TONE_SENTENCE_BANK.slice(0, 3);
+  }
+  if (selected === 3) {
+    const p3 = TONE_SENTENCE_BANK.filter((pair) => pair.level === 4);
+    return p3.length ? p3 : TONE_SENTENCE_BANK.slice(0, 3);
+  }
+  const p4 = TONE_SENTENCE_BANK.filter((pair) => pair.level === 5);
+  return p4.length ? p4 : TONE_SENTENCE_BANK.slice(0, 3);
 }
 
 function resolveToneExerciseMode() {
   const mode = state.prefs.toneExerciseMode || "word";
-  const level = effectiveToneLevel(normalizePracticeLevel(state.prefs.level));
-  if (mode === "sentence" && level >= 3) return "sentence";
+  const selected = normalizePracticeLevel(state.prefs.level);
+  const allowSentence = selected === "mixed" || (typeof selected === "number" && selected >= 2);
+  if (mode === "sentence" && allowSentence) return "sentence";
   return "word";
 }
 
@@ -3145,6 +3190,27 @@ function getFilteredQuestionSentences() {
   return pool;
 }
 
+function wordMatchesSelectedTense(word, selectedTense) {
+  if (!word || selectedTense === "mixed") return true;
+  const key = normalizeHanzi(word.hanzi);
+  const tenseHits = ALL_SENTENCES.filter((s) => normalizeHanzi(s.hanzi).includes(key)).map((s) => s.tense);
+  if (tenseHits.length) return tenseHits.includes(selectedTense);
+
+  if (selectedTense === "past") {
+    return new Set(["咗", "過", "完", "已經", "尋日", "上次"]).has(key);
+  }
+  if (selectedTense === "future") {
+    return new Set(["會", "將會", "聽日", "下次", "之後"]).has(key);
+  }
+  if (selectedTense === "present") {
+    return new Set(["緊", "住", "而家", "今日"]).has(key);
+  }
+  if (selectedTense === "conditional") {
+    return new Set(["如果", "只要", "就算", "一...就"]).has(key);
+  }
+  return true;
+}
+
 function buildWordExample(word) {
   if (!word) return "";
   if (word.example) return word.example;
@@ -3155,7 +3221,7 @@ function buildWordExample(word) {
   if (word.category === "verb") return `我${word.hanzi}。`;
   if (word.category === "adjective") return `呢個好${word.hanzi}。`;
   if (word.category === "place") return `我喺${word.hanzi}。`;
-  return `${word.hanzi}。`;
+  return `我喺屋企見到${word.hanzi}。`;
 }
 
 function buildWordExampleEnglish(word, exampleHanzi) {
@@ -3169,7 +3235,11 @@ function buildWordExampleEnglish(word, exampleHanzi) {
     const fromExampleSentence = ALL_SENTENCES.find((s) => normalizeHanzi(s.hanzi) === normalizeHanzi(word.example));
     if (fromExampleSentence?.english) return fromExampleSentence.english;
   }
-  return word.english || "";
+  if (word.category === "time") return `At ${word.english || "this time"}, I study Cantonese.`;
+  if (word.category === "verb") return `I ${word.english || "do this action"}.`;
+  if (word.category === "adjective") return `This is very ${word.english || "good"}.`;
+  if (word.category === "place") return `I am at ${word.english || "this place"}.`;
+  return `I can see ${word.english || "this word"} at home.`;
 }
 
 function wordLevel(word) {
@@ -3606,6 +3676,126 @@ function buildGeneratedQuestionSentences() {
   return out;
 }
 
+function buildGeneratedLevel3ExpandedSentences() {
+  const subjects = [
+    { h: "我", j: "ngo5", e: "I" },
+    { h: "你", j: "nei5", e: "you" },
+    { h: "佢", j: "keoi5", e: "he/she" },
+    { h: "我哋", j: "ngo5 dei6", e: "we" },
+    { h: "你哋", j: "nei5 dei6", e: "you all" }
+  ];
+  const mediumTemplates = {
+    present: [
+      { theme: "daily", h: "而家喺公司做緊嘢，之後先食午餐。", j: "ji4 gaa1 hai2 gung1 si1 zou6 gan2 je5, zi1 hau6 sin1 sik6 ng5 caan1", e: "are working at the office now, then will eat lunch." },
+      { theme: "home", h: "而家喺屋企執緊房，等陣先休息。", j: "ji4 gaa1 hai2 uk1 kei2 zap1 gan2 fong2, dang2 zan6 sin1 jau1 sik1", e: "are tidying the room at home now, then will rest." },
+      { theme: "friends", h: "而家同朋友傾緊計，仲想再聽多次。", j: "ji4 gaa1 tung4 pang4 jau5 king1 gan2 gai2, zung6 soeng2 zoi3 teng1 do1 ci3", e: "are chatting with friends now and still want to hear it again." },
+      { theme: "travel", h: "而家喺街度等緊車，準備去市場買嘢。", j: "ji4 gaa1 hai2 gaai1 dou6 dang2 gan2 ce1, zeon2 bei6 heoi3 si5 coeng4 maai5 je5", e: "are waiting for transport on the street now, getting ready to go to the market." },
+      { theme: "holiday", h: "而家喺酒店樓下食早餐，之後會去海邊行下。", j: "ji4 gaa1 hai2 zau2 dim3 lau4 haa6 sik6 zou2 caan1, zi1 hau6 wui5 heoi3 hoi2 bin1 haang4 haa5", e: "are having breakfast downstairs at the hotel now, then will walk by the sea." }
+    ],
+    past: [
+      { theme: "daily", h: "尋日喺公司做完工作之後，先返屋企休息。", j: "cam4 jat6 hai2 gung1 si1 zou6 jyun4 gung1 zok3 zi1 hau6, sin1 faan1 uk1 kei2 jau1 sik1", e: "finished work at the office yesterday, then went home to rest." },
+      { theme: "home", h: "頭先喺廚房煮完飯，跟住即刻洗碗。", j: "tau4 sin1 hai2 cyu4 fong2 zyu2 jyun4 faan6, gan1 zyu6 zik1 hak1 sai2 wun2", e: "finished cooking in the kitchen just now, then washed the dishes right away." },
+      { theme: "friends", h: "上次同朋友食完飯之後，仲一齊行咗一陣。", j: "soeng6 ci3 tung4 pang4 jau5 sik6 jyun4 faan6 zi1 hau6, zung6 jat1 cai4 haang4 zo2 jat1 zan6", e: "finished eating with friends last time and then still walked together for a while." },
+      { theme: "travel", h: "上星期去咗市場買菜，返到屋企先開始煮飯。", j: "soeng6 sing1 kei4 heoi3 zo2 si5 coeng4 maai5 coi3, faan1 dou3 uk1 kei2 sin1 hoi1 ci2 zyu2 faan6", e: "went to the market to buy vegetables last week, then started cooking after getting home." },
+      { theme: "holiday", h: "假期嗰陣住過海邊酒店，所以而家仲記得嗰間房。", j: "gaa3 kei4 go2 zan6 zyu6 gwo3 hoi2 bin1 zau2 dim3, so2 ji5 ji4 gaa1 zung6 gei3 dak1 go2 gaan1 fong2", e: "stayed at a seaside hotel during the holiday, so still remember that room now." }
+    ],
+    future: [
+      { theme: "daily", h: "聽日會早啲出門返工，避免塞車同遲到。", j: "ting1 jat6 wui5 zou2 di1 ceot1 mun4 faan1 gung1, bei6 min5 sak1 ce1 tung4 ci4 dou3", e: "will leave earlier for work tomorrow to avoid traffic and being late." },
+      { theme: "home", h: "今晚會先做完家務，再同屋企人一齊食飯。", j: "gam1 maan5 wui5 sin1 zou6 jyun4 gaa1 mou6, zoi3 tung4 uk1 kei2 jan4 jat1 cai4 sik6 faan6", e: "will finish housework first tonight, then eat with family." },
+      { theme: "friends", h: "下次會同朋友去新餐廳，順便試幾款新菜。", j: "haa6 ci3 wui5 tung4 pang4 jau5 heoi3 san1 caan1 teng1, seon6 bin6 si3 gei2 fun2 san1 coi3", e: "will go to a new restaurant with friends next time and try a few new dishes." },
+      { theme: "travel", h: "遲啲會坐巴士去機場，接朋友再一齊返酒店。", j: "ci4 di1 wui5 co5 baa1 si2 heoi3 gei1 coeng4, zip3 pang4 jau5 zoi3 jat1 cai4 faan1 zau2 dim3", e: "will take a bus to the airport later, pick up a friend, then return to the hotel together." },
+      { theme: "holiday", h: "下個月會安排假期，預早訂機票同酒店。", j: "haa6 go3 jyut6 wui5 on1 paai4 gaa3 kei4, jyu6 zou2 deng6 gei1 piu3 tung4 zau2 dim3", e: "will arrange the holiday next month and book flights and hotel early." }
+    ],
+    conditional: [
+      { theme: "daily", h: "如果之後改時間，我就會再調整行程同工作。", j: "jyu4 gwo2 zi1 hau6 goi2 si4 gaan3, ngo5 zau6 wui5 zoi3 tiu4 zing2 hang4 cing4 tung4 gung1 zok3", e: "if the time changes later, then will adjust the schedule and work again." },
+      { theme: "home", h: "如果今晚落雨，我哋就留喺屋企睇書同聽歌。", j: "jyu4 gwo2 gam1 maan5 lok6 jyu5, ngo5 dei6 zau6 lau4 hai2 uk1 kei2 tai2 syu1 tung4 teng1 go1", e: "if it rains tonight, then we will stay home reading and listening to music." },
+      { theme: "friends", h: "如果朋友遲到，我會喺餐廳等佢再點菜。", j: "jyu4 gwo2 pang4 jau5 ci4 dou3, ngo5 wui5 hai2 caan1 teng1 dang2 keoi5 zoi3 dim2 coi3", e: "if a friend is late, I will wait at the restaurant and order later." },
+      { theme: "travel", h: "如果交通唔方便，我哋就改搭巴士去市場。", j: "jyu4 gwo2 gaau1 tung1 m4 fong1 bin6, ngo5 dei6 zau6 goi2 daap3 baa1 si2 heoi3 si5 coeng4", e: "if transport is inconvenient, then we will switch to the bus to the market." },
+      { theme: "holiday", h: "如果酒店太貴，我哋就搵另一間近地鐵嘅。", j: "jyu4 gwo2 zau2 dim3 taai3 gwai3, ngo5 dei6 zau6 wan2 ling6 jat1 gaan1 gan6 dei6 tit3 ge3", e: "if the hotel is too expensive, then we will find another one near the MTR." }
+    ]
+  };
+  const out = [];
+  let idCounter = 8100;
+  Object.keys(mediumTemplates).forEach((tense) => {
+    mediumTemplates[tense].forEach((tpl) => {
+      subjects.forEach((sub) => {
+        out.push({
+          id: `gm3${idCounter++}`,
+          level: 4,
+          tense,
+          theme: tpl.theme,
+          hanzi: `${sub.h}${tpl.h}`,
+          jyutping: `${sub.j} ${tpl.j}`.trim(),
+          english: `${capitalizeFirst(sub.e)} ${tpl.e}`.replace(/\s+/g, " ").trim()
+        });
+      });
+    });
+  });
+  return out;
+}
+
+function buildGeneratedLevel4LongSentences() {
+  const subjects = [
+    { h: "我", j: "ngo5", e: "I", be: "am", have: "have" },
+    { h: "你", j: "nei5", e: "you", be: "are", have: "have" },
+    { h: "佢", j: "keoi5", e: "he/she", be: "is", have: "has" },
+    { h: "我哋", j: "ngo5 dei6", e: "we", be: "are", have: "have" },
+    { h: "你哋", j: "nei5 dei6", e: "you all", be: "are", have: "have" }
+  ];
+  const longTemplates = {
+    present: [
+      { theme: "daily", h: "而家喺公司開會，之後仲要整理文件同覆電郵。", j: "ji4 gaa1 hai2 gung1 si1 hoi1 wui2, zi1 hau6 zung6 jiu3 zing2 lei5 man4 gin2 tung4 fuk1 din6 jau4", e: "are in a meeting at the office now, and still need to organize documents and reply to emails." },
+      { theme: "home", h: "而家喺屋企煮緊飯，仲一邊聽廣東話一邊記新詞。", j: "ji4 gaa1 hai2 uk1 kei2 zyu2 gan2 faan6, zung6 jat1 bin1 teng1 gwong2 dung1 waa2 jat1 bin1 gei3 san1 ci4", e: "are cooking at home now while listening to Cantonese and memorizing new words." },
+      { theme: "friends", h: "而家同朋友喺餐廳傾緊計，順便計劃下次一齊去旅行。", j: "ji4 gaa1 tung4 pang4 jau5 hai2 caan1 teng1 king1 gan2 gai2, seon6 bin6 gai3 waak6 haa6 ci3 jat1 cai4 heoi3 leoi5 hang4", e: "are chatting with friends at a restaurant now, and at the same time planning the next trip together." },
+      { theme: "travel", h: "而家喺地鐵站等緊車，因為之後要轉兩程先到目的地。", j: "ji4 gaa1 hai2 dei6 tit3 zaam6 dang2 gan2 ce1, jan1 wai6 zi1 hau6 jiu3 zyun2 loeng5 cing4 sin1 dou3 muk6 dik1 dei6", e: "are waiting at the MTR station now because later need to transfer twice before arriving." },
+      { theme: "holiday", h: "而家喺酒店大堂等朋友，之後會去海邊散步再食晚飯。", j: "ji4 gaa1 hai2 zau2 dim3 daai6 tong4 dang2 pang4 jau5, zi1 hau6 wui5 heoi3 hoi2 bin1 saan3 bou6 zoi3 sik6 maan5 faan6", e: "are waiting for friends in the hotel lobby now, then will walk by the sea and have dinner." },
+      { theme: "daily", h: "而家雖然有啲攰，不過仲係保持練習，因為想快啲講得自然。", j: "ji4 gaa1 seoi1 jin4 jau5 di1 gui6, bat1 gwo3 zung6 hai6 bou2 ci4 lin6 zaap6, jan1 wai6 soeng2 faai3 di1 gong2 dak1 zi6 jin4", e: "are a little tired now, but still keep practicing because want to speak more naturally soon." }
+    ],
+    past: [
+      { theme: "daily", h: "尋日做完所有工作之後，仲留咗喺公司一陣先返屋企。", j: "cam4 jat6 zou6 jyun4 so2 jau5 gung1 zok3 zi1 hau6, zung6 lau4 zo2 hai2 gung1 si1 jat1 zan6 sin1 faan1 uk1 kei2", e: "finished all work yesterday, and still stayed at the office for a while before going home." },
+      { theme: "home", h: "尋晚喺廚房煮完飯之後，又同屋企人一齊收拾同洗碗。", j: "cam4 maan5 hai2 cyu4 fong2 zyu2 jyun4 faan6 zi1 hau6, jau6 tung4 uk1 kei2 jan4 jat1 cai4 sau1 sap6 tung4 sai2 wun2", e: "finished cooking in the kitchen last night, and then tidied up and washed dishes with family." },
+      { theme: "friends", h: "上星期同朋友傾咗好耐計，最後先決定下次去邊度見面。", j: "soeng6 sing1 kei4 tung4 pang4 jau5 king1 zo2 hou2 noi6 gai2, zeoi3 hau6 sin1 kyut3 ding6 haa6 ci3 heoi3 bin1 dou6 gin3 min6", e: "chatted with friends for a long time last week, and only at the end decided where to meet next time." },
+      { theme: "travel", h: "之前去過幾個市場，比較完價錢先買到又平又新鮮嘅菜。", j: "zi1 cin4 heoi3 gwo3 gei2 go3 si5 coeng4, bei2 gaau3 jyun4 gaa3 cin4 sin1 maai5 dou3 jau6 peng4 jau6 san1 sin1 ge3 coi3", e: "visited several markets before, and only after comparing prices bought vegetables that were cheap and fresh." },
+      { theme: "holiday", h: "假期嗰陣住咗喺海邊酒店三晚，每朝都早起身去散步。", j: "gaa3 kei4 go2 zan6 zyu6 zo2 hai2 hoi2 bin1 zau2 dim3 saam1 maan5, mui5 ziu1 dou1 zou2 hei2 san1 heoi3 saan3 bou6", e: "stayed at a seaside hotel for three nights during the holiday, and went for a walk early every morning." },
+      { theme: "daily", h: "啱啱試過新學習方法之後，發現記詞同聽力都明顯快咗。", j: "ngaam1 ngaam1 si3 gwo3 san1 hok6 zaap6 fong1 faat3 zi1 hau6, faat3 jin6 gei3 ci4 tung4 teng1 lik6 dou1 ming4 hin2 faai3 zo2", e: "after just trying a new study method, found that vocabulary and listening both improved clearly." }
+    ],
+    future: [
+      { theme: "daily", h: "聽日會先完成手上工作，再留十分鐘專心練習聽力同發音。", j: "ting1 jat6 wui5 sin1 jyun4 sing4 sau2 soeng6 gung1 zok3, zoi3 lau4 sap6 fan1 zung1 zyun1 sam1 lin6 zaap6 teng1 lik6 tung4 faat3 jam1", e: "will finish current work first tomorrow, then keep ten minutes to focus on listening and pronunciation practice." },
+      { theme: "home", h: "今晚會同屋企人一齊食飯，之後再用廣東話講返今日發生嘅事。", j: "gam1 maan5 wui5 tung4 uk1 kei2 jan4 jat1 cai4 sik6 faan6, zi1 hau6 zoi3 jung6 gwong2 dung1 waa2 gong2 faan1 gam1 jat6 faat3 sang1 ge3 si6", e: "will eat with family tonight, and afterwards retell what happened today in Cantonese." },
+      { theme: "friends", h: "下次見朋友之前會準備幾句自然對白，等傾計時可以即刻用到。", j: "haa6 ci3 gin3 pang4 jau5 zi1 cin4 wui5 zeon2 bei6 gei2 geoi3 zi6 jin4 deoi3 baak6, dang2 king1 gai2 si4 ho2 ji5 zik1 hak1 jung6 dou3", e: "before seeing friends next time, will prepare a few natural lines so can use them immediately while chatting." },
+      { theme: "travel", h: "遲啲會早啲去車站，預留時間買飛同確認轉車路線。", j: "ci4 di1 wui5 zou2 di1 heoi3 ce1 zaam6, jyu6 lau4 si4 gaan3 maai5 fei1 tung4 kuk1 jing6 zyun2 ce1 lou6 sin3", e: "will go to the station earlier later, leaving time to buy tickets and confirm transfer routes." },
+      { theme: "holiday", h: "下個月放假之前會訂好機票酒店，同時安排每日學習時間。", j: "haa6 go3 jyut6 fong3 gaa3 zi1 cin4 wui5 deng6 hou2 gei1 piu3 zau2 dim3, tung4 si4 on1 paai4 mui5 jat6 hok6 zaap6 si4 gaan3", e: "before next month’s holiday, will book flights and hotel, and also arrange daily study time." },
+      { theme: "daily", h: "之後會持續記錄常見句型，並且每晚用三分鐘快速覆習一次。", j: "zi1 hau6 wui5 ci4 zuk6 gei3 luk6 soeng4 gin3 geoi3 jing4, bing6 ce2 mui5 maan5 jung6 saam1 fan1 zung1 faai3 suk1 fuk1 zaap6 jat1 ci3", e: "will continue recording common sentence patterns later, and review them quickly every night for three minutes." }
+    ],
+    conditional: [
+      { theme: "daily", h: "如果明日開會時間再改，我就會提早出門並且先通知同事安排。", j: "jyu4 gwo2 ming4 jat6 hoi1 wui2 si4 gaan3 zoi3 goi2, ngo5 zau6 wui5 tai4 zou2 ceot1 mun4 bing6 ce2 sin1 tung1 zi1 tung4 si6 on1 paai4", e: "if the meeting time changes again tomorrow, then will leave earlier and inform colleagues first." },
+      { theme: "home", h: "如果今晚太攰，我哋就會留喺屋企簡單食飯，之後早啲休息。", j: "jyu4 gwo2 gam1 maan5 taai3 gui6, ngo5 dei6 zau6 wui5 lau4 hai2 uk1 kei2 gaan2 daan1 sik6 faan6, zi1 hau6 zou2 di1 jau1 sik1", e: "if tonight is too tiring, then we will stay home for a simple meal and rest early afterwards." },
+      { theme: "friends", h: "如果朋友突然改地點，我會即刻查路線，確保唔會再遲到。", j: "jyu4 gwo2 pang4 jau5 dat6 jin4 goi2 dei6 dim2, ngo5 wui5 zik1 hak1 caa4 lou6 sin3, kok3 bou2 m4 wui5 zoi3 ci4 dou3", e: "if friends suddenly change the location, I will check the route immediately to make sure not to be late again." },
+      { theme: "travel", h: "如果交通塞車好嚴重，我哋就改搭地鐵，仲會預多二十分鐘。", j: "jyu4 gwo2 gaau1 tung1 sak1 ce1 hou2 jim4 zung6, ngo5 dei6 zau6 goi2 daap3 dei6 tit3, zung6 wui5 jyu6 do1 ji6 sap6 fan1 zung1", e: "if traffic jams are severe, then we will switch to the MTR and still allow twenty extra minutes." },
+      { theme: "holiday", h: "如果酒店價格再升，我哋就會轉去另一區，兼顧預算同交通方便。", j: "jyu4 gwo2 zau2 dim3 gaa3 gaak3 zoi3 sing1, ngo5 dei6 zau6 wui5 zyun2 heoi3 ling6 jat1 keoi1, gim1 gu3 jyu6 syun3 tung4 gaau1 tung1 fong1 bin6", e: "if hotel prices rise again, then we will move to another area to balance budget and transport convenience." },
+      { theme: "daily", h: "如果我哋每日都肯練習十分鐘，講廣東話時就會越來越自然流利。", j: "jyu4 gwo2 ngo5 dei6 mui5 jat6 dou1 hang2 lin6 zaap6 sap6 fan1 zung1, gong2 gwong2 dung1 waa2 si4 zau6 wui5 jyut6 loi4 jyut6 zi6 jin4 lau4 lei6", e: "if we practice ten minutes every day, speaking Cantonese will become more and more natural and fluent." }
+    ]
+  };
+  const out = [];
+  let idCounter = 9200;
+  Object.keys(longTemplates).forEach((tense) => {
+    longTemplates[tense].forEach((tpl) => {
+      subjects.forEach((sub) => {
+        out.push({
+          id: `gm4${idCounter++}`,
+          level: 5,
+          tense,
+          theme: tpl.theme,
+          hanzi: `${sub.h}${tpl.h}`,
+          jyutping: `${sub.j} ${tpl.j}`.trim(),
+          english: `${capitalizeFirst(sub.e)} ${tpl.e}`.replace(/\s+/g, " ").trim()
+        });
+      });
+    });
+  });
+  return out;
+}
+
 function analyzeSentence(sentenceInput) {
   const hanzi = typeof sentenceInput === "string" ? sentenceInput : (sentenceInput?.hanzi || "");
   const originalJyutping = typeof sentenceInput === "string" ? "" : (sentenceInput?.jyutping || "");
@@ -3780,6 +3970,24 @@ function cleanLiteral(text) {
     .trim();
 }
 
+function normalizeEnglishSentence(textInput) {
+  let text = String(textInput || "").replace(/\s+/g, " ").trim();
+  const replacements = [
+    [/\bHe\/She are\b/g, "He/She is"],
+    [/\bhe\/she are\b/g, "he/she is"],
+    [/\bHe\/She have\b/g, "He/She has"],
+    [/\bhe\/she have\b/g, "he/she has"],
+    [/\bHe\/She were\b/g, "He/She was"],
+    [/\bhe\/she were\b/g, "he/she was"],
+    [/\bWhen he\/she met before, how long did you chat\?/gi, "When he/she met before, how long did he/she chat?"],
+    [/\bWhen your friend met before, how long did you chat\?/gi, "When your friend met before, how long did your friend chat?"]
+  ];
+  replacements.forEach(([pattern, replacement]) => {
+    text = text.replace(pattern, replacement);
+  });
+  return text;
+}
+
 function capitalizeFirst(value) {
   const text = String(value || "");
   if (!text) return text;
@@ -3787,12 +3995,14 @@ function capitalizeFirst(value) {
 }
 
 function normalizePracticeLevel(value) {
+  if (String(value) === "mixed") return "mixed";
   let n = Number(value) || 1;
   n = Math.max(1, Math.min(4, n));
   return n;
 }
 
 function sentenceMatchesSelectedLevel(sentenceLevel, selectedLevel) {
+  if (selectedLevel === "mixed") return true;
   if (selectedLevel === 1) return sentenceLevel === 1 || sentenceLevel === 2;
   if (selectedLevel === 2) return sentenceLevel === 3;
   if (selectedLevel === 3) return sentenceLevel === 4;
@@ -3801,6 +4011,7 @@ function sentenceMatchesSelectedLevel(sentenceLevel, selectedLevel) {
 }
 
 function effectiveWordLevel(selectedLevel) {
+  if (selectedLevel === "mixed") return 7;
   if (selectedLevel === 1) return 2;
   if (selectedLevel === 2) return 3;
   if (selectedLevel === 3) return 4;
@@ -3808,6 +4019,7 @@ function effectiveWordLevel(selectedLevel) {
 }
 
 function effectiveToneLevel(selectedLevel) {
+  if (selectedLevel === "mixed") return 5;
   if (selectedLevel === 1) return 2;
   if (selectedLevel === 2) return 3;
   if (selectedLevel === 3) return 4;
