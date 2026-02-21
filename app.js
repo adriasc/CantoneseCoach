@@ -3245,28 +3245,27 @@ function getFilteredQuestionSentences() {
   return pool;
 }
 
-const VALID_WORD_FILTERS = new Set([
-  "mixed",
-  "past_markers",
-  "future_markers",
-  "present_markers",
-  "conditional_markers",
-  "verbs",
-  "nouns",
-  "time",
-  "grammar",
-  "adjectives",
-  "adverbs",
-  "pronouns",
-  "places",
-  "conjunctions",
-  "prepositions",
-  "measure_words",
-  "particles",
-  "aspect_markers"
-]);
-
 function normalizeWordFilterValue(rawFilter) {
+  const validWordFilters = new Set([
+    "mixed",
+    "past_markers",
+    "future_markers",
+    "present_markers",
+    "conditional_markers",
+    "verbs",
+    "nouns",
+    "time",
+    "grammar",
+    "adjectives",
+    "adverbs",
+    "pronouns",
+    "places",
+    "conjunctions",
+    "prepositions",
+    "measure_words",
+    "particles",
+    "aspect_markers"
+  ]);
   const normalized = String(rawFilter || "mixed")
     .toLowerCase()
     .trim()
@@ -3293,7 +3292,7 @@ function normalizeWordFilterValue(rawFilter) {
     conditional: "conditional_markers"
   };
   const mapped = aliasMap[normalized] || normalized;
-  return VALID_WORD_FILTERS.has(mapped) ? mapped : "mixed";
+  return validWordFilters.has(mapped) ? mapped : "mixed";
 }
 
 function normalizeWordCategory(rawCategory) {
