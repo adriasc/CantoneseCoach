@@ -1922,12 +1922,37 @@ function switchTab(tabName) {
 
 function setControlsMode(tabName) {
   const isQuestions = tabName === "questions";
+  const isWords = tabName === "words";
+  const isTones = tabName === "tones";
   [els.globalLevelWrap, els.globalTenseWrap, els.globalThemeWrap].forEach((node) => {
     if (node) node.classList.toggle("hidden", isQuestions);
   });
   [els.questionLevelWrap, els.questionTenseWrap, els.questionThemeWrap].forEach((node) => {
     if (node) node.classList.toggle("hidden", !isQuestions);
   });
+
+  if (els.globalLevelWrap) {
+    els.globalLevelWrap.classList.toggle("inactive-control", isWords || isTones);
+  }
+  if (els.globalThemeWrap) {
+    els.globalThemeWrap.classList.toggle("inactive-control", isWords || isTones);
+  }
+  if (els.globalTenseWrap) {
+    els.globalTenseWrap.classList.toggle("inactive-control", isTones);
+  }
+  if (els.globalLevel) els.globalLevel.disabled = isWords || isTones;
+  if (els.globalTheme) els.globalTheme.disabled = isWords || isTones;
+  if (els.globalTense) els.globalTense.disabled = isTones;
+
+  if (isTones) {
+    els.controlsMessage.textContent = "Practice controls are inactive in Tones. Use Tone Exercise below.";
+    els.controlsMessage.classList.remove("pending");
+    els.controlsMessage.classList.add("applied");
+  } else if (isWords) {
+    els.controlsMessage.textContent = "In Words, only Verb Time is active. Level and Theme are inactive.";
+    els.controlsMessage.classList.remove("pending");
+    els.controlsMessage.classList.add("applied");
+  }
 }
 
 function rollWord() {
@@ -2121,7 +2146,7 @@ function renderTonePair() {
   const toneA = toneItemForLabel("a");
   const toneB = toneItemForLabel("b");
   const modeLabel = state.currentToneKind === "sentence" ? "Sentence tones" : "Word tones";
-  els.toneLabel.textContent = `Level ${pair.level} · ${modeLabel} · ${toneA.jyutping} / ${toneB.jyutping}`;
+  els.toneLabel.textContent = `${modeLabel} drill`;
   els.toneHanzi.textContent = `A: ${toneA.hanzi}   B: ${toneB.hanzi}`;
   els.toneJyutping.textContent = `A: ${toneA.jyutping}   B: ${toneB.jyutping}`;
   els.toneEnglish.textContent = `A: ${toneA.english}   B: ${toneB.english}`;
@@ -2249,45 +2274,16 @@ function pickDistractors(correctId, correctEnglish, amount) {
 }
 
 function getFilteredTonePairs() {
-  const selected = normalizePracticeLevel(state.prefs.level);
-  if (selected === "mixed") return TONE_PAIR_BANK.slice();
-  if (selected === 1) {
-    const p1 = TONE_PAIR_BANK.filter((pair) => pair.level === 1);
-    return p1.length ? p1 : TONE_PAIR_BANK.slice(0, 3);
-  }
-  if (selected === 2) {
-    const p2 = TONE_PAIR_BANK.filter((pair) => pair.level === 2 || pair.level === 3);
-    return p2.length ? p2 : TONE_PAIR_BANK.slice(0, 3);
-  }
-  if (selected === 3) {
-    const p3 = TONE_PAIR_BANK.filter((pair) => pair.level === 4);
-    return p3.length ? p3 : TONE_PAIR_BANK.slice(0, 3);
-  }
-  const p4 = TONE_PAIR_BANK.filter((pair) => pair.level === 5);
-  return p4.length ? p4 : TONE_PAIR_BANK.slice(0, 3);
+  return TONE_PAIR_BANK.slice();
 }
 
 function getFilteredToneSentencePairs() {
-  const selected = normalizePracticeLevel(state.prefs.level);
-  if (selected === "mixed") return TONE_SENTENCE_BANK.slice();
-  if (selected === 1) return [];
-  if (selected === 2) {
-    const p2 = TONE_SENTENCE_BANK.filter((pair) => pair.level === 3);
-    return p2.length ? p2 : TONE_SENTENCE_BANK.slice(0, 3);
-  }
-  if (selected === 3) {
-    const p3 = TONE_SENTENCE_BANK.filter((pair) => pair.level === 4);
-    return p3.length ? p3 : TONE_SENTENCE_BANK.slice(0, 3);
-  }
-  const p4 = TONE_SENTENCE_BANK.filter((pair) => pair.level === 5);
-  return p4.length ? p4 : TONE_SENTENCE_BANK.slice(0, 3);
+  return TONE_SENTENCE_BANK.slice();
 }
 
 function resolveToneExerciseMode() {
   const mode = state.prefs.toneExerciseMode || "word";
-  const selected = normalizePracticeLevel(state.prefs.level);
-  const allowSentence = selected === "mixed" || (typeof selected === "number" && selected >= 2);
-  if (mode === "sentence" && allowSentence) return "sentence";
+  if (mode === "sentence") return "sentence";
   return "word";
 }
 
@@ -3154,7 +3150,20 @@ function getFilteredSentences() {
   if (!pool.length) {
     pool = ALL_SENTENCES.filter((s) => sentenceMatchesSelectedLevel(s.level, level));
   }
+  if (level === 3) {
+    pool = pool.filter((s) => sentenceComplexityScore(s) >= 10);
+  }
+  if (level === 4) {
+    pool = pool.filter((s) => sentenceComplexityScore(s) >= 14);
+  }
   return pool;
+}
+
+function sentenceComplexityScore(sentence) {
+  const hanzi = String(sentence?.hanzi || "");
+  const base = tokenizeSentence(hanzi).filter((t) => !isPunctuation(t)).length;
+  const bonus = /，|；|,/.test(hanzi) ? 3 : 0;
+  return base + bonus;
 }
 
 function isQuestionSentence(sentence) {
@@ -3193,20 +3202,26 @@ function getFilteredQuestionSentences() {
 function wordMatchesSelectedTense(word, selectedTense) {
   if (!word || selectedTense === "mixed") return true;
   const key = normalizeHanzi(word.hanzi);
-  const tenseHits = ALL_SENTENCES.filter((s) => normalizeHanzi(s.hanzi).includes(key)).map((s) => s.tense);
-  if (tenseHits.length) return tenseHits.includes(selectedTense);
+  const category = String(word.category || "").toLowerCase();
+  const isVerb = category === "verb";
+  const isAspect = category === "aspect";
+  const isTime = category === "time";
+  const isConjunction = category === "conjunction";
 
   if (selectedTense === "past") {
-    return new Set(["咗", "過", "完", "已經", "尋日", "上次"]).has(key);
+    return isVerb || isAspect || (isTime && new Set(["尋日", "上次", "之前"]).has(key))
+      || new Set(["咗", "過", "完", "已經"]).has(key);
   }
   if (selectedTense === "future") {
-    return new Set(["會", "將會", "聽日", "下次", "之後"]).has(key);
+    return isVerb || isAspect || (isTime && new Set(["聽日", "下次", "之後", "稍後", "遲啲"]).has(key))
+      || new Set(["會", "將會"]).has(key);
   }
   if (selectedTense === "present") {
-    return new Set(["緊", "住", "而家", "今日"]).has(key);
+    return isVerb || isAspect || (isTime && new Set(["今日", "而家"]).has(key))
+      || new Set(["緊", "住"]).has(key);
   }
   if (selectedTense === "conditional") {
-    return new Set(["如果", "只要", "就算", "一...就"]).has(key);
+    return isVerb || isConjunction || new Set(["如果", "只要", "就算", "一...就", "因為", "所以"]).has(key);
   }
   return true;
 }

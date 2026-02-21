@@ -230,7 +230,7 @@ body[data-theme="poster"] .bg-shape {
 .topbar {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
 }
 
@@ -269,8 +269,9 @@ h1 {
   background: var(--soft);
   border: 2px solid var(--accent-2);
   border-radius: 999px;
-  padding: 8px 12px;
+  padding: 5px 9px;
   font-weight: 600;
+  font-size: 0.9rem;
 }
 
 .tabs {
@@ -332,13 +333,22 @@ h1 {
 }
 
 .gear-btn {
-  min-width: 42px;
-  min-height: 42px;
+  min-width: 36px;
+  min-height: 36px;
   border-radius: 999px;
-  font-size: 1.15rem;
+  font-size: 1rem;
   background: #2f5b7a;
   color: #fff;
   padding: 0;
+}
+
+.inactive-control {
+  opacity: 0.5;
+}
+
+.inactive-control select,
+.inactive-control input {
+  pointer-events: none;
 }
 
 .controls-card.is-collapsed .controls-grid,
