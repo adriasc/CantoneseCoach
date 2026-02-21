@@ -1458,10 +1458,12 @@ const els = {
   controlsMessage: byId("controlsMessage"),
   toggleWordJyutping: byId("toggleWordJyutping"),
   toggleWordEnglish: byId("toggleWordEnglish"),
+  toggleWordGrammarLens: byId("toggleWordGrammarLens"),
   togglePatternJyutping: byId("togglePatternJyutping"),
   togglePatternEnglish: byId("togglePatternEnglish"),
   toggleQuizJyutping: byId("toggleQuizJyutping"),
   toggleQuizEnglish: byId("toggleQuizEnglish"),
+  toggleQuizGrammarLens: byId("toggleQuizGrammarLens"),
   toggleToneJyutping: byId("toggleToneJyutping"),
   toggleToneEnglish: byId("toggleToneEnglish"),
   toggleQuestionGrammarLens: byId("toggleQuestionGrammarLens"),
@@ -1637,10 +1639,16 @@ function bindUI() {
 
   els.toggleWordJyutping.addEventListener("click", () => togglePref("showJyutping"));
   els.toggleWordEnglish.addEventListener("click", () => togglePref("showEnglish"));
+  if (els.toggleWordGrammarLens) {
+    els.toggleWordGrammarLens.addEventListener("click", toggleGrammarLensState);
+  }
   els.togglePatternJyutping.addEventListener("click", () => togglePref("showJyutping"));
   els.togglePatternEnglish.addEventListener("click", () => togglePref("showEnglish"));
   els.toggleQuizJyutping.addEventListener("click", () => togglePref("showJyutping"));
   els.toggleQuizEnglish.addEventListener("click", () => togglePref("showEnglish"));
+  if (els.toggleQuizGrammarLens) {
+    els.toggleQuizGrammarLens.addEventListener("click", toggleGrammarLensState);
+  }
   if (els.toggleToneJyutping) {
     els.toggleToneJyutping.addEventListener("click", () => {
       state.prefs.toneShowJyutping = !state.prefs.toneShowJyutping;
@@ -1898,18 +1906,35 @@ function rollWord() {
   state.currentWord = takeFromRotation("words", pool, (w) => w.id);
 
   els.wordCategory.textContent = state.currentWord.category || "word";
-  els.wordHanzi.textContent = state.currentWord.hanzi || "-";
-  els.wordJyutping.textContent = state.currentWord.jyutping || "-";
-  els.wordEnglish.textContent = state.currentWord.english || "-";
-  if (els.wordLiteral) {
-    els.wordLiteral.textContent = "";
-    els.wordLiteral.classList.add("hidden");
-  }
+  renderWordCard();
   els.wordExample.textContent = "";
   els.revealExample.textContent = "Show example";
   els.revealExample.classList.remove("hidden");
   applyVisibilityPrefs();
   refreshStats();
+}
+
+function renderWordCard() {
+  if (!state.currentWord) return;
+  const word = state.currentWord;
+  const analysis = analyzeSentence({ hanzi: word.hanzi, jyutping: word.jyutping });
+  if (state.prefs.showGrammarLens) {
+    els.wordHanzi.innerHTML = analysis.annotatedHanzi || escapeHtml(word.hanzi || "-");
+    els.wordJyutping.innerHTML = analysis.annotatedJyutping || escapeHtml(word.jyutping || "-");
+    els.wordEnglish.textContent = word.english || "-";
+    if (els.wordLiteral) {
+      els.wordLiteral.innerHTML = `Literal: ${analysis.literalHtml || escapeHtml(analysis.literal || "-")}`;
+      els.wordLiteral.classList.remove("hidden");
+    }
+  } else {
+    els.wordHanzi.textContent = word.hanzi || "-";
+    els.wordJyutping.textContent = word.jyutping || "-";
+    els.wordEnglish.textContent = word.english || "-";
+    if (els.wordLiteral) {
+      els.wordLiteral.textContent = "";
+      els.wordLiteral.classList.add("hidden");
+    }
+  }
 }
 
 function rollPattern() {
@@ -1935,13 +1960,14 @@ function renderPatternSentence() {
     els.patternGrammarNotes.innerHTML = analysis.notes.length
       ? analysis.notes.map((note) => `<div class="grammar-note">${note}</div>`).join("")
       : `<div class="grammar-note">No tense/aspect marker detected in this sentence.</div>`;
+    els.patternLiteral.innerHTML = `Literal: ${analysis.literalHtml || escapeHtml(analysis.literal)}`;
   } else {
     els.patternHanzi.textContent = built.hanzi;
     els.patternJyutping.textContent = built.jyutping;
     els.patternGrammarNotes.innerHTML = "";
+    els.patternLiteral.textContent = `Literal: ${analysis.literal}`;
   }
   els.patternEnglish.textContent = built.english;
-  els.patternLiteral.textContent = `Literal: ${analysis.literal}`;
   applyVisibilityPrefs();
 }
 
@@ -2002,23 +2028,23 @@ function renderQuizGrammar() {
     els.quizGrammarNotes.innerHTML = analysis.notes.length
       ? analysis.notes.map((note) => `<div class="grammar-note">${note}</div>`).join("")
       : `<div class="grammar-note">No tense/aspect marker detected in this sentence.</div>`;
+    els.quizLiteral.innerHTML = `Literal: ${analysis.literalHtml || escapeHtml(analysis.literal)}`;
   } else {
     els.quizHanzi.textContent = state.currentQuiz.hanzi;
     els.quizJyutping.textContent = state.currentQuiz.jyutping;
     els.quizGrammarNotes.innerHTML = "";
+    els.quizLiteral.textContent = `Literal: ${analysis.literal}`;
   }
-  els.quizLiteral.textContent = `Literal: ${analysis.literal}`;
 }
 
 function renderQuestionSentence() {
   if (!state.currentQuestion || !els.questionHanzi) return;
   const analysis = analyzeSentence({ hanzi: state.currentQuestion.hanzi, jyutping: state.currentQuestion.jyutping });
   if (state.prefs.showGrammarLens) {
-    const mapped = buildQuestionGlossMap(state.currentQuestion.hanzi);
-    els.questionHanzi.innerHTML = mapped.hanziHtml || analysis.annotatedHanzi;
+    els.questionHanzi.innerHTML = analysis.annotatedHanzi;
     els.questionJyutping.innerHTML = analysis.annotatedJyutping || escapeHtml(state.currentQuestion.jyutping);
     els.questionEnglish.textContent = state.currentQuestion.english;
-    els.questionLiteral.innerHTML = `Literal: ${mapped.glossHtml || escapeHtml(analysis.literal)}`;
+    els.questionLiteral.innerHTML = `Literal: ${analysis.literalHtml || escapeHtml(analysis.literal)}`;
   } else {
     els.questionHanzi.textContent = state.currentQuestion.hanzi;
     els.questionJyutping.textContent = state.currentQuestion.jyutping;
@@ -2980,6 +3006,12 @@ function applyVisibilityPrefs() {
   els.toggleQuizEnglish.textContent = showEn ? "Hide English" : "Show English";
   if (els.toggleQuestionEnglish) els.toggleQuestionEnglish.textContent = showEn ? "Hide English" : "Show English";
   els.toggleGrammarLens.textContent = state.prefs.showGrammarLens ? "Grammar Lens: On" : "Grammar Lens: Off";
+  if (els.toggleWordGrammarLens) {
+    els.toggleWordGrammarLens.textContent = state.prefs.showGrammarLens ? "Grammar Lens: On" : "Grammar Lens: Off";
+  }
+  if (els.toggleQuizGrammarLens) {
+    els.toggleQuizGrammarLens.textContent = state.prefs.showGrammarLens ? "Grammar Lens: On" : "Grammar Lens: Off";
+  }
   if (els.toggleQuestionGrammarLens) {
     els.toggleQuestionGrammarLens.textContent = state.prefs.showGrammarLens ? "Grammar Lens: On" : "Grammar Lens: Off";
   }
@@ -2990,6 +3022,7 @@ function toggleGrammarLensState() {
   state.prefs.showGrammarLens = !state.prefs.showGrammarLens;
   saveJson(STORAGE_KEYS.prefs, state.prefs);
   applyVisibilityPrefs();
+  renderWordCard();
   renderPatternSentence();
   renderQuizGrammar();
   renderQuestionSentence();
@@ -3549,7 +3582,11 @@ function analyzeSentence(sentenceInput) {
   const tokens = tokenizeSentence(hanzi);
   const notes = [];
   const literalParts = [];
+  const literalHtmlParts = [];
   const markerByIndex = {};
+  const classByIndex = {};
+  const mapClassByIndex = {};
+  let mapIndex = 0;
 
   tokens.forEach((token, idx) => {
     const marker = ASPECT_MARKERS[token];
@@ -3571,30 +3608,30 @@ function analyzeSentence(sentenceInput) {
 
     const marker = markerByIndex[idx];
     const isVerb = isVerbToken(token);
-    let cls = "tok";
+    const mapClass = `tok-map-${mapIndex % 8}`;
+    mapClassByIndex[idx] = mapClass;
+    mapIndex += 1;
+    let cls = `tok ${mapClass}`;
     const role = marker?.role;
     if (role === "past") cls += " tok-past";
     if (role === "prog") cls += " tok-prog";
     if (role === "future") cls += " tok-future";
     if (isVerb) cls += " tok-verb";
+    classByIndex[idx] = cls;
 
-    literalParts.push(literalForToken(token));
+    const literal = literalForToken(token);
+    literalParts.push(literal);
+    literalHtmlParts.push(`<span class="${cls} tok-gloss">${escapeHtml(literal)}</span>`);
     return `<span class="${cls}">${escapeHtml(token)}</span>`;
   });
 
   const highlights = [];
   tokens.forEach((token, idx) => {
     if (isPunctuation(token)) return;
-    const marker = markerByIndex[idx];
-    const isVerb = isVerbToken(token);
     const jp = jyutpingForToken(token);
     if (!jp || jp === token || jp === "to-confirm") return;
-    const classes = ["tok", "tok-jp"];
-    if (isVerb) classes.push("tok-verb");
-    if (marker?.role === "past") classes.push("tok-past");
-    if (marker?.role === "prog") classes.push("tok-prog");
-    if (marker?.role === "future") classes.push("tok-future");
-    highlights.push({ jp, cls: classes.join(" ") });
+    const baseCls = classByIndex[idx] || `tok ${mapClassByIndex[idx] || ""}`.trim();
+    highlights.push({ jp, cls: `${baseCls} tok-jp`.trim() });
   });
   const annotatedJyutping = highlightJyutpingLine(originalJyutping, highlights);
 
@@ -3602,6 +3639,7 @@ function analyzeSentence(sentenceInput) {
     annotatedHanzi: annotated.join(""),
     annotatedJyutping,
     literal: cleanLiteral(literalParts.join(" ")),
+    literalHtml: literalHtmlParts.join(" "),
     notes
   };
 }
@@ -3723,35 +3761,6 @@ function cleanLiteral(text) {
     .replace(/\s+([，。！？,.!?])/g, "$1")
     .replace(/\s+/g, " ")
     .trim();
-}
-
-function buildQuestionGlossMap(hanzi) {
-  const tokens = tokenizeSentence(hanzi);
-  const colorCycle = 8;
-  let colorIndex = 0;
-  const hanziParts = [];
-  const glossParts = [];
-  tokens.forEach((token) => {
-    if (isPunctuation(token)) {
-      hanziParts.push(escapeHtml(token));
-      return;
-    }
-    const marker = ASPECT_MARKERS[token];
-    const isVerb = isVerbToken(token);
-    const classes = ["tok", `tok-map-${colorIndex % colorCycle}`];
-    if (isVerb) classes.push("tok-verb");
-    if (marker?.role === "past") classes.push("tok-past");
-    if (marker?.role === "prog") classes.push("tok-prog");
-    if (marker?.role === "future") classes.push("tok-future");
-    hanziParts.push(`<span class="${classes.join(" ")}">${escapeHtml(token)}</span>`);
-    const gloss = literalForToken(token);
-    glossParts.push(`<span class="tok tok-gloss tok-map-${colorIndex % colorCycle}">${escapeHtml(gloss)}</span>`);
-    colorIndex += 1;
-  });
-  return {
-    hanziHtml: hanziParts.join(""),
-    glossHtml: glossParts.join(" ")
-  };
 }
 
 function capitalizeFirst(value) {
