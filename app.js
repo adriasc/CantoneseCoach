@@ -1204,6 +1204,49 @@ const ASPECT_MARKERS = {
   "已經": { role: "past", label: "already" }
 };
 
+const GRAMMAR_MARKER_DETAILS = {
+  "咗": {
+    when: "After a verb for a completed action.",
+    why: "Marks that the action is done.",
+    where: "Very common in daily spoken Cantonese."
+  },
+  "過": {
+    when: "After a verb for life experience.",
+    why: "Shows “have done before,” not one specific finished time.",
+    where: "Used in conversation about past experience."
+  },
+  "完": {
+    when: "After a verb meaning “finish.”",
+    why: "Emphasizes completion of the action.",
+    where: "Common in everyday speech and routines."
+  },
+  "緊": {
+    when: "After a verb for an action in progress.",
+    why: "Equivalent to “-ing” in many contexts.",
+    where: "Very common in real-time conversation."
+  },
+  "住": {
+    when: "After a verb for a continuing state.",
+    why: "Focuses on maintained condition/result.",
+    where: "Common in spoken Cantonese."
+  },
+  "會": {
+    when: "Before a verb for future or predicted action.",
+    why: "Adds “will.”",
+    where: "General daily usage."
+  },
+  "將會": {
+    when: "Before a verb for stronger future framing.",
+    why: "Adds explicit “going to / will.”",
+    where: "More formal or emphasized future statements."
+  },
+  "已經": {
+    when: "Before verb phrase, often with 咗 after the verb.",
+    why: "Adds “already.”",
+    where: "Very common in spoken and written Cantonese."
+  }
+};
+
 const GENERATED_SENTENCES = buildGeneratedAspectSentences();
 const GENERATED_FUTURE_SENTENCES = buildGeneratedFutureSentences();
 const GENERATED_CONDITIONAL_SENTENCES = buildGeneratedConditionalSentences();
@@ -1423,6 +1466,7 @@ const state = {
   rotation: { words: [], patternSentences: [], quizSentences: [], questionSentences: [], tonePairs: [] },
   currentWord: null,
   currentSentence: null,
+  currentPatternAnalysis: null,
   currentQuestion: null,
   currentPattern: null,
   patternSelections: {},
@@ -1527,6 +1571,10 @@ const els = {
   openSettings: byId("openSettings"),
   closeSettings: byId("closeSettings"),
   settingsModal: byId("settingsModal"),
+  grammarModal: byId("grammarModal"),
+  closeGrammarModal: byId("closeGrammarModal"),
+  grammarModalTitle: byId("grammarModalTitle"),
+  grammarModalBody: byId("grammarModalBody"),
   xpLine: byId("xpLine"),
   comboLine: byId("comboLine"),
   missionListens: byId("missionListens"),
@@ -1612,6 +1660,14 @@ function bindUI() {
       if (event.target === els.settingsModal) els.settingsModal.classList.add("hidden");
     });
   }
+  if (els.closeGrammarModal && els.grammarModal) {
+    els.closeGrammarModal.addEventListener("click", () => els.grammarModal.classList.add("hidden"));
+  }
+  if (els.grammarModal) {
+    els.grammarModal.addEventListener("click", (event) => {
+      if (event.target === els.grammarModal) els.grammarModal.classList.add("hidden");
+    });
+  }
 
   byId("nextWord").addEventListener("click", () => {
     markReviewed();
@@ -1654,6 +1710,16 @@ function bindUI() {
   }
 
   byId("newPattern").addEventListener("click", rollPattern);
+  if (els.patternHanzi) {
+    els.patternHanzi.addEventListener("click", (event) => {
+      if (!state.prefs.showGrammarLens) return;
+      const target = event.target?.closest?.(".tok-clickable");
+      if (!target) return;
+      const idx = Number(target.dataset.idx);
+      if (!Number.isFinite(idx)) return;
+      openPatternGrammarInfo(idx);
+    });
+  }
 
   byId("playPatternAudio").addEventListener("click", () => {
     const built = buildPatternSentence();
@@ -2054,6 +2120,7 @@ function renderPatternControls() {
 function renderPatternSentence() {
   const built = buildPatternSentence();
   const analysis = analyzeSentence({ hanzi: built.hanzi, jyutping: built.jyutping });
+  state.currentPatternAnalysis = analysis;
   if (state.prefs.showGrammarLens) {
     els.patternHanzi.innerHTML = analysis.annotatedHanzi;
     els.patternJyutping.innerHTML = analysis.annotatedJyutping;
@@ -2069,6 +2136,56 @@ function renderPatternSentence() {
   }
   els.patternEnglish.textContent = built.english;
   applyVisibilityPrefs();
+}
+
+function openPatternGrammarInfo(tokenIndex) {
+  if (!els.grammarModal || !els.grammarModalBody || !els.grammarModalTitle) return;
+  const analysis = state.currentPatternAnalysis;
+  const meta = analysis?.tokenMeta?.[tokenIndex];
+  if (!meta) return;
+
+  const token = meta.token || "";
+  const roleLabelMap = { past: "Past marker", prog: "Progressive marker", future: "Future marker" };
+  const marker = meta.marker || null;
+  const isVerb = !!meta.isVerb;
+  const linkedVerb = Number.isFinite(meta.linkedVerbIndex) && meta.linkedVerbIndex >= 0
+    ? (analysis.tokens?.[meta.linkedVerbIndex] || "")
+    : "";
+
+  let title = `Grammar Info · ${token}`;
+  const chunks = [];
+
+  if (marker) {
+    const details = GRAMMAR_MARKER_DETAILS[token] || {};
+    title = `${roleLabelMap[marker.role] || "Grammar marker"} · ${token}`;
+    chunks.push(`<p><strong>Function:</strong> ${escapeHtml(marker.label)}.</p>`);
+    chunks.push(`<p><strong>When to use:</strong> ${escapeHtml(details.when || "Use it in the marker position shown in this sentence.")}</p>`);
+    chunks.push(`<p><strong>Why it is used:</strong> ${escapeHtml(details.why || "It changes the time/aspect meaning of the verb phrase.")}</p>`);
+    chunks.push(`<p><strong>Where it appears:</strong> ${escapeHtml(details.where || "Most often in common conversation patterns.")}</p>`);
+    if (linkedVerb) {
+      chunks.push(`<p><strong>Linked verb in this sentence:</strong> <span class="chip">${escapeHtml(linkedVerb)}</span></p>`);
+    }
+  } else if (isVerb) {
+    title = `Verb Focus · ${token}`;
+    const linkedMarkers = (analysis.tokenMeta || [])
+      .filter((entry) => entry?.marker && entry.linkedVerbIndex === tokenIndex)
+      .map((entry) => entry.token)
+      .filter(Boolean);
+    chunks.push("<p><strong>Function:</strong> Main action verb in this sentence.</p>");
+    chunks.push("<p><strong>When to watch it:</strong> Aspect/time markers often attach before or after this verb.</p>");
+    if (linkedMarkers.length) {
+      chunks.push(`<p><strong>Linked marker(s) here:</strong> ${linkedMarkers.map((m) => `<span class="chip">${escapeHtml(m)}</span>`).join(" ")}</p>`);
+    } else {
+      chunks.push("<p><strong>Linked marker(s) here:</strong> none in this sentence.</p>");
+    }
+  } else {
+    title = `Token Info · ${token}`;
+    chunks.push("<p>This token is not a tense/aspect marker. Tap framed tense markers or verbs for grammar details.</p>");
+  }
+
+  els.grammarModalTitle.textContent = title;
+  els.grammarModalBody.innerHTML = chunks.join("");
+  els.grammarModal.classList.remove("hidden");
 }
 
 function buildPatternSentence() {
@@ -3886,6 +4003,7 @@ function analyzeSentence(sentenceInput) {
   const literalParts = [];
   const literalHtmlParts = [];
   const markerByIndex = {};
+  const linkedVerbByMarker = {};
   const classByIndex = {};
   let mapIndex = 0;
 
@@ -3894,11 +4012,23 @@ function analyzeSentence(sentenceInput) {
     if (!marker) return;
     markerByIndex[idx] = marker;
     const verbIndex = findPreviousVerbIndex(tokens, idx);
+    linkedVerbByMarker[idx] = verbIndex;
     if (verbIndex >= 0) {
       notes.push(`Marker <strong>${token}</strong> = ${marker.label}, linked to verb <strong>${tokens[verbIndex]}</strong>.`);
     } else {
       notes.push(`Marker <strong>${token}</strong> = ${marker.label}.`);
     }
+  });
+
+  const tokenMeta = tokens.map((token, idx) => {
+    const marker = markerByIndex[idx] || null;
+    const isVerb = !isPunctuation(token) && isVerbToken(token);
+    return {
+      token,
+      marker,
+      isVerb,
+      linkedVerbIndex: Number.isFinite(linkedVerbByMarker[idx]) ? linkedVerbByMarker[idx] : -1
+    };
   });
 
   const annotated = tokens.map((token, idx) => {
@@ -3907,8 +4037,8 @@ function analyzeSentence(sentenceInput) {
       return escapeHtml(token);
     }
 
-    const marker = markerByIndex[idx];
-    const isVerb = isVerbToken(token);
+    const marker = tokenMeta[idx]?.marker || null;
+    const isVerb = !!tokenMeta[idx]?.isVerb;
     const mapClass = `tok-map-${mapIndex % 8}`;
     mapIndex += 1;
     let cls = `tok ${mapClass}`;
@@ -3917,12 +4047,16 @@ function analyzeSentence(sentenceInput) {
     if (role === "prog") cls += " tok-prog";
     if (role === "future") cls += " tok-future";
     if (isVerb) cls += " tok-verb";
+    if (marker || isVerb) cls += " tok-clickable";
     classByIndex[idx] = cls;
+    const dataAttrs = marker || isVerb
+      ? ` data-idx="${idx}" data-token="${escapeAttr(token)}" data-role="${escapeAttr(role || (isVerb ? "verb" : ""))}"`
+      : "";
 
     const literal = literalForToken(token);
     literalParts.push(literal);
     literalHtmlParts.push(`<span class="${cls} tok-gloss">${escapeHtml(literal)}</span>`);
-    return `<span class="${cls}">${escapeHtml(token)}</span>`;
+    return `<span class="${cls}"${dataAttrs}>${escapeHtml(token)}</span>`;
   });
 
   const annotatedJyutping = buildAnnotatedJyutping(tokens, classByIndex, originalJyutping);
@@ -3932,7 +4066,9 @@ function analyzeSentence(sentenceInput) {
     annotatedJyutping,
     literal: cleanLiteral(literalParts.join(" ")),
     literalHtml: literalHtmlParts.join(" "),
-    notes
+    notes,
+    tokens,
+    tokenMeta
   };
 }
 
@@ -4118,6 +4254,14 @@ function uiLevelFromSentenceLevel(sentenceLevel) {
 function escapeHtml(value) {
   return String(value)
     .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function escapeAttr(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 }

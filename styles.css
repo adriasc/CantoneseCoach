@@ -595,6 +595,15 @@ button:hover,
   text-decoration-color: #d09821;
 }
 
+.tok-clickable {
+  cursor: pointer;
+}
+
+.tok-clickable:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(11, 31, 59, 0.14);
+}
+
 .example {
   min-height: 26px;
   margin-bottom: 0;
@@ -693,6 +702,24 @@ button:hover,
   border: 2px solid #ffbf9a;
   box-shadow: var(--shadow);
   padding: 16px;
+}
+
+.grammar-modal-card {
+  width: min(640px, 96vw);
+  background: linear-gradient(165deg, #f6fbff 0%, #eef7ff 100%);
+  border: 2px solid #bcd4ef;
+}
+
+.grammar-modal-body {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+  color: #26435b;
+}
+
+.grammar-modal-body p {
+  margin: 0;
+  line-height: 1.42;
 }
 
 #funModal .card-head h2 {
