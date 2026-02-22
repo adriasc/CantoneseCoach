@@ -1206,52 +1206,60 @@ const ASPECT_MARKERS = {
 
 const GRAMMAR_MARKER_DETAILS = {
   "咗": {
-    when: "After a verb for a completed action.",
-    why: "Marks that the action is done.",
-    where: "Very common in daily spoken Cantonese.",
-    position: "Usually placed right after the main verb."
+    core: "Completed/perfective marker for finished events.",
+    pattern: "Verb + 咗",
+    use: "Use when the action is completed at a specific time or as a finished event.",
+    contrast: "Compared with 過: 咗 = completed event; 過 = life experience.",
+    extra: "咗 can also appear sentence-finally in change-of-state contexts."
   },
   "過": {
-    when: "After a verb for life experience.",
-    why: "Shows “have done before,” not one specific finished time.",
-    where: "Used in conversation about past experience.",
-    position: "Usually right after the verb."
+    core: "Experiential marker: have done before.",
+    pattern: "Verb + 過",
+    use: "Use for past experience, not one single finished event in time.",
+    contrast: "Compared with 咗: 過 = experience; 咗 = completed event.",
+    extra: "過 is also an independent verb meaning pass/cross in other contexts."
   },
   "完": {
-    when: "After a verb meaning “finish.”",
-    why: "Emphasizes completion of the action.",
-    where: "Common in everyday speech and routines.",
-    position: "Typically follows the verb."
+    core: "Resultative complement meaning finish/completion.",
+    pattern: "Verb + 完",
+    use: "Use to emphasize full completion of the action.",
+    contrast: "Often combines with 咗 in speech when both completion and past are expressed.",
+    extra: "完 can also be an independent verb (to finish)."
   },
   "緊": {
-    when: "After a verb for an action in progress.",
-    why: "Equivalent to “-ing” in many contexts.",
-    where: "Very common in real-time conversation.",
-    position: "Placed after the verb being done now."
+    core: "Progressive marker for ongoing action (-ing).",
+    pattern: "Verb + 緊",
+    use: "Use for actions happening right now/in progress.",
+    contrast: "Compared with 住: 緊 = active ongoing action; 住 = maintained state.",
+    extra: "Less natural with stative verbs in many contexts."
   },
   "住": {
-    when: "After a verb for a continuing state.",
-    why: "Focuses on maintained condition/result.",
-    where: "Common in spoken Cantonese.",
-    position: "Usually after a verb to mark sustained state."
+    core: "Durative marker for sustained state/condition.",
+    pattern: "Verb + 住",
+    use: "Use when the result/state continues.",
+    contrast: "Compared with 緊: 住 often highlights maintained condition rather than active process.",
+    extra: "住 is also a full verb meaning live/stay (e.g., 住喺香港)."
   },
   "會": {
-    when: "Before a verb for future or predicted action.",
-    why: "Adds “will.”",
-    where: "General daily usage.",
-    position: "Usually before the main verb."
+    core: "Modal: future prediction/intention ('will').",
+    pattern: "會 + Verb",
+    use: "Use for likely future actions, predictions, or planned intention.",
+    contrast: "Compared with 將會: 會 is more neutral/common in conversation.",
+    extra: "會 can also mean know how to/can (ability), depending on context."
   },
   "將會": {
-    when: "Before a verb for stronger future framing.",
-    why: "Adds explicit “going to / will.”",
-    where: "More formal or emphasized future statements.",
-    position: "Usually before the main verb."
+    core: "Future marker with stronger/formal future framing.",
+    pattern: "將會 + Verb",
+    use: "Use for explicit future events, plans, announcements, and formal tone.",
+    contrast: "Compared with 會: 將會 sounds more formal and less conversational.",
+    extra: "In daily speech, many speakers prefer 會."
   },
   "已經": {
-    when: "Before verb phrase, often with 咗 after the verb.",
-    why: "Adds “already.”",
-    where: "Very common in spoken and written Cantonese.",
-    position: "Before the verb phrase."
+    core: "Adverb meaning already.",
+    pattern: "已經 + Verb phrase (often with 咗 after the verb)",
+    use: "Use to show the action/state happened earlier than expected.",
+    contrast: "Compared with just 咗: 已經 adds an 'already' nuance.",
+    extra: "Can appear without 咗 in some contexts."
   }
 };
 
@@ -2173,11 +2181,15 @@ function openPatternGrammarInfo(tokenIndex) {
   if (marker) {
     const details = GRAMMAR_MARKER_DETAILS[token] || {};
     title = `${roleLabelMap[marker.role] || "Grammar marker"} · ${token}`;
-    chunks.push(`<div class="grammar-row"><span class="grammar-label">Meaning</span><p>${escapeHtml(marker.label)}</p></div>`);
-    chunks.push(`<div class="grammar-row"><span class="grammar-label">When</span><p>${escapeHtml(details.when || "Use in the marker position shown in this sentence.")}</p></div>`);
-    chunks.push(`<div class="grammar-row"><span class="grammar-label">Why</span><p>${escapeHtml(details.why || "It changes time/aspect meaning of the verb phrase.")}</p></div>`);
-    chunks.push(`<div class="grammar-row"><span class="grammar-label">Position</span><p>${escapeHtml(details.position || "Near the main verb in this sentence pattern.")}</p></div>`);
-    chunks.push(`<div class="grammar-row"><span class="grammar-label">Common in</span><p>${escapeHtml(details.where || "Common everyday conversation.")}</p></div>`);
+    chunks.push(`<div class="grammar-row"><span class="grammar-label">Core</span><p>${escapeHtml(details.core || marker.label)}</p></div>`);
+    chunks.push(`<div class="grammar-row"><span class="grammar-label">Pattern</span><p>${escapeHtml(details.pattern || "See this sentence pattern.")}</p></div>`);
+    chunks.push(`<div class="grammar-row"><span class="grammar-label">Use</span><p>${escapeHtml(details.use || "Use in this tense/aspect context.")}</p></div>`);
+    if (details.contrast) {
+      chunks.push(`<div class="grammar-row"><span class="grammar-label">Contrast</span><p>${escapeHtml(details.contrast)}</p></div>`);
+    }
+    if (details.extra) {
+      chunks.push(`<div class="grammar-row"><span class="grammar-label">Also</span><p>${escapeHtml(details.extra)}</p></div>`);
+    }
     if (linkedVerb) {
       chunks.push(
         `<div class="grammar-row">
@@ -2193,7 +2205,8 @@ function openPatternGrammarInfo(tokenIndex) {
       .map((entry) => entry.token)
       .filter(Boolean);
     chunks.push(`<div class="grammar-row"><span class="grammar-label">Role</span><p>Main action verb in this sentence.</p></div>`);
-    chunks.push(`<div class="grammar-row"><span class="grammar-label">Tip</span><p>Watch markers around this verb to understand tense/aspect.</p></div>`);
+    chunks.push(`<div class="grammar-row"><span class="grammar-label">Use</span><p>Read nearby markers to know if it is past, progressive, future, or experiential.</p></div>`);
+    chunks.push(`<div class="grammar-row"><span class="grammar-label">Also</span><p>Some verbs can act as full verbs or auxiliaries depending on context.</p></div>`);
     if (linkedMarkers.length) {
       chunks.push(`<div class="grammar-row"><span class="grammar-label">Linked Marker(s)</span><p>${linkedMarkers.map((m) => `<span class="chip">${escapeHtml(m)}</span>`).join(" ")}</p></div>`);
     } else {
