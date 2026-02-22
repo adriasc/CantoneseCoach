@@ -894,7 +894,49 @@ const EXTRA_TOKEN_JYUTPING = {
   "搵": "wan2",
   "所": "so2",
   "未": "mei6",
-  "嗰": "go2"
+  "嗰": "go2",
+  "遲到": "ci4 dou3",
+  "交通": "gaau1 tung1",
+  "地鐵": "dei6 tit3",
+  "自然": "zi6 jin4",
+  "方便": "fong1 bin6",
+  "預留": "jyu6 lau4",
+  "預算": "jyu6 syun3",
+  "安排": "on1 paai4",
+  "行程": "hang4 cing4",
+  "傾計": "king1 gai2",
+  "專心": "zyun1 sam1",
+  "發生": "faat3 sang1",
+  "發音": "faat3 jam1",
+  "準備": "zeon2 bei6",
+  "收拾": "sau1 sap6",
+  "洗碗": "sai2 wun2",
+  "順便": "seon6 bin6",
+  "另外": "ling6 ngoi6",
+  "覆電郵": "fuk1 din6 jau4",
+  "散步": "saan3 bou6",
+  "保持": "bou2 ci4",
+  "見面": "gin3 min6",
+  "價錢": "gaa3 cin4",
+  "聽力": "teng1 lik6",
+  "句型": "geoi3 jing4",
+  "確保": "kok3 bou2",
+  "路線": "lou6 sin3",
+  "日常": "jat6 soeng4",
+  "並且": "bing6 ce2",
+  "突然": "dat6 jin4",
+  "越來越": "jyut6 loi4 jyut6",
+  "午餐": "ng5 caan1",
+  "大堂": "daai6 tong4",
+  "跟住": "gan1 zyu6",
+  "開始": "hoi1 ci2",
+  "文件": "man4 gin2",
+  "電郵": "din6 jau4",
+  "兩程": "loeng5 cing4",
+  "目的地": "muk6 dik1 dei6",
+  "轉車": "zyun2 ce1",
+  "調整": "tiu4 zing2",
+  "早起身": "zou2 hei2 san1"
 };
 
 const EXTRA_TOKEN_MEANINGS = {
@@ -1017,7 +1059,49 @@ const EXTRA_TOKEN_MEANINGS = {
   "今晚": "tonight",
   "樣": "kind / type",
   "今": "this / now",
-  "晚": "late / evening"
+  "晚": "late / evening",
+  "遲到": "be late / arrive late",
+  "交通": "transport / traffic",
+  "地鐵": "MTR / metro",
+  "自然": "natural / naturally",
+  "方便": "convenient",
+  "預留": "reserve (time/space)",
+  "預算": "budget",
+  "安排": "arrange / arrangement",
+  "行程": "itinerary / schedule",
+  "傾計": "chat",
+  "專心": "focus / concentrate",
+  "發生": "happen",
+  "發音": "pronunciation",
+  "準備": "prepare / get ready",
+  "收拾": "tidy up / pack",
+  "洗碗": "wash dishes",
+  "順便": "on the way / by the way",
+  "另外": "in addition / another",
+  "覆電郵": "reply to email",
+  "散步": "take a walk",
+  "保持": "keep / maintain",
+  "見面": "meet (face to face)",
+  "價錢": "price",
+  "聽力": "listening ability",
+  "句型": "sentence pattern",
+  "確保": "ensure / make sure",
+  "路線": "route",
+  "日常": "daily / everyday",
+  "並且": "and / moreover",
+  "突然": "suddenly",
+  "越來越": "more and more",
+  "午餐": "lunch",
+  "大堂": "lobby",
+  "跟住": "then / next",
+  "開始": "start / begin",
+  "文件": "document(s)",
+  "電郵": "email",
+  "兩程": "two segments / two legs",
+  "目的地": "destination",
+  "轉車": "transfer (transport)",
+  "調整": "adjust",
+  "早起身": "wake up early"
 };
 
 const DEFAULT_DATA = {
@@ -4200,6 +4284,7 @@ function buildAnnotatedJyutping(tokens, classByIndex, baseJyutping) {
   if (!Array.isArray(tokens) || !tokens.length) return escapeHtml(baseJyutping || "");
   const parts = [];
   let hasAtLeastOneMapped = false;
+  let hasUnknownToken = false;
   tokens.forEach((token, idx) => {
     if (isPunctuation(token)) {
       parts.push(escapeHtml(token));
@@ -4207,13 +4292,15 @@ function buildAnnotatedJyutping(tokens, classByIndex, baseJyutping) {
     }
     const jp = jyutpingForToken(token);
     if (!jp || jp === token || jp === "to-confirm") {
-      parts.push(escapeHtml(jp || token));
+      hasUnknownToken = true;
+      parts.push(escapeHtml(token));
       return;
     }
     const cls = `${classByIndex[idx] || "tok"} tok-jp`;
     parts.push(`<span class="${cls}">${escapeHtml(jp)}</span>`);
     hasAtLeastOneMapped = true;
   });
+  if (hasUnknownToken && baseJyutping) return escapeHtml(baseJyutping);
   if (!hasAtLeastOneMapped) return escapeHtml(baseJyutping || "");
   return cleanLiteral(parts.join(" "));
 }

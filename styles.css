@@ -535,7 +535,8 @@ button:hover,
 .tok-gloss {
   font-size: 0.93rem;
   font-style: normal;
-  border-bottom: 2px solid transparent;
+  border-bottom: 0 !important;
+  text-decoration: none;
 }
 
 .tok-map-0 { background: #fff2f2; border-bottom-color: #e95d5d; }
