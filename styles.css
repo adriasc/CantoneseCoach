@@ -337,15 +337,17 @@ h1 {
 }
 
 .gear-btn {
-  min-width: 34px;
-  min-height: 34px;
-  border-radius: 10px;
-  font-size: 1.2rem;
+  min-width: auto;
+  min-height: auto;
+  border-radius: 0;
+  border: 0;
+  font-size: 1.35rem;
   font-weight: 700;
   line-height: 1;
-  background: #355f7d;
-  color: #fff;
-  padding: 0;
+  background: transparent;
+  color: #355f7d;
+  padding: 2px 4px;
+  box-shadow: none;
 }
 
 .inactive-control {
@@ -575,18 +577,18 @@ button:hover,
 .tok-gloss {
   font-size: 0.93rem;
   font-style: normal;
-  border: 1px solid transparent;
+  border: 0;
   text-decoration: none !important;
 }
 
-.tok-map-0 { background: #fff2f2; border-color: #e95d5d; }
-.tok-map-1 { background: #fff6e8; border-color: #e08f25; }
-.tok-map-2 { background: #f4ffe8; border-color: #82aa22; }
-.tok-map-3 { background: #e8fff8; border-color: #1ea482; }
-.tok-map-4 { background: #e9f4ff; border-color: #2e84c7; }
-.tok-map-5 { background: #eff0ff; border-color: #5968d6; }
-.tok-map-6 { background: #f8ecff; border-color: #9556c8; }
-.tok-map-7 { background: #ffeefa; border-color: #cb4b9c; }
+.tok-map-0 { background: #fff2f2; }
+.tok-map-1 { background: #fff6e8; }
+.tok-map-2 { background: #f4ffe8; }
+.tok-map-3 { background: #e8fff8; }
+.tok-map-4 { background: #e9f4ff; }
+.tok-map-5 { background: #eff0ff; }
+.tok-map-6 { background: #f8ecff; }
+.tok-map-7 { background: #ffeefa; }
 
 .tok-verb {
   border: 2px solid #0f9d8b;
