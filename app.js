@@ -2946,7 +2946,7 @@ function refreshStats() {
   els.knownWords.textContent = `Known words: ${state.known.size}`;
   const reviewedCount = state.reviewed.date === todayString() ? state.reviewed.count : 0;
   els.reviewedWords.textContent = `Reviewed today: ${reviewedCount}`;
-  els.streakBadge.textContent = `Streak: ${state.streak.days} day${state.streak.days === 1 ? "" : "s"}`;
+  els.streakBadge.textContent = `🔥 ${state.streak.days}d`;
 }
 
 function renderKnownList() {

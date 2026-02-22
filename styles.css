@@ -237,7 +237,7 @@ body[data-theme="poster"] .bg-shape {
 .topbar-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .eyebrow {
@@ -251,11 +251,13 @@ body[data-theme="poster"] .bg-shape {
 .version-tag {
   display: inline-block;
   margin-left: 6px;
-  padding: 1px 8px;
+  padding: 1px 6px;
   border-radius: 999px;
   border: 1px solid #8fb3d9;
   color: #365173;
   font-weight: 700;
+  font-size: 0.75rem;
+  line-height: 1.1;
   letter-spacing: 0.02em;
   text-transform: none;
 }
@@ -269,9 +271,11 @@ h1 {
   background: var(--soft);
   border: 2px solid var(--accent-2);
   border-radius: 999px;
-  padding: 5px 9px;
+  padding: 4px 8px;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.82rem;
+  line-height: 1.1;
+  white-space: nowrap;
 }
 
 .tabs {
@@ -333,11 +337,13 @@ h1 {
 }
 
 .gear-btn {
-  min-width: 36px;
-  min-height: 36px;
-  border-radius: 999px;
-  font-size: 1rem;
-  background: #2f5b7a;
+  min-width: 34px;
+  min-height: 34px;
+  border-radius: 10px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1;
+  background: #355f7d;
   color: #fff;
   padding: 0;
 }
@@ -490,12 +496,46 @@ button:hover,
 #playQuestionAudio,
 #playToneA,
 #playToneB,
-#playToneRandom {
+#playToneRandom,
+#testVoice,
+#bossPlayAudio {
   background: linear-gradient(135deg, #0fa97b, #1493b8);
+}
+
+.play-icon-btn {
+  width: 46px;
+  min-width: 46px;
+  height: 46px;
   min-height: 46px;
-  padding: 11px 15px;
-  font-size: 1.02rem;
+  border-radius: 999px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  line-height: 1;
   font-weight: 800;
+}
+
+.play-tone-btn {
+  position: relative;
+}
+
+.play-tone-btn::after {
+  content: attr(data-tone-label);
+  position: absolute;
+  right: -4px;
+  bottom: -6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #fff;
+  color: #365173;
+  border: 1px solid #b7cadf;
+  font-size: 0.67rem;
+  font-weight: 800;
+  line-height: 16px;
+  text-align: center;
 }
 
 #applyControls {
@@ -535,18 +575,18 @@ button:hover,
 .tok-gloss {
   font-size: 0.93rem;
   font-style: normal;
-  border-bottom: 0 !important;
-  text-decoration: none;
+  border: 1px solid transparent;
+  text-decoration: none !important;
 }
 
-.tok-map-0 { background: #fff2f2; border-bottom-color: #e95d5d; }
-.tok-map-1 { background: #fff6e8; border-bottom-color: #e08f25; }
-.tok-map-2 { background: #f4ffe8; border-bottom-color: #82aa22; }
-.tok-map-3 { background: #e8fff8; border-bottom-color: #1ea482; }
-.tok-map-4 { background: #e9f4ff; border-bottom-color: #2e84c7; }
-.tok-map-5 { background: #eff0ff; border-bottom-color: #5968d6; }
-.tok-map-6 { background: #f8ecff; border-bottom-color: #9556c8; }
-.tok-map-7 { background: #ffeefa; border-bottom-color: #cb4b9c; }
+.tok-map-0 { background: #fff2f2; border-color: #e95d5d; }
+.tok-map-1 { background: #fff6e8; border-color: #e08f25; }
+.tok-map-2 { background: #f4ffe8; border-color: #82aa22; }
+.tok-map-3 { background: #e8fff8; border-color: #1ea482; }
+.tok-map-4 { background: #e9f4ff; border-color: #2e84c7; }
+.tok-map-5 { background: #eff0ff; border-color: #5968d6; }
+.tok-map-6 { background: #f8ecff; border-color: #9556c8; }
+.tok-map-7 { background: #ffeefa; border-color: #cb4b9c; }
 
 .tok-verb {
   border: 2px solid #0f9d8b;
@@ -1021,8 +1061,8 @@ input[type="file"] {
   }
 
   .streak {
-    font-size: 0.9rem;
-    padding: 6px 9px;
+    font-size: 0.78rem;
+    padding: 3px 7px;
   }
 }
 

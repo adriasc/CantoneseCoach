@@ -19,12 +19,12 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.2.15</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.2.16</span></p>
         <h1>Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
-        <div class="streak" id="streakBadge">Streak: 0 days</div>
-        <button id="openSettings" class="gear-btn" type="button" aria-label="Open audio and display settings">⚙</button>
+        <div class="streak" id="streakBadge">🔥 0d</div>
+        <button id="openSettings" class="gear-btn" type="button" aria-label="Open audio and display settings">≡</button>
       </div>
     </header>
 
@@ -193,7 +193,7 @@
           </div>
         </div>
         <div class="actions">
-          <button id="testVoice">Test Voice</button>
+          <button id="testVoice" class="play-icon-btn" aria-label="Test voice playback">▶</button>
         </div>
       </div>
     </div>
@@ -227,7 +227,7 @@
           <p id="bossPrompt"></p>
           <div class="choices" id="bossChoices"></div>
           <div class="actions">
-            <button id="bossPlayAudio">Play challenge audio</button>
+            <button id="bossPlayAudio" class="play-icon-btn" aria-label="Play challenge audio">▶</button>
             <button id="bossSkip">Skip</button>
           </div>
         </div>
@@ -252,7 +252,7 @@
         <p class="english" id="wordEnglish">I / me</p>
         <p class="literal hidden" id="wordLiteral"></p>
         <div class="actions">
-          <button id="playWordAudio">Play audio</button>
+          <button id="playWordAudio" class="play-icon-btn" aria-label="Play word audio">▶</button>
           <button id="revealExample">Show example</button>
           <div class="inline-pair">
             <button id="toggleWordJyutping">Hide Jyutping</button>
@@ -290,7 +290,7 @@
           <div class="grammar-notes" id="patternGrammarNotes"></div>
         </div>
         <div class="actions">
-          <button id="playPatternAudio">Play sentence</button>
+          <button id="playPatternAudio" class="play-icon-btn" aria-label="Play pattern sentence">▶</button>
           <button id="newPattern">Next pattern</button>
           <button id="toggleGrammarLens">Grammar Lens: Off</button>
           <div class="inline-pair">
@@ -311,7 +311,7 @@
         <p class="literal" id="quizLiteral"></p>
         <div class="grammar-notes" id="quizGrammarNotes"></div>
         <div class="actions">
-          <button id="playQuizAudio">Play clip</button>
+          <button id="playQuizAudio" class="play-icon-btn" aria-label="Play listening clip">▶</button>
           <button id="nextQuiz">Next quiz</button>
           <button id="toggleQuizGrammarLens">Grammar Lens: Off</button>
           <button id="showQuizText">Show Chinese</button>
@@ -337,7 +337,7 @@
           <p class="literal" id="questionLiteral"></p>
         </div>
         <div class="actions">
-          <button id="playQuestionAudio">Play question</button>
+          <button id="playQuestionAudio" class="play-icon-btn" aria-label="Play question audio">▶</button>
           <button id="nextQuestion">Next question</button>
           <button id="toggleQuestionGrammarLens">Grammar Lens: Off</button>
           <div class="inline-pair">
@@ -360,9 +360,9 @@
           <p class="english tone-line" id="toneEnglish"></p>
         </div>
         <div class="actions">
-          <button id="playToneA">Play A</button>
-          <button id="playToneB">Play B</button>
-          <button id="playToneRandom">Play Random</button>
+          <button id="playToneA" class="play-icon-btn play-tone-btn" aria-label="Play tone A" data-tone-label="A">▶</button>
+          <button id="playToneB" class="play-icon-btn play-tone-btn" aria-label="Play tone B" data-tone-label="B">▶</button>
+          <button id="playToneRandom" class="play-icon-btn play-tone-btn" aria-label="Play random tone" data-tone-label="?">▶</button>
           <div class="inline-pair">
             <button id="toggleToneJyutping">Hide Jyutping</button>
             <button id="toggleToneEnglish">Hide English</button>
