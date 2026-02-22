@@ -2162,6 +2162,9 @@ function openPatternGrammarInfo(tokenIndex) {
 
   const token = meta.token || "";
   const tokenJyutping = jyutpingForToken(token);
+  const normalizedToken = normalizeHanzi(token);
+  const byWord = (state.content?.words || []).find((w) => normalizeHanzi(w.hanzi) === normalizedToken);
+  const tokenMeaning = byWord?.english || literalForToken(token);
   const roleLabelMap = { past: "Past marker", prog: "Progressive marker", future: "Future marker" };
   const marker = meta.marker || null;
   const isVerb = !!meta.isVerb;
@@ -2214,7 +2217,9 @@ function openPatternGrammarInfo(tokenIndex) {
     }
   } else {
     title = `Token Info · ${token}`;
-    chunks.push("<div class=\"grammar-row\"><span class=\"grammar-label\">Note</span><p>This token is not a tense/aspect marker. Tap framed markers or verbs for grammar details.</p></div>");
+    chunks.push(`<div class="grammar-row"><span class="grammar-label">Meaning</span><p>${escapeHtml(String(tokenMeaning || token))}</p></div>`);
+    chunks.push(`<div class="grammar-row"><span class="grammar-label">Role</span><p>${escapeHtml(byWord?.category || "word/token in this sentence")}</p></div>`);
+    chunks.push("<div class=\"grammar-row\"><span class=\"grammar-label\">Use</span><p>This token is not a tense/aspect marker. Use it as normal sentence vocabulary here.</p></div>");
   }
 
   els.grammarModalTitle.textContent = title;
@@ -4081,11 +4086,9 @@ function analyzeSentence(sentenceInput) {
     if (role === "prog") cls += " tok-prog";
     if (role === "future") cls += " tok-future";
     if (isVerb) cls += " tok-verb";
-    if (marker || isVerb) cls += " tok-clickable";
+    cls += " tok-clickable";
     classByIndex[idx] = cls;
-    const dataAttrs = marker || isVerb
-      ? ` data-idx="${idx}" data-token="${escapeAttr(token)}" data-role="${escapeAttr(role || (isVerb ? "verb" : ""))}"`
-      : "";
+    const dataAttrs = ` data-idx="${idx}" data-token="${escapeAttr(token)}" data-role="${escapeAttr(role || (isVerb ? "verb" : ""))}"`;
 
     const literal = literalForToken(token);
     literalParts.push(literal);
