@@ -2031,9 +2031,7 @@ function bindUI() {
 }
 
 function markControlsDirty() {
-  els.controlsMessage.textContent = "Pending changes. Press Apply Settings.";
-  els.controlsMessage.classList.remove("applied");
-  els.controlsMessage.classList.add("pending");
+  applyGlobalControls();
 }
 
 function applyGlobalControls() {
@@ -2083,9 +2081,6 @@ function applyGlobalControls() {
     state.rotation.questionSentences = [];
     rollQuestion();
   }
-  els.controlsMessage.textContent = "Settings applied.";
-  els.controlsMessage.classList.remove("pending");
-  els.controlsMessage.classList.add("applied");
 }
 
 function switchTab(tabName) {
@@ -2140,24 +2135,7 @@ function setControlsMode(tabName) {
   if (els.wordFilter) els.wordFilter.disabled = !isWords || isTones;
   if (els.toneExerciseMode) els.toneExerciseMode.disabled = !isTones;
 
-  if (isTones) {
-    els.controlsMessage.textContent = "In Tones, choose Tone Exercise here, then press Apply Settings.";
-    els.controlsMessage.classList.remove("pending");
-    els.controlsMessage.classList.add("applied");
-  } else if (isWords) {
-    els.controlsMessage.textContent = "In Words, use Word Filter.";
-    els.controlsMessage.classList.remove("pending");
-    els.controlsMessage.classList.add("applied");
-  } else {
-    const msg = String(els.controlsMessage.textContent || "");
-    if (msg.includes("In Words, use Word Filter")
-      || msg.includes("inactive in Tones")
-      || msg.includes("In Tones, choose Tone Exercise here")) {
-      els.controlsMessage.textContent = "";
-      els.controlsMessage.classList.remove("pending");
-      els.controlsMessage.classList.remove("applied");
-    }
-  }
+  // Controls apply immediately on change, so no status message is needed here.
 }
 
 function rollWord() {
@@ -2959,7 +2937,7 @@ function refreshStats() {
   els.knownWords.textContent = `Known words: ${state.known.size}`;
   const reviewedCount = state.reviewed.date === todayString() ? state.reviewed.count : 0;
   els.reviewedWords.textContent = `Reviewed today: ${reviewedCount}`;
-  els.streakBadge.textContent = `🔥 ${state.streak.days}d`;
+  els.streakBadge.textContent = `🔥 ${state.streak.days}Day`;
 }
 
 function renderKnownList() {
@@ -3412,7 +3390,7 @@ function applyTheme(themeName) {
 function setControlsCollapsed(collapsed) {
   if (!els.controlsCard || !els.toggleControlsCard) return;
   els.controlsCard.classList.toggle("is-collapsed", collapsed);
-  els.toggleControlsCard.textContent = collapsed ? "Show ▼" : "Hide ▲";
+  els.toggleControlsCard.textContent = collapsed ? "▼" : "▲";
 }
 
 function togglePref(prefKey) {

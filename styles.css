@@ -237,7 +237,7 @@ body[data-theme="poster"] .bg-shape {
 .topbar-right {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 16px;
 }
 
 .eyebrow {
@@ -343,12 +343,12 @@ h1 {
   min-height: auto;
   border-radius: 0;
   border: 0;
-  font-size: 3.6rem;
-  font-weight: 700;
-  line-height: 0.6;
+  font-size: 4.3rem;
+  font-weight: 800;
+  line-height: 0.52;
   background: transparent;
   color: #355f7d;
-  padding: 0 4px;
+  padding: 0 2px;
   box-shadow: none;
 }
 
@@ -367,6 +367,18 @@ h1 {
   display: none;
 }
 
+#toggleControlsCard {
+  min-width: auto;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #365173;
+  font-size: 1.8rem;
+  font-weight: 800;
+  line-height: 1;
+  padding: 0 2px;
+}
+
 .inline-pair {
   display: flex;
   gap: 8px;
@@ -378,6 +390,19 @@ h1 {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
+}
+
+.controls-card > .actions {
+  display: none;
+}
+
+.controls-grid label {
+  font-size: 1.03rem;
+}
+
+.controls-grid select,
+.controls-grid input {
+  font-size: 1.02rem;
 }
 
 .controls-divider {
@@ -561,6 +586,11 @@ button:hover,
 
 #applyControls {
   background: #0f9d8b;
+}
+
+#applyControls,
+#controlsMessage {
+  display: none !important;
 }
 
 .literal {
@@ -766,6 +796,31 @@ button:hover,
   padding: 16px;
 }
 
+#settingsModal .modal-card {
+  background: linear-gradient(180deg, #f7f8fa 0%, #f0f2f5 100%);
+  border: 1px solid #d3d9e2;
+}
+
+#settingsModal .card-head h2 {
+  color: #2f4258;
+}
+
+#closeSettings {
+  min-width: auto;
+  padding: 0 2px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  color: #5b6778;
+  font-size: 2.9rem;
+  line-height: 1;
+}
+
+#closeSettings:hover {
+  color: #3f4a58;
+  transform: scale(1.04);
+}
+
 .grammar-modal-card {
   width: min(640px, 96vw);
   background: #fffaf4;
@@ -924,7 +979,7 @@ button:hover,
 }
 
 .slot-grid label {
-  font-size: 0.98rem;
+  font-size: 1.04rem;
   color: var(--muted);
   font-weight: 600;
 }
@@ -936,7 +991,7 @@ button:hover,
   border: 2px solid #d6e1f5;
   padding: 9px;
   background: #fff;
-  font-size: 1rem;
+  font-size: 1.03rem;
   font-weight: 600;
 }
 
