@@ -706,21 +706,87 @@ button:hover,
 
 .grammar-modal-card {
   width: min(640px, 96vw);
-  background: linear-gradient(165deg, #f6fbff 0%, #eef7ff 100%);
-  border: 2px solid #bcd4ef;
+  background: linear-gradient(160deg, #fff6e9 0%, #ffeef6 48%, #eef6ff 100%);
+  border: 2px solid #ffc6a1;
+}
+
+.grammar-modal-card .card-head h2 {
+  color: #8f3f1f;
 }
 
 .grammar-modal-body {
   margin-top: 10px;
   display: grid;
-  gap: 8px;
-  color: #26435b;
+  gap: 10px;
+  color: #243b59;
 }
 
 .grammar-modal-body p {
   margin: 0;
-  line-height: 1.42;
+  line-height: 1.45;
 }
+
+.grammar-hero {
+  display: grid;
+  gap: 4px;
+  background: linear-gradient(135deg, #fff 0%, #fff7ef 100%);
+  border: 2px solid #ffd3b5;
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+
+.grammar-hero-hanzi {
+  font-family: "PingFang TC", "Hiragino Sans GB", serif;
+  font-size: clamp(3.1rem, 10.5vw, 4.8rem);
+  line-height: 1;
+  color: #a5411d;
+}
+
+.grammar-hero-jyutping {
+  font-family: "Menlo", "Courier New", monospace;
+  color: #6f4c2f;
+  font-size: 1.02rem;
+}
+
+.grammar-row {
+  background: #fff;
+  border: 1px solid #ffd8be;
+  border-radius: 12px;
+  padding: 9px 10px;
+  display: grid;
+  gap: 3px;
+}
+
+.grammar-label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #a95a27;
+  font-weight: 800;
+}
+
+.grammar-inline-jp {
+  font-family: "Menlo", "Courier New", monospace;
+  color: #5e6e88;
+  margin-left: 6px;
+}
+
+#closeGrammarModal {
+  min-width: auto;
+  padding: 0 5px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  color: #d55f2c;
+  font-size: 2.8rem;
+  line-height: 1;
+}
+
+#closeGrammarModal:hover {
+  color: #b3471b;
+  transform: scale(1.04);
+}
+
 
 #funModal .card-head h2 {
   color: #b95c2b;

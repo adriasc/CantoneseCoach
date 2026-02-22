@@ -1208,42 +1208,50 @@ const GRAMMAR_MARKER_DETAILS = {
   "咗": {
     when: "After a verb for a completed action.",
     why: "Marks that the action is done.",
-    where: "Very common in daily spoken Cantonese."
+    where: "Very common in daily spoken Cantonese.",
+    position: "Usually placed right after the main verb."
   },
   "過": {
     when: "After a verb for life experience.",
     why: "Shows “have done before,” not one specific finished time.",
-    where: "Used in conversation about past experience."
+    where: "Used in conversation about past experience.",
+    position: "Usually right after the verb."
   },
   "完": {
     when: "After a verb meaning “finish.”",
     why: "Emphasizes completion of the action.",
-    where: "Common in everyday speech and routines."
+    where: "Common in everyday speech and routines.",
+    position: "Typically follows the verb."
   },
   "緊": {
     when: "After a verb for an action in progress.",
     why: "Equivalent to “-ing” in many contexts.",
-    where: "Very common in real-time conversation."
+    where: "Very common in real-time conversation.",
+    position: "Placed after the verb being done now."
   },
   "住": {
     when: "After a verb for a continuing state.",
     why: "Focuses on maintained condition/result.",
-    where: "Common in spoken Cantonese."
+    where: "Common in spoken Cantonese.",
+    position: "Usually after a verb to mark sustained state."
   },
   "會": {
     when: "Before a verb for future or predicted action.",
     why: "Adds “will.”",
-    where: "General daily usage."
+    where: "General daily usage.",
+    position: "Usually before the main verb."
   },
   "將會": {
     when: "Before a verb for stronger future framing.",
     why: "Adds explicit “going to / will.”",
-    where: "More formal or emphasized future statements."
+    where: "More formal or emphasized future statements.",
+    position: "Usually before the main verb."
   },
   "已經": {
     when: "Before verb phrase, often with 咗 after the verb.",
     why: "Adds “already.”",
-    where: "Very common in spoken and written Cantonese."
+    where: "Very common in spoken and written Cantonese.",
+    position: "Before the verb phrase."
   }
 };
 
@@ -2145,25 +2153,38 @@ function openPatternGrammarInfo(tokenIndex) {
   if (!meta) return;
 
   const token = meta.token || "";
+  const tokenJyutping = jyutpingForToken(token);
   const roleLabelMap = { past: "Past marker", prog: "Progressive marker", future: "Future marker" };
   const marker = meta.marker || null;
   const isVerb = !!meta.isVerb;
   const linkedVerb = Number.isFinite(meta.linkedVerbIndex) && meta.linkedVerbIndex >= 0
     ? (analysis.tokens?.[meta.linkedVerbIndex] || "")
     : "";
+  const linkedVerbJyutping = linkedVerb ? jyutpingForToken(linkedVerb) : "";
 
   let title = `Grammar Info · ${token}`;
-  const chunks = [];
+  const chunks = [
+    `<div class="grammar-hero">
+      <div class="grammar-hero-hanzi">${escapeHtml(token || "-")}</div>
+      <div class="grammar-hero-jyutping">${escapeHtml(tokenJyutping || "-")}</div>
+    </div>`
+  ];
 
   if (marker) {
     const details = GRAMMAR_MARKER_DETAILS[token] || {};
     title = `${roleLabelMap[marker.role] || "Grammar marker"} · ${token}`;
-    chunks.push(`<p><strong>Function:</strong> ${escapeHtml(marker.label)}.</p>`);
-    chunks.push(`<p><strong>When to use:</strong> ${escapeHtml(details.when || "Use it in the marker position shown in this sentence.")}</p>`);
-    chunks.push(`<p><strong>Why it is used:</strong> ${escapeHtml(details.why || "It changes the time/aspect meaning of the verb phrase.")}</p>`);
-    chunks.push(`<p><strong>Where it appears:</strong> ${escapeHtml(details.where || "Most often in common conversation patterns.")}</p>`);
+    chunks.push(`<div class="grammar-row"><span class="grammar-label">Meaning</span><p>${escapeHtml(marker.label)}</p></div>`);
+    chunks.push(`<div class="grammar-row"><span class="grammar-label">When</span><p>${escapeHtml(details.when || "Use in the marker position shown in this sentence.")}</p></div>`);
+    chunks.push(`<div class="grammar-row"><span class="grammar-label">Why</span><p>${escapeHtml(details.why || "It changes time/aspect meaning of the verb phrase.")}</p></div>`);
+    chunks.push(`<div class="grammar-row"><span class="grammar-label">Position</span><p>${escapeHtml(details.position || "Near the main verb in this sentence pattern.")}</p></div>`);
+    chunks.push(`<div class="grammar-row"><span class="grammar-label">Common in</span><p>${escapeHtml(details.where || "Common everyday conversation.")}</p></div>`);
     if (linkedVerb) {
-      chunks.push(`<p><strong>Linked verb in this sentence:</strong> <span class="chip">${escapeHtml(linkedVerb)}</span></p>`);
+      chunks.push(
+        `<div class="grammar-row">
+          <span class="grammar-label">Linked Verb</span>
+          <p><span class="chip">${escapeHtml(linkedVerb)}</span> <span class="grammar-inline-jp">${escapeHtml(linkedVerbJyutping || "-")}</span></p>
+        </div>`
+      );
     }
   } else if (isVerb) {
     title = `Verb Focus · ${token}`;
@@ -2171,16 +2192,16 @@ function openPatternGrammarInfo(tokenIndex) {
       .filter((entry) => entry?.marker && entry.linkedVerbIndex === tokenIndex)
       .map((entry) => entry.token)
       .filter(Boolean);
-    chunks.push("<p><strong>Function:</strong> Main action verb in this sentence.</p>");
-    chunks.push("<p><strong>When to watch it:</strong> Aspect/time markers often attach before or after this verb.</p>");
+    chunks.push(`<div class="grammar-row"><span class="grammar-label">Role</span><p>Main action verb in this sentence.</p></div>`);
+    chunks.push(`<div class="grammar-row"><span class="grammar-label">Tip</span><p>Watch markers around this verb to understand tense/aspect.</p></div>`);
     if (linkedMarkers.length) {
-      chunks.push(`<p><strong>Linked marker(s) here:</strong> ${linkedMarkers.map((m) => `<span class="chip">${escapeHtml(m)}</span>`).join(" ")}</p>`);
+      chunks.push(`<div class="grammar-row"><span class="grammar-label">Linked Marker(s)</span><p>${linkedMarkers.map((m) => `<span class="chip">${escapeHtml(m)}</span>`).join(" ")}</p></div>`);
     } else {
-      chunks.push("<p><strong>Linked marker(s) here:</strong> none in this sentence.</p>");
+      chunks.push("<div class=\"grammar-row\"><span class=\"grammar-label\">Linked Marker(s)</span><p>None in this sentence.</p></div>");
     }
   } else {
     title = `Token Info · ${token}`;
-    chunks.push("<p>This token is not a tense/aspect marker. Tap framed tense markers or verbs for grammar details.</p>");
+    chunks.push("<div class=\"grammar-row\"><span class=\"grammar-label\">Note</span><p>This token is not a tense/aspect marker. Tap framed markers or verbs for grammar details.</p></div>");
   }
 
   els.grammarModalTitle.textContent = title;
