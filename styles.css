@@ -417,6 +417,23 @@ h1 {
   margin: 10px 0 2px;
 }
 
+.hanzi.pattern-ruby {
+  line-height: 1.35;
+}
+
+.hanzi.pattern-ruby ruby {
+  ruby-position: over;
+  ruby-align: center;
+}
+
+.hanzi.pattern-ruby rt {
+  font-family: "Menlo", "Courier New", monospace;
+  font-size: 0.34em;
+  line-height: 1;
+  color: #365173;
+  letter-spacing: 0.01em;
+}
+
 .jyutping {
   font-family: "Menlo", "Courier New", monospace;
   margin: 0;

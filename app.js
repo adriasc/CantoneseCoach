@@ -1842,7 +1842,10 @@ function bindUI() {
 
   els.toggleWordJyutping.addEventListener("click", () => togglePref("showJyutping"));
   els.toggleWordEnglish.addEventListener("click", () => togglePref("showEnglish"));
-  els.togglePatternJyutping.addEventListener("click", () => togglePref("showJyutping"));
+  els.togglePatternJyutping.addEventListener("click", () => {
+    togglePref("showJyutping");
+    renderPatternSentence();
+  });
   els.togglePatternEnglish.addEventListener("click", () => togglePref("showEnglish"));
   els.toggleQuizJyutping.addEventListener("click", () => togglePref("showJyutping"));
   els.toggleQuizEnglish.addEventListener("click", () => togglePref("showEnglish"));
@@ -2089,6 +2092,9 @@ function switchTab(tabName) {
   els.tabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.tab === tabName));
   els.panels.forEach((panel) => panel.classList.toggle("is-active", panel.id === `panel-${tabName}`));
   setControlsMode(tabName);
+  if (tabName === "patterns" && state.currentSentence) {
+    renderPatternSentence();
+  }
 }
 
 function setControlsMode(tabName) {
@@ -2221,21 +2227,28 @@ function renderPatternSentence() {
   const built = buildPatternSentence();
   const analysis = analyzeSentence({ hanzi: built.hanzi, jyutping: built.jyutping });
   state.currentPatternAnalysis = analysis;
+  const showRuby = !!state.prefs.showJyutping;
   if (state.prefs.showGrammarLens) {
-    els.patternHanzi.innerHTML = analysis.annotatedHanzi;
+    els.patternHanzi.innerHTML = showRuby ? analysis.annotatedRubyHanzi : analysis.annotatedHanzi;
     els.patternJyutping.innerHTML = analysis.annotatedJyutping;
     els.patternGrammarNotes.innerHTML = analysis.notes.length
       ? analysis.notes.map((note) => `<div class="grammar-note">${note}</div>`).join("")
       : `<div class="grammar-note">No tense/aspect marker detected in this sentence.</div>`;
     els.patternLiteral.innerHTML = `Literal: ${analysis.literalHtml || escapeHtml(analysis.literal)}`;
   } else {
-    els.patternHanzi.textContent = built.hanzi;
+    if (showRuby) {
+      els.patternHanzi.innerHTML = analysis.rubyHanzi || escapeHtml(built.hanzi);
+    } else {
+      els.patternHanzi.textContent = built.hanzi;
+    }
     els.patternJyutping.textContent = built.jyutping;
     els.patternGrammarNotes.innerHTML = "";
     els.patternLiteral.textContent = `Literal: ${analysis.literal}`;
   }
+  els.patternHanzi.classList.toggle("pattern-ruby", showRuby);
   els.patternEnglish.textContent = built.english;
   applyVisibilityPrefs();
+  if (showRuby) els.patternJyutping.classList.add("hidden");
 }
 
 function openPatternGrammarInfo(tokenIndex) {
@@ -4181,10 +4194,14 @@ function analyzeSentence(sentenceInput) {
   });
 
   const annotatedJyutping = buildAnnotatedJyutping(tokens, classByIndex, originalJyutping);
+  const rubyHanzi = buildRubyHanzi(tokens, classByIndex, tokenMeta, false);
+  const annotatedRubyHanzi = buildRubyHanzi(tokens, classByIndex, tokenMeta, true);
 
   return {
     annotatedHanzi: annotated.join(""),
     annotatedJyutping,
+    rubyHanzi,
+    annotatedRubyHanzi,
     literal: cleanLiteral(literalParts.join(" ")),
     literalHtml: literalHtmlParts.join(" "),
     notes,
@@ -4303,6 +4320,29 @@ function buildAnnotatedJyutping(tokens, classByIndex, baseJyutping) {
   if (hasUnknownToken && baseJyutping) return escapeHtml(baseJyutping);
   if (!hasAtLeastOneMapped) return escapeHtml(baseJyutping || "");
   return cleanLiteral(parts.join(" "));
+}
+
+function buildRubyHanzi(tokens, classByIndex, tokenMeta, useAnnotatedClasses) {
+  if (!Array.isArray(tokens) || !tokens.length) return "";
+  const parts = [];
+  tokens.forEach((token, idx) => {
+    if (isPunctuation(token)) {
+      parts.push(escapeHtml(token));
+      return;
+    }
+    const jp = jyutpingForToken(token);
+    const showRt = jp && jp !== "to-confirm" && jp !== token;
+    const ruby = `<ruby><rb>${escapeHtml(token)}</rb>${showRt ? `<rt>${escapeHtml(jp)}</rt>` : ""}</ruby>`;
+    if (!useAnnotatedClasses) {
+      parts.push(ruby);
+      return;
+    }
+    const cls = classByIndex[idx] || "tok";
+    const role = tokenMeta[idx]?.marker?.role || (tokenMeta[idx]?.isVerb ? "verb" : "");
+    const dataAttrs = ` data-idx="${idx}" data-token="${escapeAttr(token)}" data-role="${escapeAttr(role)}"`;
+    parts.push(`<span class="${cls}"${dataAttrs}>${ruby}</span>`);
+  });
+  return parts.join("");
 }
 
 function cleanLiteral(text) {
