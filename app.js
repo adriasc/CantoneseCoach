@@ -2102,7 +2102,7 @@ function setControlsMode(tabName) {
   const isWords = tabName === "words";
   const isTones = tabName === "tones";
   [els.globalLevelWrap, els.globalTenseWrap, els.globalThemeWrap].forEach((node) => {
-    if (node) node.classList.toggle("hidden", isQuestions || isTones);
+    if (node) node.classList.toggle("hidden", isQuestions || isTones || isWords);
   });
   if (els.wordFilterWrap) {
     els.wordFilterWrap.classList.toggle("hidden", !isWords || isQuestions);
@@ -2145,7 +2145,7 @@ function setControlsMode(tabName) {
     els.controlsMessage.classList.remove("pending");
     els.controlsMessage.classList.add("applied");
   } else if (isWords) {
-    els.controlsMessage.textContent = "In Words, use Word Filter. Level and Theme are inactive.";
+    els.controlsMessage.textContent = "In Words, use Word Filter.";
     els.controlsMessage.classList.remove("pending");
     els.controlsMessage.classList.add("applied");
   } else {
