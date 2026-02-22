@@ -343,9 +343,9 @@ h1 {
   min-height: auto;
   border-radius: 0;
   border: 0;
-  font-size: 1.8rem;
+  font-size: 3.6rem;
   font-weight: 700;
-  line-height: 1;
+  line-height: 0.6;
   background: transparent;
   color: #355f7d;
   padding: 0 4px;
@@ -924,7 +924,7 @@ button:hover,
 }
 
 .slot-grid label {
-  font-size: 0.86rem;
+  font-size: 0.98rem;
   color: var(--muted);
   font-weight: 600;
 }
@@ -936,11 +936,17 @@ button:hover,
   border: 2px solid #d6e1f5;
   padding: 9px;
   background: #fff;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .slot-grid input[type="range"] {
   margin-top: 8px;
   width: 100%;
+}
+
+#panel-patterns #patternJyutping {
+  display: none !important;
 }
 
 .result-box {
