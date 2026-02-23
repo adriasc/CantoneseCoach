@@ -1246,6 +1246,11 @@ button:hover,
   border: 2px solid #d7dfef;
 }
 
+#quizEnglishControl,
+#toneJyutpingControl {
+  display: none !important;
+}
+
 #panel-listening .choice {
   font-size: 1.15rem;
   line-height: 1.4;
