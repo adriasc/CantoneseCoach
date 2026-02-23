@@ -1711,6 +1711,8 @@ const speechNoise = {
 };
 let bossAdvanceTimer = null;
 let settingsModalTimer = null;
+let layoutResizeObserver = null;
+const softResizeHeights = new WeakMap();
 
 bindUI();
 ensureDailyGameState();
@@ -1729,6 +1731,7 @@ refreshStats();
 renderKnownList();
 refreshGameUI();
 registerServiceWorker();
+initSoftLayoutTransitions();
 
 function bindUI() {
   els.tabs.forEach((tab) => {
@@ -3450,6 +3453,60 @@ function closeSettingsModal() {
     els.settingsModal.classList.remove("is-closing");
     settingsModalTimer = null;
   }, 270);
+}
+
+function initSoftLayoutTransitions() {
+  if (!window.ResizeObserver || layoutResizeObserver) return;
+  const targets = [
+    document.querySelector("#panel-words .card"),
+    document.querySelector("#panel-patterns .card"),
+    document.querySelector("#panel-listening .card"),
+    document.querySelector("#panel-questions .card")
+  ].filter(Boolean);
+  if (!targets.length) return;
+
+  layoutResizeObserver = new ResizeObserver((entries) => {
+    entries.forEach((entry) => {
+      const el = entry.target;
+      const panel = el.closest(".panel");
+      const isActivePanel = !panel || panel.classList.contains("is-active");
+      const nextHeight = Math.round(entry.contentRect.height);
+      const prevHeight = softResizeHeights.get(el) ?? nextHeight;
+
+      if (!isActivePanel || nextHeight <= 0 || prevHeight <= 0 || Math.abs(nextHeight - prevHeight) < 6) {
+        softResizeHeights.set(el, nextHeight);
+        return;
+      }
+      if (el.dataset.resizing === "1") {
+        softResizeHeights.set(el, nextHeight);
+        return;
+      }
+
+      el.dataset.resizing = "1";
+      el.style.height = `${prevHeight}px`;
+      el.style.overflow = "hidden";
+      el.style.transition = "height 210ms cubic-bezier(0.22, 0.61, 0.36, 1)";
+
+      requestAnimationFrame(() => {
+        el.style.height = `${nextHeight}px`;
+      });
+
+      const finish = () => {
+        el.style.height = "";
+        el.style.overflow = "";
+        el.style.transition = "";
+        delete el.dataset.resizing;
+        softResizeHeights.set(el, nextHeight);
+      };
+
+      el.addEventListener("transitionend", finish, { once: true });
+    });
+  });
+
+  targets.forEach((el) => {
+    softResizeHeights.set(el, Math.round(el.getBoundingClientRect().height));
+    layoutResizeObserver.observe(el);
+  });
 }
 
 function ordinalSuffix(n) {
