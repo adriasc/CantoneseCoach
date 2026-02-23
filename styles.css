@@ -339,17 +339,47 @@ h1 {
 }
 
 .gear-btn {
-  min-width: auto;
-  min-height: auto;
+  width: 30px;
+  min-width: 30px;
+  height: 26px;
+  min-height: 26px;
   border-radius: 0;
   border: 0;
-  font-size: 4.3rem;
-  font-weight: 500;
-  line-height: 0.52;
   background: transparent;
   color: #355f7d;
-  padding: 0 2px;
+  padding: 0;
   box-shadow: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.86;
+}
+
+.gear-lines,
+.gear-lines::before,
+.gear-lines::after {
+  display: block;
+  width: 18px;
+  height: 2.2px;
+  border-radius: 999px;
+  background: #5d6d7e;
+  content: "";
+}
+
+.gear-lines {
+  position: relative;
+}
+
+.gear-lines::before {
+  position: absolute;
+  left: 0;
+  top: -6px;
+}
+
+.gear-lines::after {
+  position: absolute;
+  left: 0;
+  top: 6px;
 }
 
 .inactive-control {
@@ -361,7 +391,6 @@ h1 {
   pointer-events: none;
 }
 
-.controls-card.is-collapsed .controls-grid,
 .controls-card.is-collapsed .actions,
 .controls-card.is-collapsed #controlsMessage {
   display: none;
@@ -373,8 +402,8 @@ h1 {
   background: transparent;
   box-shadow: none;
   color: #365173;
-  font-size: 1.8rem;
-  font-weight: 800;
+  font-size: 1.58rem;
+  font-weight: 700;
   line-height: 1;
   padding: 0 2px;
 }
@@ -390,6 +419,19 @@ h1 {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
+  max-height: 720px;
+  opacity: 1;
+  transform: translateY(0);
+  transform-origin: top;
+  overflow: hidden;
+  transition: max-height 180ms ease, opacity 180ms ease, transform 180ms ease;
+}
+
+.controls-card.is-collapsed .controls-grid {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-5px);
+  pointer-events: none;
 }
 
 .controls-card > .actions {
@@ -901,6 +943,38 @@ button:hover,
   border: 2px solid #ffbf9a;
   box-shadow: var(--shadow);
   padding: 16px;
+}
+
+#settingsModal {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+#settingsModal .modal-card {
+  opacity: 0;
+  transform: translateY(9px) scale(0.985);
+  transition: transform 190ms ease, opacity 190ms ease;
+}
+
+#settingsModal.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#settingsModal.is-open .modal-card {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+#settingsModal.is-closing {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#settingsModal.is-closing .modal-card {
+  opacity: 0;
+  transform: translateY(7px) scale(0.985);
 }
 
 #settingsModal .modal-card {

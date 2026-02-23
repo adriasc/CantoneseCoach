@@ -1710,6 +1710,7 @@ const speechNoise = {
   playId: 0
 };
 let bossAdvanceTimer = null;
+let settingsModalTimer = null;
 
 bindUI();
 ensureDailyGameState();
@@ -1754,15 +1755,15 @@ function bindUI() {
   if (els.openSettings && els.settingsModal) {
     els.openSettings.addEventListener("click", () => {
       syncControlValues();
-      els.settingsModal.classList.remove("hidden");
+      openSettingsModal();
     });
   }
   if (els.closeSettings && els.settingsModal) {
-    els.closeSettings.addEventListener("click", () => els.settingsModal.classList.add("hidden"));
+    els.closeSettings.addEventListener("click", closeSettingsModal);
   }
   if (els.settingsModal) {
     els.settingsModal.addEventListener("click", (event) => {
-      if (event.target === els.settingsModal) els.settingsModal.classList.add("hidden");
+      if (event.target === els.settingsModal) closeSettingsModal();
     });
   }
   if (els.closeGrammarModal && els.grammarModal) {
@@ -3420,7 +3421,35 @@ function applyTheme(themeName) {
 function setControlsCollapsed(collapsed) {
   if (!els.controlsCard || !els.toggleControlsCard) return;
   els.controlsCard.classList.toggle("is-collapsed", collapsed);
-  els.toggleControlsCard.textContent = collapsed ? ">" : "V";
+  els.toggleControlsCard.textContent = collapsed ? "›" : "⌄";
+}
+
+function openSettingsModal() {
+  if (!els.settingsModal) return;
+  if (settingsModalTimer) {
+    clearTimeout(settingsModalTimer);
+    settingsModalTimer = null;
+  }
+  els.settingsModal.classList.remove("hidden", "is-closing");
+  requestAnimationFrame(() => {
+    els.settingsModal.classList.add("is-open");
+  });
+}
+
+function closeSettingsModal() {
+  if (!els.settingsModal) return;
+  if (settingsModalTimer) {
+    clearTimeout(settingsModalTimer);
+    settingsModalTimer = null;
+  }
+  els.settingsModal.classList.remove("is-open");
+  els.settingsModal.classList.add("is-closing");
+  settingsModalTimer = setTimeout(() => {
+    if (!els.settingsModal) return;
+    els.settingsModal.classList.add("hidden");
+    els.settingsModal.classList.remove("is-closing");
+    settingsModalTimer = null;
+  }, 190);
 }
 
 function ordinalSuffix(n) {
