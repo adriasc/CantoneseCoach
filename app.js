@@ -1626,6 +1626,7 @@ const els = {
   togglePatternEnglish: byId("togglePatternEnglish"),
   patternLensText: byId("patternLensText"),
   patternJpText: byId("patternJpText"),
+  patternEnText: byId("patternEnText"),
   patternNextText: byId("patternNextText"),
   toggleQuizJyutping: byId("toggleQuizJyutping"),
   toggleQuizEnglish: byId("toggleQuizEnglish"),
@@ -3376,16 +3377,14 @@ function renderPatternActionButtons(showJp, showEn, showLens) {
   };
   setPill(els.toggleGrammarLens, showLens, "◎");
   setPill(els.togglePatternJyutping, showJp, "粵");
+  setPill(els.togglePatternEnglish, showEn, "EN");
 
-  if (els.patternLensText) els.patternLensText.textContent = `Lens ${showLens ? "On" : "Off"}`;
-  if (els.patternJpText) els.patternJpText.textContent = `Jyutping ${showJp ? "On" : "Off"}`;
+  if (els.patternLensText) els.patternLensText.textContent = "Lens";
+  if (els.patternJpText) els.patternJpText.textContent = "Jyutping";
+  if (els.patternEnText) els.patternEnText.textContent = "English";
 
   if (els.togglePatternEnglish) {
-    els.togglePatternEnglish.classList.add("pattern-english-btn", "pattern-toggle-btn");
-    els.togglePatternEnglish.classList.toggle("is-on", !!showEn);
-    els.togglePatternEnglish.classList.toggle("is-off", !showEn);
-    els.togglePatternEnglish.setAttribute("aria-pressed", showEn ? "true" : "false");
-    els.togglePatternEnglish.textContent = `English ${showEn ? "On" : "Off"}`;
+    els.togglePatternEnglish.setAttribute("aria-label", showEn ? "English on" : "English off");
   }
 }
 

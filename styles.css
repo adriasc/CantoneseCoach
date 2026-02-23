@@ -531,41 +531,39 @@ button:hover,
 }
 
 #panel-patterns .pattern-actions {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
   align-items: end;
-  gap: 14px;
-}
-
-#panel-patterns .pattern-side-control {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
 }
 
-#panel-patterns .pattern-center-control {
+#panel-patterns .pattern-control-col {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
+  min-width: 0;
 }
 
 #panel-patterns .pattern-control-text {
   margin: 0;
-  font-size: 1.02rem;
-  font-weight: 700;
+  font-size: 0.84rem;
+  font-weight: 600;
   color: #3f5167;
   text-align: center;
+  white-space: nowrap;
 }
 
 #panel-patterns .pattern-pill-btn {
-  width: 170px;
-  height: 56px;
+  width: 88px;
+  height: 34px;
   border-radius: 999px;
   border: 2px solid rgba(255, 255, 255, 0.45);
   position: relative;
-  padding: 0 16px;
+  padding: 0 8px;
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
@@ -574,17 +572,18 @@ button:hover,
 }
 
 #panel-patterns .pattern-pill-icon {
-  font-size: 1.3rem;
+  font-size: 0.82rem;
+  font-weight: 800;
   line-height: 1;
 }
 
 #panel-patterns .pattern-pill-btn::after {
   content: "";
   position: absolute;
-  top: 5px;
-  left: 6px;
-  width: 42px;
-  height: 42px;
+  top: 3px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
   border-radius: 999px;
   background: #f9fafc;
   border: 2px solid rgba(214, 223, 236, 0.92);
@@ -593,7 +592,7 @@ button:hover,
 }
 
 #panel-patterns .pattern-pill-btn.is-on::after {
-  left: calc(100% - 48px);
+  left: calc(100% - 28px);
 }
 
 #panel-patterns #toggleGrammarLens.pattern-pill-btn {
@@ -604,20 +603,24 @@ button:hover,
   background: linear-gradient(90deg, #11d7b8 0%, #16b7dd 48%, #2f89ff 100%);
 }
 
+#panel-patterns #togglePatternEnglish.pattern-pill-btn {
+  background: linear-gradient(90deg, #6ea7ff 0%, #5d90ff 55%, #6d6be8 100%);
+}
+
 #panel-patterns .pattern-pill-btn.is-off {
   filter: saturate(0.66) brightness(0.92);
 }
 
 #panel-patterns .pattern-next-btn {
-  width: 54px;
-  min-width: 54px;
-  height: 54px;
-  min-height: 54px;
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  min-height: 38px;
   border-radius: 999px;
   border: 1px solid #d2d8e3;
   background: linear-gradient(180deg, #f8f9fb 0%, #e9edf3 100%);
   color: #5a6778;
-  font-size: 1.72rem;
+  font-size: 1.2rem;
   line-height: 1;
   font-weight: 700;
   padding: 0;
@@ -627,44 +630,15 @@ button:hover,
 }
 
 #panel-patterns #playPatternAudio.pattern-play-main {
-  width: 96px;
-  min-width: 96px;
-  height: 96px;
-  min-height: 96px;
+  width: 78px;
+  min-width: 78px;
+  height: 78px;
+  min-height: 78px;
   border-radius: 999px;
-  font-size: 2rem;
+  font-size: 1.75rem;
   background: linear-gradient(160deg, #ff8f63 0%, #ff646f 48%, #ff4f85 100%);
-  border: 4px solid #fff8f4;
+  border: 3px solid #fff8f4;
   box-shadow: 0 8px 22px rgba(225, 80, 95, 0.35);
-}
-
-#panel-patterns .pattern-secondary-actions {
-  justify-content: center;
-  margin-top: 10px;
-}
-
-#panel-patterns .pattern-english-btn {
-  border-radius: 999px;
-  padding: 10px 16px;
-  font-size: 1.02rem;
-  font-weight: 700;
-  border: 1px solid #cfd7e2;
-}
-
-#panel-patterns .pattern-english-btn.is-on {
-  background: linear-gradient(180deg, #74b8ff 0%, #4a90ff 50%, #5e5ce6 100%);
-  color: #fff;
-  border-color: #5a78d6;
-}
-
-#panel-patterns .pattern-english-btn.is-off {
-  background: linear-gradient(180deg, #f7f8fa 0%, #ebeff5 100%);
-  color: #36475d;
-  border-color: #cfd7e2;
-}
-
-#panel-patterns .pattern-english-btn.is-off:hover {
-  background: linear-gradient(180deg, #f2f5f9 0%, #e4eaf2 100%);
 }
 
 #playToneA,
@@ -1280,12 +1254,12 @@ input[type="file"] {
   }
 
   #panel-patterns .pattern-actions {
-    grid-template-columns: 1fr;
-    justify-items: center;
+    justify-content: flex-start;
+    gap: 7px;
   }
 
   #panel-patterns .pattern-pill-btn {
-    width: min(92vw, 280px);
+    width: 82px;
   }
 
   .streak {
