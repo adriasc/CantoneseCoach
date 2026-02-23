@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.2.23</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.2.24</span></p>
         <h1>Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -290,13 +290,22 @@
           <div class="grammar-notes" id="patternGrammarNotes"></div>
         </div>
         <div class="actions pattern-actions">
-          <button id="playPatternAudio" class="play-icon-btn" aria-label="Play pattern sentence">▶</button>
-          <button id="newPattern" class="pattern-icon-btn">NEXT</button>
-          <button id="toggleGrammarLens" class="pattern-icon-btn pattern-toggle-btn is-off" aria-pressed="false">Lens Off</button>
-          <div class="inline-pair">
-            <button id="togglePatternJyutping" class="pattern-icon-btn pattern-toggle-btn is-off" aria-pressed="false">Jyutping Off</button>
-            <button id="togglePatternEnglish" class="pattern-icon-btn pattern-toggle-btn is-off" aria-pressed="false">English Off</button>
+          <div class="pattern-side-control">
+            <button id="toggleGrammarLens" class="pattern-pill-btn pattern-toggle-btn is-off" aria-pressed="false" aria-label="Toggle grammar lens"></button>
+            <p class="pattern-control-text" id="patternLensText">Lens Off</p>
           </div>
+          <div class="pattern-center-control">
+            <button id="newPattern" class="pattern-next-btn" aria-label="Next pattern">↗</button>
+            <p class="pattern-control-text" id="patternNextText">Next</p>
+            <button id="playPatternAudio" class="play-icon-btn pattern-play-main" aria-label="Play pattern sentence">▶</button>
+          </div>
+          <div class="pattern-side-control">
+            <button id="togglePatternJyutping" class="pattern-pill-btn pattern-toggle-btn is-off" aria-pressed="false" aria-label="Toggle Jyutping"></button>
+            <p class="pattern-control-text" id="patternJpText">Jyutping Off</p>
+          </div>
+        </div>
+        <div class="actions pattern-secondary-actions">
+          <button id="togglePatternEnglish" class="pattern-english-btn pattern-toggle-btn is-off" aria-pressed="false">English Off</button>
         </div>
       </div>
     </section>

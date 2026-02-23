@@ -1621,8 +1621,12 @@ const els = {
   controlsMessage: byId("controlsMessage"),
   toggleWordJyutping: byId("toggleWordJyutping"),
   toggleWordEnglish: byId("toggleWordEnglish"),
+  newPattern: byId("newPattern"),
   togglePatternJyutping: byId("togglePatternJyutping"),
   togglePatternEnglish: byId("togglePatternEnglish"),
+  patternLensText: byId("patternLensText"),
+  patternJpText: byId("patternJpText"),
+  patternNextText: byId("patternNextText"),
   toggleQuizJyutping: byId("toggleQuizJyutping"),
   toggleQuizEnglish: byId("toggleQuizEnglish"),
   toggleQuizGrammarLens: byId("toggleQuizGrammarLens"),
@@ -3356,20 +3360,33 @@ function applyVisibilityPrefs() {
 
 function renderPatternActionButtons(showJp, showEn, showLens) {
   if (els.newPattern) {
-    els.newPattern.classList.add("pattern-icon-btn");
-    els.newPattern.textContent = "NEXT";
+    els.newPattern.classList.add("pattern-next-btn");
+    els.newPattern.textContent = "↗";
   }
-  const setToggle = (btn, label, isOn) => {
+  if (els.patternNextText) {
+    els.patternNextText.textContent = "Next";
+  }
+  const setPill = (btn, isOn, iconText) => {
     if (!btn) return;
-    btn.classList.add("pattern-icon-btn", "pattern-toggle-btn");
+    btn.classList.add("pattern-pill-btn", "pattern-toggle-btn");
     btn.classList.toggle("is-on", !!isOn);
     btn.classList.toggle("is-off", !isOn);
     btn.setAttribute("aria-pressed", isOn ? "true" : "false");
-    btn.textContent = `${label} ${isOn ? "On" : "Off"}`;
+    btn.innerHTML = `<span class="pattern-pill-icon" aria-hidden="true">${iconText}</span>`;
   };
-  setToggle(els.toggleGrammarLens, "Lens", showLens);
-  setToggle(els.togglePatternJyutping, "Jyutping", showJp);
-  setToggle(els.togglePatternEnglish, "English", showEn);
+  setPill(els.toggleGrammarLens, showLens, "◎");
+  setPill(els.togglePatternJyutping, showJp, "粵");
+
+  if (els.patternLensText) els.patternLensText.textContent = `Lens ${showLens ? "On" : "Off"}`;
+  if (els.patternJpText) els.patternJpText.textContent = `Jyutping ${showJp ? "On" : "Off"}`;
+
+  if (els.togglePatternEnglish) {
+    els.togglePatternEnglish.classList.add("pattern-english-btn", "pattern-toggle-btn");
+    els.togglePatternEnglish.classList.toggle("is-on", !!showEn);
+    els.togglePatternEnglish.classList.toggle("is-off", !showEn);
+    els.togglePatternEnglish.setAttribute("aria-pressed", showEn ? "true" : "false");
+    els.togglePatternEnglish.textContent = `English ${showEn ? "On" : "Off"}`;
+  }
 }
 
 function toggleGrammarLensState() {
