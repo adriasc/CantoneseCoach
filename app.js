@@ -4752,9 +4752,9 @@ function romanToggleLabelState(isOn) {
 
 function appTitleForMode(modeInput) {
   const mode = normalizeLanguageMode(modeInput);
-  if (mode === "mandarin") return "粤语教练";
-  if (mode === "compare") return "廣東話教練 / 粤语教练";
-  return "廣東話教練";
+  if (mode === "mandarin") return "Mandarin Coach";
+  if (mode === "compare") return "Cantonese + Mandarin Coach";
+  return "Cantonese Coach";
 }
 
 function renderAppTitle() {
