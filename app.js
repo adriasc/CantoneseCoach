@@ -4758,8 +4758,9 @@ function appTitleForMode(modeInput) {
 }
 
 function renderAppTitle() {
-  if (!els.appTitle) return;
-  els.appTitle.textContent = appTitleForMode(state?.prefs?.languageMode);
+  const nextTitle = appTitleForMode(state?.prefs?.languageMode);
+  if (els.appTitle) els.appTitle.textContent = nextTitle;
+  document.title = nextTitle;
 }
 
 function normalizeLocalizedWordEntry(word, idx) {
