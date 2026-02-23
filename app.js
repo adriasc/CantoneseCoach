@@ -4501,6 +4501,7 @@ const MANDARIN_CHAR_PINYIN_MAP = {
   "房": "fang2",
   "桌": "zhuo1",
   "椅": "yi3",
+  "子": "zi3",
   "寓": "yu4",
   "浴": "yu4",
   "室": "shi4",
