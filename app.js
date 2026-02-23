@@ -3418,9 +3418,9 @@ function applyVisibilityPrefs() {
   if (els.questionEnglish) els.questionEnglish.classList.toggle("hidden", !showEn);
   if (els.questionLiteral) els.questionLiteral.classList.toggle("hidden", !showEn);
 
-  els.toggleWordJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
+  setMiniToggle(els.toggleWordJyutping, showJp, "粵", "Jyutping on", "Jyutping off");
   setMiniToggle(els.toggleQuestionJyutping, showJp, "粵", "Jyutping on", "Jyutping off");
-  els.toggleWordEnglish.textContent = showEn ? "Hide English" : "Show English";
+  setMiniToggle(els.toggleWordEnglish, showEn, "EN", "English on", "English off");
   setMiniToggle(els.toggleQuestionEnglish, showEn, "EN", "English on", "English off");
   renderPatternActionButtons(showJp, showEn, showLens);
   setMiniToggle(els.toggleQuestionGrammarLens, showLens, "◎", "Lens on", "Lens off");

@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.2.36</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.2.37</span></p>
         <h1>Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -251,15 +251,30 @@
         <p class="jyutping" id="wordJyutping">ngo5</p>
         <p class="english" id="wordEnglish">I / me</p>
         <p class="literal hidden" id="wordLiteral"></p>
-        <div class="actions">
-          <button id="playWordAudio" class="play-icon-btn" aria-label="Play word audio">▶</button>
-          <button id="revealExample">Show example</button>
-          <div class="inline-pair">
-            <button id="toggleWordJyutping">Hide Jyutping</button>
-            <button id="toggleWordEnglish">Hide English</button>
+        <div class="actions pattern-actions panel-actions">
+          <div class="pattern-control-col">
+            <button id="nextWord" class="pattern-next-btn" aria-label="Next word">↗</button>
+            <p class="pattern-control-text">Next</p>
           </div>
-          <button id="markKnown">I know this</button>
-          <button id="nextWord">Next</button>
+          <div class="pattern-control-col">
+            <button id="playWordAudio" class="play-icon-btn pattern-play-main" aria-label="Play word audio">▶</button>
+            <p class="pattern-control-text">Play</p>
+          </div>
+          <div class="pattern-control-col">
+            <button id="toggleWordJyutping" class="pattern-mini-btn pattern-toggle-btn is-off" aria-pressed="false" aria-label="Toggle Jyutping">粵</button>
+            <p class="pattern-control-text">Jyutping</p>
+          </div>
+          <div class="pattern-control-col">
+            <button id="toggleWordEnglish" class="pattern-mini-btn pattern-toggle-btn is-off" aria-pressed="false" aria-label="Toggle English">EN</button>
+            <p class="pattern-control-text">English</p>
+          </div>
+          <div class="pattern-control-col">
+            <button id="markKnown" class="pattern-mini-btn" aria-label="Mark word as known">✓</button>
+            <p class="pattern-control-text">Known</p>
+          </div>
+        </div>
+        <div class="actions word-example-actions">
+          <button id="revealExample">Show example</button>
         </div>
         <p class="example" id="wordExample"></p>
       </div>

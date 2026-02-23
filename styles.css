@@ -566,6 +566,7 @@ button:hover,
   background: #365173;
 }
 
+#panel-words .panel-actions,
 #panel-patterns .pattern-actions,
 #panel-listening .panel-actions,
 #panel-questions .panel-actions,
@@ -580,6 +581,7 @@ button:hover,
   padding: 2px 0;
 }
 
+#panel-words .pattern-control-col,
 #panel-patterns .pattern-control-col,
 #panel-listening .pattern-control-col,
 #panel-questions .pattern-control-col,
@@ -592,6 +594,7 @@ button:hover,
   min-width: 56px;
 }
 
+#panel-words .pattern-control-text,
 #panel-patterns .pattern-control-text,
 #panel-listening .pattern-control-text,
 #panel-questions .pattern-control-text,
@@ -604,6 +607,7 @@ button:hover,
   white-space: nowrap;
 }
 
+#panel-words .pattern-mini-btn,
 #panel-patterns .pattern-mini-btn,
 #panel-listening .pattern-mini-btn,
 #panel-questions .pattern-mini-btn,
@@ -646,6 +650,7 @@ button:hover,
   border-color: #2f9bd1;
 }
 
+#panel-words #toggleWordJyutping.pattern-mini-btn.is-on,
 #panel-listening #toggleQuizJyutping.pattern-mini-btn.is-on,
 #panel-questions #toggleQuestionJyutping.pattern-mini-btn.is-on,
 #panel-tones #toggleToneJyutping.pattern-mini-btn.is-on {
@@ -660,6 +665,7 @@ button:hover,
   border-color: #6b7ed8;
 }
 
+#panel-words #toggleWordEnglish.pattern-mini-btn.is-on,
 #panel-listening #toggleQuizEnglish.pattern-mini-btn.is-on,
 #panel-questions #toggleQuestionEnglish.pattern-mini-btn.is-on,
 #panel-tones #toggleToneEnglish.pattern-mini-btn.is-on {
@@ -674,6 +680,7 @@ button:hover,
   border-color: #3aa291;
 }
 
+#panel-words .pattern-mini-btn.is-off,
 #panel-patterns .pattern-mini-btn.is-off,
 #panel-listening .pattern-mini-btn.is-off,
 #panel-questions .pattern-mini-btn.is-off,
@@ -683,6 +690,7 @@ button:hover,
   border-color: #d2dbe7;
 }
 
+#panel-words .pattern-next-btn,
 #panel-patterns .pattern-next-btn,
 #panel-listening .pattern-next-btn,
 #panel-questions .pattern-next-btn,
@@ -705,6 +713,7 @@ button:hover,
   justify-content: center;
 }
 
+#panel-words #playWordAudio.pattern-play-main,
 #panel-patterns #playPatternAudio.pattern-play-main,
 #panel-listening #playQuizAudio.pattern-play-main,
 #panel-questions #playQuestionAudio.pattern-play-main {
@@ -729,6 +738,19 @@ button:hover,
   background: linear-gradient(160deg, #ff8f63 0%, #ff646f 48%, #ff4f85 100%);
   border: 3px solid #fff8f4;
   box-shadow: 0 6px 16px rgba(225, 80, 95, 0.31);
+}
+
+#panel-words #markKnown.pattern-mini-btn {
+  color: #fff;
+  background: linear-gradient(160deg, #19b67b 0%, #0fa97b 50%, #168cb2 100%);
+  border: 2px solid #1f9e88;
+  box-shadow: 0 6px 14px rgba(15, 153, 123, 0.27);
+  font-size: 1.15rem;
+}
+
+#panel-words .word-example-actions {
+  justify-content: center;
+  margin-top: 8px;
 }
 
 #playWordAudio,
