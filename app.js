@@ -1704,6 +1704,7 @@ const els = {
   knownListWrap: byId("knownListWrap"),
   knownListMeta: byId("knownListMeta"),
   knownList: byId("knownList"),
+  clearKnownList: byId("clearKnownList"),
   streakBadge: byId("streakBadge"),
   patternFormula: byId("patternFormula"),
   slotGrid: byId("slotGrid"),
@@ -1880,6 +1881,29 @@ function bindUI() {
     renderKnownList();
     rollWord();
   });
+
+  if (els.knownList) {
+    els.knownList.addEventListener("click", (event) => {
+      const btn = event.target?.closest?.(".known-remove-btn");
+      if (!btn) return;
+      const wordId = String(btn.dataset.wordId || "").trim();
+      if (!wordId || !state.known.has(wordId)) return;
+      state.known.delete(wordId);
+      saveJson(STORAGE_KEYS.known, [...state.known]);
+      refreshStats();
+      renderKnownList();
+    });
+  }
+
+  if (els.clearKnownList) {
+    els.clearKnownList.addEventListener("click", () => {
+      if (!state.known.size) return;
+      state.known.clear();
+      saveJson(STORAGE_KEYS.known, [...state.known]);
+      refreshStats();
+      renderKnownList();
+    });
+  }
 
   if (els.toggleKnownList && els.knownListWrap) {
     els.toggleKnownList.addEventListener("click", () => {
@@ -3383,15 +3407,17 @@ function renderKnownList() {
   els.knownList.innerHTML = "";
   if (!items.length) {
     els.knownListMeta.textContent = "No words marked yet.";
+    if (els.clearKnownList) els.clearKnownList.disabled = true;
     return;
   }
+  if (els.clearKnownList) els.clearKnownList.disabled = false;
   els.knownListMeta.textContent = `${items.length} words marked as known.`;
   items.forEach((w) => {
     const localized = localizeEntry(w);
     const rowClass = localized.isCompare ? "known-item compare-lines" : "known-item";
     const row = document.createElement("div");
     row.className = rowClass;
-    row.innerHTML = `<p class="hanzi">${escapeHtml(localized.display.hanzi || "-")}</p><p class="jyutping">${escapeHtml(localized.display.roman || "-")}</p><p class="english">${escapeHtml(localized.display.english || "-")}</p>`;
+    row.innerHTML = `<p class="hanzi">${escapeHtml(localized.display.hanzi || "-")}</p><p class="jyutping">${escapeHtml(localized.display.roman || "-")}</p><p class="english">${escapeHtml(localized.display.english || "-")}</p><button class="known-remove-btn" type="button" data-word-id="${escapeAttr(w.id)}" aria-label="Remove from known list">✕</button>`;
     els.knownList.appendChild(row);
   });
 }

@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.6</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.7</span></p>
         <h1>Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -266,6 +266,10 @@
             <p class="pattern-control-text">Next</p>
           </div>
           <div class="pattern-control-col">
+            <button id="markKnown" class="pattern-mini-btn" aria-label="Mark word as known">✓</button>
+            <p class="pattern-control-text">Known</p>
+          </div>
+          <div class="pattern-control-col">
             <button id="playWordAudio" class="play-icon-btn pattern-play-main" aria-label="Play word audio">▶</button>
             <p class="pattern-control-text">Play</p>
           </div>
@@ -276,10 +280,6 @@
           <div class="pattern-control-col">
             <button id="toggleWordEnglish" class="pattern-mini-btn pattern-toggle-btn is-off" aria-pressed="false" aria-label="Toggle English">EN</button>
             <p class="pattern-control-text">English</p>
-          </div>
-          <div class="pattern-control-col">
-            <button id="markKnown" class="pattern-mini-btn" aria-label="Mark word as known">✓</button>
-            <p class="pattern-control-text">Known</p>
           </div>
         </div>
         <div class="actions word-example-actions">
@@ -297,6 +297,9 @@
       <div class="card hidden" id="knownListWrap">
         <h3>Known Words</h3>
         <p class="example" id="knownListMeta">No words marked yet.</p>
+        <div class="actions known-list-actions">
+          <button id="clearKnownList" type="button">Clear all known</button>
+        </div>
         <div class="known-list" id="knownList"></div>
       </div>
     </section>

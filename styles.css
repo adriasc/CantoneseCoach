@@ -881,7 +881,7 @@ button:hover,
 }
 
 #panel-words .word-example-actions {
-  justify-content: center;
+  justify-content: flex-start;
   margin-top: 14px;
 }
 
@@ -1456,7 +1456,7 @@ button:hover,
 
 .known-item {
   display: grid;
-  grid-template-columns: minmax(70px, auto) minmax(90px, auto) 1fr;
+  grid-template-columns: minmax(70px, auto) minmax(90px, auto) 1fr auto;
   gap: 10px;
   align-items: baseline;
   padding: 6px 8px;
@@ -1473,6 +1473,42 @@ button:hover,
 .known-item .jyutping,
 .known-item .english {
   margin: 0;
+}
+
+.known-list-actions {
+  margin-top: 8px;
+}
+
+#clearKnownList {
+  background: #9a5560;
+}
+
+#clearKnownList:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.known-remove-btn {
+  border: 1px solid #d7deec;
+  background: #f6f8fc;
+  color: #6f3e45;
+  border-radius: 999px;
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  min-height: 30px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.known-remove-btn:hover {
+  background: #feeff1;
+  border-color: #e8bbc2;
 }
 
 .confetti-piece {
