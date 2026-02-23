@@ -1688,6 +1688,7 @@ const els = {
   togglePatternEnglish: byId("togglePatternEnglish"),
   patternLensText: byId("patternLensText"),
   patternJpText: byId("patternJpText"),
+  questionJpText: byId("questionJpText"),
   patternEnText: byId("patternEnText"),
   patternNextText: byId("patternNextText"),
   toggleQuizJyutping: byId("toggleQuizJyutping"),
@@ -2376,14 +2377,10 @@ function renderPatternSentence() {
 
   if (isCompare) {
     const localized = localizeEntry(state.currentSentence);
-    const mandoAnalysis = analyzeSentence({
-      hanzi: localized.mandarin.hanzi,
-      jyutping: localized.mandarin.roman
-    });
     const cantoHanzi = state.prefs.showGrammarLens ? analysis.annotatedHanzi : escapeHtml(localized.cantonese.hanzi || "-");
     const cantoRoman = state.prefs.showGrammarLens ? (analysis.annotatedJyutping || escapeHtml(localized.cantonese.roman || "-")) : escapeHtml(localized.cantonese.roman || "-");
-    const mandoHanzi = state.prefs.showGrammarLens ? mandoAnalysis.annotatedHanzi : escapeHtml(localized.mandarin.hanzi || "-");
-    const mandoRoman = state.prefs.showGrammarLens ? (mandoAnalysis.annotatedJyutping || escapeHtml(localized.mandarin.roman || "-")) : escapeHtml(localized.mandarin.roman || "-");
+    const mandoHanzi = escapeHtml(localized.mandarin.hanzi || "-");
+    const mandoRoman = escapeHtml(localized.mandarin.roman || "-");
     els.patternHanzi.innerHTML = buildCompareLabeledLine(cantoHanzi, mandoHanzi);
     els.patternJyutping.innerHTML = buildCompareLabeledLine(cantoRoman, mandoRoman);
     els.patternEnglish.textContent = built.english;
@@ -2395,10 +2392,7 @@ function renderPatternSentence() {
       const cantoNotes = analysis.notes.length
         ? analysis.notes.map((note) => `<div class="grammar-note">${note}</div>`).join("")
         : `<div class="grammar-note">No tense/aspect marker detected in Cantonese line.</div>`;
-      const mandoNotes = mandoAnalysis.notes.length
-        ? mandoAnalysis.notes.map((note) => `<div class="grammar-note">${note}</div>`).join("")
-        : `<div class="grammar-note">No tense/aspect marker detected in Mandarin line.</div>`;
-      els.patternGrammarNotes.innerHTML = `<div class="grammar-note">Compare mode: lens highlights Cantonese and Mandarin lines.</div>${cantoNotes}${mandoNotes}`;
+      els.patternGrammarNotes.innerHTML = `<div class="grammar-note">Compare mode: lens currently applies to Cantonese line.</div>${cantoNotes}`;
       els.patternLiteral.innerHTML = `Literal (Canto): ${analysis.literalHtml || escapeHtml(analysis.literal)}`;
     } else {
       els.patternGrammarNotes.innerHTML = "";
@@ -2648,14 +2642,10 @@ function renderQuestionSentence() {
   state.currentQuestionAnalysis = analysis;
   const showRuby = !!state.prefs.showJyutping;
   if (localized.isCompare) {
-    const mandoAnalysis = analyzeSentence({
-      hanzi: localized.mandarin.hanzi,
-      jyutping: localized.mandarin.roman
-    });
     const cantoHanzi = state.prefs.showGrammarLens ? analysis.annotatedHanzi : escapeHtml(localized.cantonese.hanzi || "-");
     const cantoRoman = state.prefs.showGrammarLens ? (analysis.annotatedJyutping || escapeHtml(localized.cantonese.roman || "-")) : escapeHtml(localized.cantonese.roman || "-");
-    const mandoHanzi = state.prefs.showGrammarLens ? mandoAnalysis.annotatedHanzi : escapeHtml(localized.mandarin.hanzi || "-");
-    const mandoRoman = state.prefs.showGrammarLens ? (mandoAnalysis.annotatedJyutping || escapeHtml(localized.mandarin.roman || "-")) : escapeHtml(localized.mandarin.roman || "-");
+    const mandoHanzi = escapeHtml(localized.mandarin.hanzi || "-");
+    const mandoRoman = escapeHtml(localized.mandarin.roman || "-");
     els.questionHanzi.innerHTML = buildCompareLabeledLine(cantoHanzi, mandoHanzi);
     els.questionJyutping.innerHTML = buildCompareLabeledLine(cantoRoman, mandoRoman);
     els.questionEnglish.textContent = localized.display.english;
@@ -3987,6 +3977,53 @@ const MANDARIN_TOKEN_MAP = {
   "尋日": "昨天",
   "聽日": "明天",
   "巴士": "公交车",
+  "咩": "什么",
+  "邊個": "谁",
+  "幾多": "多少",
+  "點樣": "怎么样",
+  "點解": "为什么",
+  "屋企": "家里",
+  "早晨": "早上",
+  "多謝": "谢谢",
+  "唔該": "劳驾",
+  "對唔住": "对不起",
+  "廣東話": "广东话",
+  "英文": "英语",
+  "早啲": "早一点",
+  "稍後": "稍后",
+  "遲啲": "晚一点",
+  "下晝": "下午",
+  "嗰陣": "那阵",
+  "一啲": "一些",
+  "咁": "这样",
+  "仲": "还",
+  "多次": "再次",
+  "夠": "够",
+  "太貴啦": "太贵了",
+  "開心": "开心",
+  "傷心": "伤心",
+  "入面": "里面",
+  "外面": "外面",
+  "周圍": "周围",
+  "橫過": "横过",
+  "穿過": "穿过",
+  "除咗": "除了",
+  "一...就": "一...就",
+  "並": "并",
+  "啲": "些",
+  "俾": "给",
+  "畀": "给",
+  "房間": "房间",
+  "浴室": "浴室",
+  "爐頭": "炉头",
+  "地毯": "地毯",
+  "浴缸": "浴缸",
+  "淋浴": "淋浴",
+  "洗手盆": "洗手盆",
+  "喇": "啦",
+  "囉": "啰",
+  "嘞": "了",
+  "吖": "啊",
   "餐廳": "餐厅",
   "學校": "学校",
   "市場": "市场",
@@ -4076,6 +4113,46 @@ const MANDARIN_PINYIN_MAP = {
   "今天": "jin1 tian1",
   "昨天": "zuo2 tian1",
   "明天": "ming2 tian1",
+  "什么": "shen2 me",
+  "谁": "shei2",
+  "多少": "duo1 shao3",
+  "怎么样": "zen3 me yang4",
+  "为什么": "wei4 shen2 me",
+  "家里": "jia1 li3",
+  "早上": "zao3 shang4",
+  "谢谢": "xie4 xie",
+  "劳驾": "lao2 jia4",
+  "对不起": "dui4 bu4 qi3",
+  "广东话": "guang3 dong1 hua4",
+  "英语": "ying1 yu3",
+  "早一点": "zao3 yi4 dian3",
+  "稍后": "shao1 hou4",
+  "晚一点": "wan3 yi4 dian3",
+  "那阵": "na4 zhen4",
+  "一些": "yi4 xie1",
+  "这样": "zhe4 yang4",
+  "还": "hai2",
+  "再次": "zai4 ci4",
+  "够": "gou4",
+  "太贵了": "tai4 gui4 le",
+  "开心": "kai1 xin1",
+  "伤心": "shang1 xin1",
+  "里面": "li3 mian4",
+  "周围": "zhou1 wei2",
+  "横过": "heng2 guo4",
+  "穿过": "chuan1 guo4",
+  "除了": "chu2 le",
+  "并": "bing4",
+  "些": "xie1",
+  "给": "gei3",
+  "房间": "fang2 jian1",
+  "炉头": "lu2 tou2",
+  "地毯": "di4 tan3",
+  "浴缸": "yu4 gang1",
+  "淋浴": "lin2 yu4",
+  "洗手盆": "xi3 shou3 pen2",
+  "啊": "a",
+  "啰": "luo",
   "公交车": "gong1 jiao1 che1",
   "餐厅": "can1 ting1",
   "学校": "xue2 xiao4",
@@ -4167,6 +4244,286 @@ const MANDARIN_CHAR_MAP = {
   "將": "将"
 };
 
+const MANDARIN_CHAR_PINYIN_MAP = {
+  "有": "you3",
+  "去": "qu4",
+  "买": "mai3",
+  "學": "xue2",
+  "学": "xue2",
+  "做": "zuo4",
+  "好": "hao3",
+  "水": "shui3",
+  "茶": "cha2",
+  "咖": "ka1",
+  "啡": "fei1",
+  "饭": "fan4",
+  "飯": "fan4",
+  "书": "shu1",
+  "書": "shu1",
+  "朋": "peng2",
+  "友": "you3",
+  "名": "ming2",
+  "广": "guang3",
+  "廣": "guang3",
+  "东": "dong1",
+  "東": "dong1",
+  "话": "hua4",
+  "話": "hua4",
+  "英": "ying1",
+  "文": "wen2",
+  "屋": "wu1",
+  "企": "qi3",
+  "香": "xiang1",
+  "港": "gang3",
+  "早": "zao3",
+  "晨": "chen2",
+  "多": "duo1",
+  "谢": "xie4",
+  "謝": "xie4",
+  "唔": "wu2",
+  "该": "gai1",
+  "該": "gai1",
+  "对": "dui4",
+  "對": "dui4",
+  "住": "zhu4",
+  "边": "bian1",
+  "邊": "bian1",
+  "个": "ge4",
+  "個": "ge4",
+  "几": "ji3",
+  "幾": "ji3",
+  "点": "dian3",
+  "點": "dian3",
+  "样": "yang4",
+  "樣": "yang4",
+  "解": "jie3",
+  "一": "yi1",
+  "二": "er4",
+  "三": "san1",
+  "后": "hou4",
+  "後": "hou4",
+  "天": "tian1",
+  "啲": "xie1",
+  "稍": "shao1",
+  "迟": "chi2",
+  "遲": "chi2",
+  "下": "xia4",
+  "次": "ci4",
+  "上": "shang4",
+  "今": "jin1",
+  "星": "xing1",
+  "期": "qi1",
+  "日": "ri4",
+  "中": "zhong1",
+  "午": "wu3",
+  "晝": "zhou4",
+  "黄": "huang2",
+  "黃": "huang2",
+  "昏": "hun1",
+  "晚": "wan3",
+  "嗰": "na4",
+  "阵": "zhen4",
+  "陣": "zhen4",
+  "街": "jie1",
+  "公": "gong1",
+  "司": "si1",
+  "酒": "jiu3",
+  "店": "dian4",
+  "商": "shang1",
+  "位": "wei4",
+  "识": "shi2",
+  "識": "shi2",
+  "想": "xiang3",
+  "必": "bi4",
+  "须": "xu1",
+  "須": "xu1",
+  "应": "ying1",
+  "應": "ying1",
+  "可": "ke3",
+  "以": "yi3",
+  "能": "neng2",
+  "或": "huo4",
+  "者": "zhe3",
+  "常": "chang2",
+  "时": "shi2",
+  "時": "shi2",
+  "从": "cong2",
+  "從": "cong2",
+  "来": "lai2",
+  "來": "lai2",
+  "成": "cheng2",
+  "经": "jing1",
+  "經": "jing1",
+  "前": "qian2",
+  "很": "hen3",
+  "些": "xie1",
+  "这": "zhe4",
+  "這": "zhe4",
+  "还": "hai2",
+  "還": "hai2",
+  "已": "yi3",
+  "再": "zai4",
+  "够": "gou4",
+  "都": "dou1",
+  "就": "jiu4",
+  "反": "fan3",
+  "行": "xing2",
+  "加": "jia1",
+  "味": "wei4",
+  "闻": "wen2",
+  "聞": "wen2",
+  "卖": "mai4",
+  "賣": "mai4",
+  "笑": "xiao4",
+  "哭": "ku1",
+  "喊": "han3",
+  "用": "yong4",
+  "见": "jian4",
+  "見": "jian4",
+  "读": "du2",
+  "讀": "du2",
+  "写": "xie3",
+  "寫": "xie3",
+  "知": "zhi1",
+  "搭": "da1",
+  "打": "da3",
+  "坐": "zuo4",
+  "站": "zhan4",
+  "把": "ba3",
+  "试": "shi4",
+  "試": "shi4",
+  "记": "ji4",
+  "記": "ji4",
+  "拉": "la1",
+  "推": "tui1",
+  "收": "shou1",
+  "畀": "gei3",
+  "俾": "gei3",
+  "入": "ru4",
+  "离": "li2",
+  "離": "li2",
+  "开": "kai1",
+  "開": "kai1",
+  "关": "guan1",
+  "關": "guan1",
+  "明": "ming2",
+  "白": "bai2",
+  "停": "ting2",
+  "完": "wan2",
+  "得": "de2",
+  "到": "dao4",
+  "囉": "luo",
+  "平": "ping2",
+  "贵": "gui4",
+  "貴": "gui4",
+  "太": "tai4",
+  "啦": "la",
+  "喇": "la",
+  "难": "nan2",
+  "難": "nan2",
+  "容": "rong2",
+  "易": "yi4",
+  "快": "kuai4",
+  "慢": "man4",
+  "热": "re4",
+  "熱": "re4",
+  "暖": "nuan3",
+  "大": "da4",
+  "细": "xi4",
+  "細": "xi4",
+  "新": "xin1",
+  "旧": "jiu4",
+  "舊": "jiu4",
+  "辣": "la4",
+  "少": "shao3",
+  "伤": "shang1",
+  "傷": "shang1",
+  "心": "xin1",
+  "面": "mian4",
+  "外": "wai4",
+  "近": "jin4",
+  "远": "yuan3",
+  "遠": "yuan3",
+  "左": "zuo3",
+  "右": "you4",
+  "由": "you2",
+  "靠": "kao4",
+  "之": "zhi1",
+  "间": "jian1",
+  "間": "jian1",
+  "周": "zhou1",
+  "围": "wei2",
+  "圍": "wei2",
+  "横": "heng2",
+  "橫": "heng2",
+  "沿": "yan2",
+  "向": "xiang4",
+  "穿": "chuan1",
+  "并": "bing4",
+  "並": "bing4",
+  "定": "ding4",
+  "除": "chu2",
+  "咗": "le",
+  "虽": "sui1",
+  "雖": "sui1",
+  "然": "ran2",
+  "不": "bu4",
+  "过": "guo4",
+  "直": "zhi2",
+  "至": "zhi4",
+  "只": "zhi3",
+  "要": "yao4",
+  "算": "suan4",
+  "张": "zhang1",
+  "張": "zhang1",
+  "件": "jian4",
+  "支": "zhi1",
+  "本": "ben3",
+  "部": "bu4",
+  "条": "tiao2",
+  "條": "tiao2",
+  "块": "kuai4",
+  "塊": "kuai4",
+  "双": "shuang1",
+  "雙": "shuang1",
+  "杯": "bei1",
+  "片": "pian4",
+  "顶": "ding3",
+  "頂": "ding3",
+  "棵": "ke1",
+  "隻": "zhi1",
+  "架": "jia4",
+  "篇": "pian1",
+  "碗": "wan3",
+  "粒": "li4",
+  "餐": "can1",
+  "份": "fen4",
+  "房": "fang2",
+  "桌": "zhuo1",
+  "椅": "yi3",
+  "寓": "yu4",
+  "浴": "yu4",
+  "室": "shi4",
+  "窗": "chuang1",
+  "冰": "bing1",
+  "箱": "xiang1",
+  "炉": "lu2",
+  "爐": "lu2",
+  "头": "tou2",
+  "頭": "tou2",
+  "地": "di4",
+  "毯": "tan3",
+  "缸": "gang1",
+  "淋": "lin2",
+  "洗": "xi3",
+  "手": "shou3",
+  "盆": "pen2",
+  "床": "chuang2",
+  "呀": "ya",
+  "吖": "a",
+  "嘞": "le"
+};
+
 function mapTokenToMandarinHanzi(token) {
   if (isPunctuation(token)) return token;
   const normalized = normalizeHanzi(token);
@@ -4184,6 +4541,14 @@ function mapTokenToMandarinPinyin(cantoToken, mandarinToken) {
   const mNorm = normalizeHanzi(mandarinToken);
   if (MANDARIN_PINYIN_MAP[mNorm]) return MANDARIN_PINYIN_MAP[mNorm];
   if (MANDARIN_PINYIN_MAP[cNorm]) return MANDARIN_PINYIN_MAP[cNorm];
+  if (mNorm) {
+    const chars = Array.from(mNorm).map((ch) => {
+      if (isPunctuation(ch)) return ch;
+      return MANDARIN_CHAR_PINYIN_MAP[ch] || ch;
+    });
+    const merged = cleanLiteral(chars.join(" "));
+    if (merged) return merged;
+  }
   return "";
 }
 
@@ -4418,13 +4783,11 @@ function applyVisibilityPrefs() {
   const showJp = !!state.prefs.showJyutping;
   const showEn = !!state.prefs.showEnglish;
   const showLens = !!state.prefs.showGrammarLens;
-  const languageMode = normalizeLanguageMode(state.prefs.languageMode);
-  const forceCompareRoman = languageMode === "compare";
 
   els.wordJyutping.classList.toggle("hidden", !showJp);
-  els.patternJyutping.classList.toggle("hidden", !forceCompareRoman && !showJp);
+  els.patternJyutping.classList.toggle("hidden", !showJp);
   if (els.questionJyutping) {
-    els.questionJyutping.classList.toggle("hidden", !forceCompareRoman && !showJp);
+    els.questionJyutping.classList.toggle("hidden", !showJp);
   }
 
   els.wordEnglish.classList.toggle("hidden", !showEn);
@@ -4483,6 +4846,10 @@ function renderPatternActionButtons(showJp, showEn, showLens) {
   if (els.patternJpText) {
     const mode = normalizeLanguageMode(state.prefs.languageMode);
     els.patternJpText.textContent = mode === "mandarin" ? "Pinyin" : (mode === "compare" ? "Roman" : "Jyutping");
+  }
+  if (els.questionJpText) {
+    const mode = normalizeLanguageMode(state.prefs.languageMode);
+    els.questionJpText.textContent = mode === "mandarin" ? "Pinyin" : (mode === "compare" ? "Roman" : "Jyutping");
   }
   if (els.patternEnText) els.patternEnText.textContent = "English";
 }
