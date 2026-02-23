@@ -1641,6 +1641,7 @@ const state = {
 };
 
 const els = {
+  appTitle: byId("appTitle"),
   tabs: [...document.querySelectorAll(".tab")],
   panels: [...document.querySelectorAll(".panel")],
   wordCategory: byId("wordCategory"),
@@ -4749,6 +4750,18 @@ function romanToggleLabelState(isOn) {
   return isOn ? "Jyutping on" : "Jyutping off";
 }
 
+function appTitleForMode(modeInput) {
+  const mode = normalizeLanguageMode(modeInput);
+  if (mode === "mandarin") return "粤语教练";
+  if (mode === "compare") return "廣東話教練 / 粤语教练";
+  return "廣東話教練";
+}
+
+function renderAppTitle() {
+  if (!els.appTitle) return;
+  els.appTitle.textContent = appTitleForMode(state?.prefs?.languageMode);
+}
+
 function normalizeLocalizedWordEntry(word, idx) {
   const safe = word && typeof word === "object" ? { ...word } : {};
   return {
@@ -4942,6 +4955,7 @@ function renderPatternActionButtons(showJp, showEn, showLens) {
     els.questionJpText.textContent = mode === "mandarin" ? "Pinyin" : (mode === "compare" ? "Roman" : "Jyutping");
   }
   if (els.patternEnText) els.patternEnText.textContent = "English";
+  renderAppTitle();
 }
 
 function toggleGrammarLensState() {
