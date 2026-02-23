@@ -3631,6 +3631,171 @@ function normalizeLanguageMode(value) {
   return "cantonese";
 }
 
+const MANDARIN_TOKEN_MAP = {
+  "我": "我",
+  "你": "你",
+  "佢": "他",
+  "我哋": "我们",
+  "你哋": "你们",
+  "佢哋": "他们",
+  "哋": "们",
+  "呢個": "这个",
+  "嗰個": "那个",
+  "呢啲": "这些",
+  "嗰啲": "那些",
+  "呢度": "这里",
+  "嗰度": "那里",
+  "邊度": "哪里",
+  "而家": "现在",
+  "今日": "今天",
+  "尋日": "昨天",
+  "聽日": "明天",
+  "下次": "下次",
+  "上次": "上次",
+  "今次": "这次",
+  "喺": "在",
+  "唔": "不",
+  "係": "是",
+  "嘅": "的",
+  "咗": "了",
+  "緊": "在",
+  "過": "过",
+  "住": "着",
+  "返": "回",
+  "翻": "回",
+  "嚟": "来",
+  "食": "吃",
+  "飲": "喝",
+  "睇": "看",
+  "聽": "听",
+  "講": "说",
+  "傾": "聊",
+  "揾": "找",
+  "冇": "没有",
+  "鍾意": "喜欢",
+  "但係": "但是",
+  "同埋": "和",
+  "同": "和",
+  "之前": "之前",
+  "之後": "之后",
+  "將會": "将会",
+  "會": "会",
+  "想": "想",
+  "要": "要",
+  "如果": "如果",
+  "所以": "所以",
+  "因為": "因为"
+};
+
+const MANDARIN_PINYIN_MAP = {
+  "我": "wo3",
+  "你": "ni3",
+  "他": "ta1",
+  "我们": "wo3 men",
+  "你们": "ni3 men",
+  "他们": "ta1 men",
+  "们": "men",
+  "这个": "zhe4 ge",
+  "那个": "na4 ge",
+  "这些": "zhe4 xie1",
+  "那些": "na4 xie1",
+  "这里": "zhe4 li3",
+  "那里": "na4 li3",
+  "哪里": "na3 li3",
+  "现在": "xian4 zai4",
+  "今天": "jin1 tian1",
+  "昨天": "zuo2 tian1",
+  "明天": "ming2 tian1",
+  "在": "zai4",
+  "不": "bu4",
+  "是": "shi4",
+  "的": "de",
+  "了": "le",
+  "过": "guo4",
+  "着": "zhe",
+  "回": "hui2",
+  "来": "lai2",
+  "吃": "chi1",
+  "喝": "he1",
+  "看": "kan4",
+  "听": "ting1",
+  "说": "shuo1",
+  "聊": "liao2",
+  "找": "zhao3",
+  "没有": "mei2 you3",
+  "喜欢": "xi3 huan1",
+  "但是": "dan4 shi4",
+  "和": "he2",
+  "之前": "zhi1 qian2",
+  "之后": "zhi1 hou4",
+  "将会": "jiang1 hui4",
+  "会": "hui4",
+  "想": "xiang3",
+  "要": "yao4",
+  "如果": "ru2 guo3",
+  "所以": "suo3 yi3",
+  "因为": "yin1 wei4",
+  "吗": "ma",
+  "呢": "ne"
+};
+
+const MANDARIN_CHAR_MAP = {
+  "佢": "他",
+  "哋": "们",
+  "喺": "在",
+  "唔": "不",
+  "嘅": "的",
+  "咗": "了",
+  "緊": "在",
+  "過": "过",
+  "住": "着",
+  "返": "回",
+  "翻": "回",
+  "嚟": "来",
+  "食": "吃",
+  "飲": "喝",
+  "睇": "看",
+  "聽": "听",
+  "講": "说",
+  "傾": "聊",
+  "揾": "找",
+  "冇": "没",
+  "鍾": "钟",
+  "鍾意": "喜欢",
+  "將": "将"
+};
+
+function mapTokenToMandarinHanzi(token) {
+  if (isPunctuation(token)) return token;
+  const normalized = normalizeHanzi(token);
+  if (MANDARIN_TOKEN_MAP[normalized]) return MANDARIN_TOKEN_MAP[normalized];
+  let converted = "";
+  for (const ch of normalized) {
+    converted += MANDARIN_CHAR_MAP[ch] || ch;
+  }
+  return converted || normalized;
+}
+
+function mapTokenToMandarinPinyin(cantoToken, mandarinToken) {
+  if (isPunctuation(cantoToken)) return cantoToken;
+  const cNorm = normalizeHanzi(cantoToken);
+  const mNorm = normalizeHanzi(mandarinToken);
+  if (MANDARIN_PINYIN_MAP[mNorm]) return MANDARIN_PINYIN_MAP[mNorm];
+  if (MANDARIN_PINYIN_MAP[cNorm]) return MANDARIN_PINYIN_MAP[cNorm];
+  return "";
+}
+
+function deriveMandarinFromCantonese(item) {
+  const hanzi = String(item?.hanzi || "").trim();
+  if (!hanzi) return { hanzi: "", roman: "" };
+  const tokens = tokenizeSentence(hanzi);
+  const mappedHanziTokens = tokens.map((token) => mapTokenToMandarinHanzi(token));
+  const mappedRomanTokens = tokens.map((token, idx) => mapTokenToMandarinPinyin(token, mappedHanziTokens[idx]));
+  const mappedHanzi = cleanLiteral(mappedHanziTokens.join(" "));
+  const mappedRoman = cleanLiteral(mappedRomanTokens.filter(Boolean).join(" "));
+  return { hanzi: mappedHanzi || hanzi, roman: mappedRoman };
+}
+
 function readLocalizedField(item, keys) {
   if (!item || typeof item !== "object") return "";
   for (let i = 0; i < keys.length; i += 1) {
@@ -3647,8 +3812,9 @@ function localizeEntry(item) {
   const cantoHanzi = String(source.hanzi || "").trim();
   const cantoRoman = String(source.jyutping || "").trim();
   const cantoEnglish = String(source.english || "").trim();
-  const mandarinHanzi = readLocalizedField(source, ["mandarin_hanzi", "mandarinHanzi"]) || cantoHanzi;
-  const mandarinRoman = readLocalizedField(source, ["pinyin", "mandarin_pinyin", "mandarinPinyin"]) || cantoRoman;
+  const fallbackMandarin = deriveMandarinFromCantonese(source);
+  const mandarinHanzi = readLocalizedField(source, ["mandarin_hanzi", "mandarinHanzi"]) || fallbackMandarin.hanzi || cantoHanzi;
+  const mandarinRoman = readLocalizedField(source, ["pinyin", "mandarin_pinyin", "mandarinPinyin"]) || fallbackMandarin.roman || cantoRoman;
   const mandarinEnglish = readLocalizedField(source, ["mandarin_english", "mandarinEnglish"]) || cantoEnglish;
   const intentId = readLocalizedField(source, ["intent_id", "intentId"]);
   const mode = normalizeLanguageMode(state?.prefs?.languageMode);
@@ -3860,9 +4026,9 @@ function applyVisibilityPrefs() {
     els.wordLiteral.classList.toggle("hidden", !showEn || !hasLiteral);
   }
   els.patternEnglish.classList.toggle("hidden", !showEn);
-  els.patternLiteral.classList.toggle("hidden", !showEn);
+  els.patternLiteral.classList.toggle("hidden", !showEn && !showLens);
   if (els.questionEnglish) els.questionEnglish.classList.toggle("hidden", !showEn);
-  if (els.questionLiteral) els.questionLiteral.classList.toggle("hidden", !showEn);
+  if (els.questionLiteral) els.questionLiteral.classList.toggle("hidden", !showEn && !showLens);
 
   setMiniToggle(els.toggleWordJyutping, showJp, romanToggleIcon(), romanToggleLabelState(true), romanToggleLabelState(false));
   setMiniToggle(els.toggleQuestionJyutping, showJp, romanToggleIcon(), romanToggleLabelState(true), romanToggleLabelState(false));
@@ -3886,7 +4052,7 @@ function applyQuizVisibility() {
     els.quizJyutping.classList.toggle("hidden", hideQuizRomanLine);
   }
   if (els.quizEnglish) els.quizEnglish.classList.toggle("hidden", !showEn);
-  if (els.quizLiteral) els.quizLiteral.classList.toggle("hidden", !showEn);
+  if (els.quizLiteral) els.quizLiteral.classList.toggle("hidden", !showEn && !showLens);
   if (els.quizGrammarNotes) els.quizGrammarNotes.classList.toggle("hidden", !showLens);
   setMiniToggle(els.toggleQuizGrammarLens, showLens, "◎", "Lens on", "Lens off");
   setMiniToggle(els.toggleQuizJyutping, showJp, romanToggleIcon(), romanToggleLabelState(true), romanToggleLabelState(false));
