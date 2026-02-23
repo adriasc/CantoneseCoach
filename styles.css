@@ -932,6 +932,9 @@ button:hover,
   align-items: center;
   justify-content: center;
   padding: 16px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 260ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .modal-card {
@@ -943,36 +946,27 @@ button:hover,
   border: 2px solid #ffbf9a;
   box-shadow: var(--shadow);
   padding: 16px;
-}
-
-#settingsModal {
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 250ms cubic-bezier(0.22, 0.61, 0.36, 1);
-}
-
-#settingsModal .modal-card {
   opacity: 0;
   transform: translateY(18px) scale(0.972);
-  transition: transform 260ms cubic-bezier(0.22, 0.61, 0.36, 1), opacity 260ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition: transform 280ms cubic-bezier(0.22, 0.61, 0.36, 1), opacity 280ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
-#settingsModal.is-open {
+.modal.is-open {
   opacity: 1;
   pointer-events: auto;
 }
 
-#settingsModal.is-open .modal-card {
+.modal.is-open .modal-card {
   opacity: 1;
   transform: translateY(0) scale(1);
 }
 
-#settingsModal.is-closing {
+.modal.is-closing {
   opacity: 0;
   pointer-events: none;
 }
 
-#settingsModal.is-closing .modal-card {
+.modal.is-closing .modal-card {
   opacity: 0;
   transform: translateY(14px) scale(0.972);
 }
@@ -1204,6 +1198,12 @@ button:hover,
   background: #fff;
   color: var(--ink);
   border: 2px solid #d7dfef;
+}
+
+#panel-listening .choice {
+  font-size: 1.15rem;
+  line-height: 1.4;
+  padding: 12px 14px;
 }
 
 .choice.is-correct {

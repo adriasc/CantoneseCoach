@@ -1576,6 +1576,7 @@ const state = {
   currentToneSide: null,
   toneLabelMap: { a: "a", b: "b" },
   toneScore: { correct: 0, total: 0 },
+  quizDisplay: { hanzi: false, jyutping: false, english: false, lens: false },
   game: normalizeGameState(loadJson(STORAGE_KEYS.game, defaultGameState()))
 };
 
@@ -1710,9 +1711,9 @@ const speechNoise = {
   playId: 0
 };
 let bossAdvanceTimer = null;
-let settingsModalTimer = null;
 let layoutResizeObserver = null;
 const softResizeHeights = new WeakMap();
+const modalCloseTimers = new WeakMap();
 
 bindUI();
 ensureDailyGameState();
@@ -1744,37 +1745,37 @@ function bindUI() {
     els.openFunLoop.addEventListener("click", () => {
       ensureDailyGameState();
       refreshGameUI();
-      els.funModal.classList.remove("hidden");
+      openModalAnimated(els.funModal);
     });
   }
   if (els.closeFunLoop && els.funModal) {
-    els.closeFunLoop.addEventListener("click", () => els.funModal.classList.add("hidden"));
+    els.closeFunLoop.addEventListener("click", () => closeModalAnimated(els.funModal));
   }
   if (els.funModal) {
     els.funModal.addEventListener("click", (event) => {
-      if (event.target === els.funModal) els.funModal.classList.add("hidden");
+      if (event.target === els.funModal) closeModalAnimated(els.funModal);
     });
   }
   if (els.openSettings && els.settingsModal) {
     els.openSettings.addEventListener("click", () => {
       syncControlValues();
-      openSettingsModal();
+      openModalAnimated(els.settingsModal);
     });
   }
   if (els.closeSettings && els.settingsModal) {
-    els.closeSettings.addEventListener("click", closeSettingsModal);
+    els.closeSettings.addEventListener("click", () => closeModalAnimated(els.settingsModal));
   }
   if (els.settingsModal) {
     els.settingsModal.addEventListener("click", (event) => {
-      if (event.target === els.settingsModal) closeSettingsModal();
+      if (event.target === els.settingsModal) closeModalAnimated(els.settingsModal);
     });
   }
   if (els.closeGrammarModal && els.grammarModal) {
-    els.closeGrammarModal.addEventListener("click", () => els.grammarModal.classList.add("hidden"));
+    els.closeGrammarModal.addEventListener("click", () => closeModalAnimated(els.grammarModal));
   }
   if (els.grammarModal) {
     els.grammarModal.addEventListener("click", (event) => {
-      if (event.target === els.grammarModal) els.grammarModal.classList.add("hidden");
+      if (event.target === els.grammarModal) closeModalAnimated(els.grammarModal);
     });
   }
 
@@ -1843,11 +1844,13 @@ function bindUI() {
     }
   });
 
-  byId("showQuizText").addEventListener("click", () => {
-    const isHidden = els.quizHanzi.classList.contains("hidden");
-    els.quizHanzi.classList.toggle("hidden", !isHidden);
-    byId("showQuizText").textContent = isHidden ? "Hide Chinese" : "Show Chinese";
-  });
+  const showQuizTextBtn = byId("showQuizText");
+  if (showQuizTextBtn) {
+    showQuizTextBtn.addEventListener("click", () => {
+      state.quizDisplay.hanzi = !state.quizDisplay.hanzi;
+      applyQuizVisibility();
+    });
+  }
 
   els.toggleWordJyutping.addEventListener("click", () => togglePref("showJyutping"));
   els.toggleWordEnglish.addEventListener("click", () => togglePref("showEnglish"));
@@ -1856,10 +1859,24 @@ function bindUI() {
     renderPatternSentence();
   });
   els.togglePatternEnglish.addEventListener("click", () => togglePref("showEnglish"));
-  els.toggleQuizJyutping.addEventListener("click", () => togglePref("showJyutping"));
-  els.toggleQuizEnglish.addEventListener("click", () => togglePref("showEnglish"));
+  if (els.toggleQuizJyutping) {
+    els.toggleQuizJyutping.addEventListener("click", () => {
+      state.quizDisplay.jyutping = !state.quizDisplay.jyutping;
+      applyQuizVisibility();
+    });
+  }
+  if (els.toggleQuizEnglish) {
+    els.toggleQuizEnglish.addEventListener("click", () => {
+      state.quizDisplay.english = !state.quizDisplay.english;
+      applyQuizVisibility();
+    });
+  }
   if (els.toggleQuizGrammarLens) {
-    els.toggleQuizGrammarLens.addEventListener("click", toggleGrammarLensState);
+    els.toggleQuizGrammarLens.addEventListener("click", () => {
+      state.quizDisplay.lens = !state.quizDisplay.lens;
+      renderQuizGrammar();
+      applyQuizVisibility();
+    });
   }
   if (els.toggleToneJyutping) {
     els.toggleToneJyutping.addEventListener("click", () => {
@@ -2308,7 +2325,7 @@ function openPatternGrammarInfo(tokenIndex) {
 
   els.grammarModalTitle.textContent = title;
   els.grammarModalBody.innerHTML = chunks.join("");
-  els.grammarModal.classList.remove("hidden");
+  openModalAnimated(els.grammarModal);
 }
 
 function buildPatternSentence() {
@@ -2329,10 +2346,12 @@ function rollQuiz() {
   els.quizHanzi.textContent = state.currentQuiz.hanzi;
   els.quizJyutping.textContent = state.currentQuiz.jyutping;
   els.quizEnglish.textContent = state.currentQuiz.english;
-  els.quizHanzi.classList.add("hidden");
-  byId("showQuizText").textContent = "Show Chinese";
-  applyVisibilityPrefs();
+  state.quizDisplay.hanzi = false;
+  state.quizDisplay.jyutping = false;
+  state.quizDisplay.english = false;
+  state.quizDisplay.lens = false;
   renderQuizGrammar();
+  applyQuizVisibility();
 
   const answers = [state.currentQuiz.english, ...pickDistractors(state.currentQuiz.id, state.currentQuiz.english, 3)];
   shuffle(answers);
@@ -2362,7 +2381,7 @@ function rollQuiz() {
 function renderQuizGrammar() {
   if (!state.currentQuiz) return;
   const analysis = analyzeSentence({ hanzi: state.currentQuiz.hanzi, jyutping: state.currentQuiz.jyutping });
-  if (state.prefs.showGrammarLens) {
+  if (state.quizDisplay.lens) {
     els.quizHanzi.innerHTML = analysis.annotatedHanzi;
     els.quizJyutping.innerHTML = analysis.annotatedJyutping;
     els.quizGrammarNotes.innerHTML = analysis.notes.length
@@ -3332,7 +3351,6 @@ function applyVisibilityPrefs() {
 
   els.wordJyutping.classList.toggle("hidden", !showJp);
   els.patternJyutping.classList.toggle("hidden", !showJp);
-  els.quizJyutping.classList.toggle("hidden", !showJp);
   if (els.questionJyutping) els.questionJyutping.classList.toggle("hidden", !showJp);
 
   els.wordEnglish.classList.toggle("hidden", !showEn);
@@ -3341,26 +3359,36 @@ function applyVisibilityPrefs() {
     els.wordLiteral.classList.toggle("hidden", !showEn || !hasLiteral);
   }
   els.patternEnglish.classList.toggle("hidden", !showEn);
-  els.quizEnglish.classList.toggle("hidden", !showEn);
   els.patternLiteral.classList.toggle("hidden", !showEn);
-  els.quizLiteral.classList.toggle("hidden", !showEn);
   if (els.questionEnglish) els.questionEnglish.classList.toggle("hidden", !showEn);
   if (els.questionLiteral) els.questionLiteral.classList.toggle("hidden", !showEn);
 
   els.toggleWordJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
-  els.toggleQuizJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
   if (els.toggleQuestionJyutping) els.toggleQuestionJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
   els.toggleWordEnglish.textContent = showEn ? "Hide English" : "Show English";
-  els.toggleQuizEnglish.textContent = showEn ? "Hide English" : "Show English";
   if (els.toggleQuestionEnglish) els.toggleQuestionEnglish.textContent = showEn ? "Hide English" : "Show English";
   renderPatternActionButtons(showJp, showEn, showLens);
-  if (els.toggleQuizGrammarLens) {
-    els.toggleQuizGrammarLens.textContent = showLens ? "Grammar Lens: On" : "Grammar Lens: Off";
-  }
   if (els.toggleQuestionGrammarLens) {
     els.toggleQuestionGrammarLens.textContent = showLens ? "Grammar Lens: On" : "Grammar Lens: Off";
   }
   applyToneVisibility();
+}
+
+function applyQuizVisibility() {
+  const showHanzi = !!state.quizDisplay.hanzi;
+  const showJp = !!state.quizDisplay.jyutping;
+  const showEn = !!state.quizDisplay.english;
+  const showLens = !!state.quizDisplay.lens;
+
+  if (els.quizHanzi) els.quizHanzi.classList.toggle("hidden", !showHanzi);
+  if (els.quizJyutping) els.quizJyutping.classList.toggle("hidden", !showJp);
+  if (els.quizEnglish) els.quizEnglish.classList.toggle("hidden", !showEn);
+  if (els.quizLiteral) els.quizLiteral.classList.toggle("hidden", !showEn);
+  if (els.quizGrammarNotes) els.quizGrammarNotes.classList.toggle("hidden", !showLens);
+  if (els.toggleQuizGrammarLens) els.toggleQuizGrammarLens.textContent = showLens ? "Grammar Lens: On" : "Grammar Lens: Off";
+  if (els.toggleQuizJyutping) els.toggleQuizJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
+  if (els.toggleQuizEnglish) els.toggleQuizEnglish.textContent = showEn ? "Hide English" : "Show English";
+  if (byId("showQuizText")) byId("showQuizText").textContent = showHanzi ? "Hide Chinese" : "Show Chinese";
 }
 
 function renderPatternActionButtons(showJp, showEn, showLens) {
@@ -3427,32 +3455,31 @@ function setControlsCollapsed(collapsed) {
   els.toggleControlsCard.textContent = collapsed ? "›" : "⌄";
 }
 
-function openSettingsModal() {
-  if (!els.settingsModal) return;
-  if (settingsModalTimer) {
-    clearTimeout(settingsModalTimer);
-    settingsModalTimer = null;
+function openModalAnimated(modalEl) {
+  if (!modalEl) return;
+  const existing = modalCloseTimers.get(modalEl);
+  if (existing) {
+    clearTimeout(existing);
+    modalCloseTimers.delete(modalEl);
   }
-  els.settingsModal.classList.remove("hidden", "is-closing");
+  modalEl.classList.remove("hidden", "is-closing");
   requestAnimationFrame(() => {
-    els.settingsModal.classList.add("is-open");
+    modalEl.classList.add("is-open");
   });
 }
 
-function closeSettingsModal() {
-  if (!els.settingsModal) return;
-  if (settingsModalTimer) {
-    clearTimeout(settingsModalTimer);
-    settingsModalTimer = null;
-  }
-  els.settingsModal.classList.remove("is-open");
-  els.settingsModal.classList.add("is-closing");
-  settingsModalTimer = setTimeout(() => {
-    if (!els.settingsModal) return;
-    els.settingsModal.classList.add("hidden");
-    els.settingsModal.classList.remove("is-closing");
-    settingsModalTimer = null;
-  }, 270);
+function closeModalAnimated(modalEl, duration = 270) {
+  if (!modalEl) return;
+  const existing = modalCloseTimers.get(modalEl);
+  if (existing) clearTimeout(existing);
+  modalEl.classList.remove("is-open");
+  modalEl.classList.add("is-closing");
+  const timer = setTimeout(() => {
+    modalEl.classList.add("hidden");
+    modalEl.classList.remove("is-closing");
+    modalCloseTimers.delete(modalEl);
+  }, duration);
+  modalCloseTimers.set(modalEl, timer);
 }
 
 function initSoftLayoutTransitions() {
