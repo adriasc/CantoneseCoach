@@ -1689,6 +1689,7 @@ const els = {
   patternLensText: byId("patternLensText"),
   patternJpText: byId("patternJpText"),
   questionJpText: byId("questionJpText"),
+  wordJpText: byId("wordJpText"),
   patternEnText: byId("patternEnText"),
   patternNextText: byId("patternNextText"),
   toggleQuizJyutping: byId("toggleQuizJyutping"),
@@ -4847,6 +4848,10 @@ function renderPatternActionButtons(showJp, showEn, showLens) {
   if (els.patternJpText) {
     const mode = normalizeLanguageMode(state.prefs.languageMode);
     els.patternJpText.textContent = mode === "mandarin" ? "Pinyin" : (mode === "compare" ? "Roman" : "Jyutping");
+  }
+  if (els.wordJpText) {
+    const mode = normalizeLanguageMode(state.prefs.languageMode);
+    els.wordJpText.textContent = mode === "mandarin" ? "Pinyin" : (mode === "compare" ? "Roman" : "Jyutping");
   }
   if (els.questionJpText) {
     const mode = normalizeLanguageMode(state.prefs.languageMode);
