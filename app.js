@@ -3367,25 +3367,22 @@ function renderPatternActionButtons(showJp, showEn, showLens) {
   if (els.patternNextText) {
     els.patternNextText.textContent = "Next";
   }
-  const setPill = (btn, isOn, iconText) => {
+  const setMini = (btn, isOn, iconText, onLabel, offLabel) => {
     if (!btn) return;
-    btn.classList.add("pattern-pill-btn", "pattern-toggle-btn");
+    btn.classList.add("pattern-mini-btn", "pattern-toggle-btn");
     btn.classList.toggle("is-on", !!isOn);
     btn.classList.toggle("is-off", !isOn);
     btn.setAttribute("aria-pressed", isOn ? "true" : "false");
-    btn.innerHTML = `<span class="pattern-pill-icon" aria-hidden="true">${iconText}</span>`;
+    btn.textContent = iconText;
+    btn.setAttribute("aria-label", isOn ? onLabel : offLabel);
   };
-  setPill(els.toggleGrammarLens, showLens, "◎");
-  setPill(els.togglePatternJyutping, showJp, "粵");
-  setPill(els.togglePatternEnglish, showEn, "EN");
+  setMini(els.toggleGrammarLens, showLens, "◎", "Lens on", "Lens off");
+  setMini(els.togglePatternJyutping, showJp, "粵", "Jyutping on", "Jyutping off");
+  setMini(els.togglePatternEnglish, showEn, "EN", "English on", "English off");
 
-  if (els.patternLensText) els.patternLensText.textContent = "Lens";
-  if (els.patternJpText) els.patternJpText.textContent = "Jyutping";
-  if (els.patternEnText) els.patternEnText.textContent = "English";
-
-  if (els.togglePatternEnglish) {
-    els.togglePatternEnglish.setAttribute("aria-label", showEn ? "English on" : "English off");
-  }
+  if (els.patternLensText) els.patternLensText.textContent = `Lens ${showLens ? "On" : "Off"}`;
+  if (els.patternJpText) els.patternJpText.textContent = `Jyutping ${showJp ? "On" : "Off"}`;
+  if (els.patternEnText) els.patternEnText.textContent = `English ${showEn ? "On" : "Off"}`;
 }
 
 function toggleGrammarLensState() {

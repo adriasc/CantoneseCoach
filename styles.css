@@ -557,58 +557,47 @@ button:hover,
   white-space: nowrap;
 }
 
-#panel-patterns .pattern-pill-btn {
-  width: 88px;
-  height: 34px;
+#panel-patterns .pattern-mini-btn {
+  width: 46px;
+  min-width: 46px;
+  height: 46px;
+  min-height: 46px;
   border-radius: 999px;
-  border: 2px solid rgba(255, 255, 255, 0.45);
-  position: relative;
-  padding: 0 8px;
+  border: 2px solid #d8dfe9;
+  padding: 0;
   display: inline-flex;
   align-items: center;
-  justify-content: flex-start;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 6px 14px rgba(42, 53, 73, 0.2);
-  color: #fff;
-}
-
-#panel-patterns .pattern-pill-icon {
-  font-size: 0.82rem;
+  justify-content: center;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.58), 0 4px 10px rgba(42, 53, 73, 0.22);
+  color: #35506a;
+  background: linear-gradient(180deg, #f8f9fb 0%, #e9edf3 100%);
+  font-size: 0.95rem;
   font-weight: 800;
   line-height: 1;
 }
 
-#panel-patterns .pattern-pill-btn::after {
-  content: "";
-  position: absolute;
-  top: 3px;
-  left: 4px;
-  width: 24px;
-  height: 24px;
-  border-radius: 999px;
-  background: #f9fafc;
-  border: 2px solid rgba(214, 223, 236, 0.92);
-  box-shadow: 0 2px 8px rgba(30, 45, 71, 0.24);
-  transition: left 180ms ease;
+#panel-patterns #toggleGrammarLens.pattern-mini-btn.is-on {
+  color: #fff;
+  background: linear-gradient(160deg, #ffba34 0%, #ff8e36 50%, #ff6d58 100%);
+  border-color: #f0823f;
 }
 
-#panel-patterns .pattern-pill-btn.is-on::after {
-  left: calc(100% - 28px);
+#panel-patterns #togglePatternJyutping.pattern-mini-btn.is-on {
+  color: #fff;
+  background: linear-gradient(160deg, #16d5b8 0%, #19b8db 48%, #3289ff 100%);
+  border-color: #2f9bd1;
 }
 
-#panel-patterns #toggleGrammarLens.pattern-pill-btn {
-  background: linear-gradient(90deg, #ffbe2f 0%, #ff9f2d 45%, #ff6f54 100%);
+#panel-patterns #togglePatternEnglish.pattern-mini-btn.is-on {
+  color: #fff;
+  background: linear-gradient(160deg, #6ea7ff 0%, #5d90ff 55%, #6d6be8 100%);
+  border-color: #6b7ed8;
 }
 
-#panel-patterns #togglePatternJyutping.pattern-pill-btn {
-  background: linear-gradient(90deg, #11d7b8 0%, #16b7dd 48%, #2f89ff 100%);
-}
-
-#panel-patterns #togglePatternEnglish.pattern-pill-btn {
-  background: linear-gradient(90deg, #6ea7ff 0%, #5d90ff 55%, #6d6be8 100%);
-}
-
-#panel-patterns .pattern-pill-btn.is-off {
-  filter: saturate(0.66) brightness(0.92);
+#panel-patterns .pattern-mini-btn.is-off {
+  color: #4f6075;
+  background: linear-gradient(180deg, #f8f9fb 0%, #e9edf3 100%);
+  border-color: #d2dbe7;
 }
 
 #panel-patterns .pattern-next-btn {
@@ -1258,8 +1247,11 @@ input[type="file"] {
     gap: 7px;
   }
 
-  #panel-patterns .pattern-pill-btn {
-    width: 82px;
+  #panel-patterns .pattern-mini-btn {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
   }
 
   .streak {
