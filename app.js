@@ -1908,9 +1908,14 @@ function bindUI() {
   if (els.toggleKnownList && els.knownListWrap) {
     els.toggleKnownList.addEventListener("click", () => {
       const hidden = els.knownListWrap.classList.contains("hidden");
-      els.knownListWrap.classList.toggle("hidden", !hidden);
-      els.toggleKnownList.textContent = hidden ? "Hide known list" : "Show known list";
-      if (hidden) renderKnownList();
+      if (hidden) {
+        renderKnownList();
+        openKnownListAnimated();
+        els.toggleKnownList.textContent = "Hide known list";
+      } else {
+        closeKnownListAnimated();
+        els.toggleKnownList.textContent = "Show known list";
+      }
     });
   }
 
@@ -4945,6 +4950,34 @@ function closeModalAnimated(modalEl, duration = 270) {
     modalCloseTimers.delete(modalEl);
   }, duration);
   modalCloseTimers.set(modalEl, timer);
+}
+
+function openKnownListAnimated() {
+  if (!els.knownListWrap) return;
+  const existing = modalCloseTimers.get(els.knownListWrap);
+  if (existing) {
+    clearTimeout(existing);
+    modalCloseTimers.delete(els.knownListWrap);
+  }
+  els.knownListWrap.classList.remove("hidden", "is-closing");
+  requestAnimationFrame(() => {
+    els.knownListWrap.classList.add("is-open");
+  });
+}
+
+function closeKnownListAnimated(duration = 240) {
+  if (!els.knownListWrap) return;
+  const existing = modalCloseTimers.get(els.knownListWrap);
+  if (existing) clearTimeout(existing);
+  els.knownListWrap.classList.remove("is-open");
+  els.knownListWrap.classList.add("is-closing");
+  const timer = setTimeout(() => {
+    if (!els.knownListWrap) return;
+    els.knownListWrap.classList.add("hidden");
+    els.knownListWrap.classList.remove("is-closing");
+    modalCloseTimers.delete(els.knownListWrap);
+  }, duration);
+  modalCloseTimers.set(els.knownListWrap, timer);
 }
 
 function initSoftLayoutTransitions() {
