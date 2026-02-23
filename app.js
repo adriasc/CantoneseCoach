@@ -3357,19 +3357,19 @@ function applyVisibilityPrefs() {
 function renderPatternActionButtons(showJp, showEn, showLens) {
   if (els.newPattern) {
     els.newPattern.classList.add("pattern-icon-btn");
-    els.newPattern.innerHTML = `<span class="pattern-btn-icon" aria-hidden="true">⏭</span><span>Next</span>`;
+    els.newPattern.textContent = "Next pattern";
   }
-  const setToggle = (btn, icon, label, isOn) => {
+  const setToggle = (btn, label, isOn) => {
     if (!btn) return;
     btn.classList.add("pattern-icon-btn", "pattern-toggle-btn");
     btn.classList.toggle("is-on", !!isOn);
     btn.classList.toggle("is-off", !isOn);
     btn.setAttribute("aria-pressed", isOn ? "true" : "false");
-    btn.innerHTML = `<span class="pattern-btn-icon" aria-hidden="true">${icon}</span><span>${label} ${isOn ? "On" : "Off"}</span>`;
+    btn.textContent = `${label} ${isOn ? "On" : "Off"}`;
   };
-  setToggle(els.toggleGrammarLens, "🧩", "Lens", showLens);
-  setToggle(els.togglePatternJyutping, "🗣", "Jyutping", showJp);
-  setToggle(els.togglePatternEnglish, "🌐", "English", showEn);
+  setToggle(els.toggleGrammarLens, "Lens", showLens);
+  setToggle(els.togglePatternJyutping, "Jyutping", showJp);
+  setToggle(els.togglePatternEnglish, "English", showEn);
 }
 
 function toggleGrammarLensState() {

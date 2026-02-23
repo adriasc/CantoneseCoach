@@ -531,36 +531,33 @@ button:hover,
 }
 
 #panel-patterns .pattern-icon-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border-radius: 999px;
-  padding: 10px 13px;
+  border-radius: 12px;
+  padding: 10px 12px;
   font-weight: 700;
-}
-
-#panel-patterns .pattern-btn-icon {
-  font-size: 1rem;
-  line-height: 1;
+  border: 1px solid #ced7e3;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
 }
 
 #panel-patterns #newPattern.pattern-icon-btn {
-  background: var(--accent);
+  background: linear-gradient(180deg, #4aa1ff 0%, #0a84ff 100%);
   color: #fff;
+  border-color: #0a73dc;
 }
 
 #panel-patterns .pattern-toggle-btn.is-on {
-  background: #1f9d63;
+  background: linear-gradient(180deg, #74b8ff 0%, #4a90ff 50%, #5e5ce6 100%);
   color: #fff;
+  border-color: #5a78d6;
 }
 
 #panel-patterns .pattern-toggle-btn.is-off {
-  background: #e7edf4;
-  color: #2f435a;
+  background: linear-gradient(180deg, #f7f8fa 0%, #ebeff5 100%);
+  color: #36475d;
+  border-color: #cfd7e2;
 }
 
 #panel-patterns .pattern-toggle-btn.is-off:hover {
-  background: #dde6f0;
+  background: linear-gradient(180deg, #f2f5f9 0%, #e4eaf2 100%);
 }
 
 #playToneA,
