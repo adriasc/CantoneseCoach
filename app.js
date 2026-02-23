@@ -2372,8 +2372,21 @@ function renderWordCard() {
   if (!state.currentWord) return;
   const word = state.currentWord;
   const localized = localizeEntry(word);
-  els.wordHanzi.textContent = localized.display.hanzi || "-";
-  els.wordJyutping.textContent = localized.display.roman || "-";
+  const showRuby = !!state.prefs.showJyutping;
+  if (localized.isCompare) {
+    const cantoHanzi = showRuby
+      ? buildRubyByCharacter(localized.cantonese.hanzi, localized.cantonese.roman)
+      : escapeHtml(localized.cantonese.hanzi || "-");
+    const mandoHanzi = showRuby
+      ? buildRubyByCharacter(localized.mandarin.hanzi, localized.mandarin.roman)
+      : escapeHtml(localized.mandarin.hanzi || "-");
+    els.wordHanzi.innerHTML = buildCompareLabeledLine(cantoHanzi, mandoHanzi);
+    els.wordJyutping.textContent = localized.display.roman || "-";
+  } else {
+    els.wordHanzi.textContent = localized.display.hanzi || "-";
+    els.wordJyutping.textContent = localized.display.roman || "-";
+  }
+  els.wordHanzi.classList.toggle("pattern-ruby", showRuby && localized.isCompare);
   els.wordEnglish.textContent = localized.display.english || "-";
   els.wordHanzi.classList.toggle("compare-lines", localized.isCompare);
   els.wordJyutping.classList.toggle("compare-lines", localized.isCompare);
@@ -2407,14 +2420,18 @@ function renderPatternSentence() {
 
   if (isCompare) {
     const localized = localizeEntry(state.currentSentence);
-    const cantoHanzi = state.prefs.showGrammarLens ? analysis.annotatedHanzi : escapeHtml(localized.cantonese.hanzi || "-");
-    const cantoRoman = state.prefs.showGrammarLens ? (analysis.annotatedJyutping || escapeHtml(localized.cantonese.roman || "-")) : escapeHtml(localized.cantonese.roman || "-");
-    const mandoHanzi = escapeHtml(localized.mandarin.hanzi || "-");
-    const mandoRoman = escapeHtml(localized.mandarin.roman || "-");
+    const cantoHanzi = state.prefs.showGrammarLens
+      ? (showRuby ? analysis.annotatedRubyHanzi : analysis.annotatedHanzi)
+      : (showRuby
+        ? (analysis.rubyHanzi || buildRubyByCharacter(localized.cantonese.hanzi, localized.cantonese.roman))
+        : escapeHtml(localized.cantonese.hanzi || "-"));
+    const mandoHanzi = showRuby
+      ? buildRubyByCharacter(localized.mandarin.hanzi, localized.mandarin.roman)
+      : escapeHtml(localized.mandarin.hanzi || "-");
     els.patternHanzi.innerHTML = buildCompareLabeledLine(cantoHanzi, mandoHanzi);
-    els.patternJyutping.innerHTML = buildCompareLabeledLine(cantoRoman, mandoRoman);
+    els.patternJyutping.textContent = "";
     els.patternEnglish.textContent = built.english;
-    els.patternHanzi.classList.remove("pattern-ruby");
+    els.patternHanzi.classList.toggle("pattern-ruby", showRuby);
     els.patternHanzi.classList.add("compare-lines");
     els.patternJyutping.classList.add("compare-lines");
     els.patternEnglish.classList.add("compare-lines");
@@ -2623,10 +2640,18 @@ function renderQuizGrammar() {
   state.currentQuizAnalysis = analysis;
   const showRuby = !!state.quizDisplay.jyutping;
   if (localized.isCompare) {
-    els.quizHanzi.textContent = localized.display.hanzi;
-    els.quizJyutping.textContent = localized.display.roman;
+    const cantoHanzi = state.quizDisplay.lens
+      ? (showRuby ? analysis.annotatedRubyHanzi : analysis.annotatedHanzi)
+      : (showRuby
+        ? (analysis.rubyHanzi || buildRubyByCharacter(localized.cantonese.hanzi, localized.cantonese.roman))
+        : escapeHtml(localized.cantonese.hanzi || "-"));
+    const mandoHanzi = showRuby
+      ? buildRubyByCharacter(localized.mandarin.hanzi, localized.mandarin.roman)
+      : escapeHtml(localized.mandarin.hanzi || "-");
+    els.quizHanzi.innerHTML = buildCompareLabeledLine(cantoHanzi, mandoHanzi);
+    els.quizJyutping.textContent = "";
     els.quizEnglish.textContent = localized.display.english;
-    els.quizHanzi.classList.remove("pattern-ruby");
+    els.quizHanzi.classList.toggle("pattern-ruby", showRuby);
     els.quizHanzi.classList.add("compare-lines");
     els.quizJyutping.classList.add("compare-lines");
     els.quizEnglish.classList.add("compare-lines");
@@ -2672,17 +2697,21 @@ function renderQuestionSentence() {
   state.currentQuestionAnalysis = analysis;
   const showRuby = !!state.prefs.showJyutping;
   if (localized.isCompare) {
-    const cantoHanzi = state.prefs.showGrammarLens ? analysis.annotatedHanzi : escapeHtml(localized.cantonese.hanzi || "-");
-    const cantoRoman = state.prefs.showGrammarLens ? (analysis.annotatedJyutping || escapeHtml(localized.cantonese.roman || "-")) : escapeHtml(localized.cantonese.roman || "-");
-    const mandoHanzi = escapeHtml(localized.mandarin.hanzi || "-");
-    const mandoRoman = escapeHtml(localized.mandarin.roman || "-");
+    const cantoHanzi = state.prefs.showGrammarLens
+      ? (showRuby ? analysis.annotatedRubyHanzi : analysis.annotatedHanzi)
+      : (showRuby
+        ? (analysis.rubyHanzi || buildRubyByCharacter(localized.cantonese.hanzi, localized.cantonese.roman))
+        : escapeHtml(localized.cantonese.hanzi || "-"));
+    const mandoHanzi = showRuby
+      ? buildRubyByCharacter(localized.mandarin.hanzi || "-", localized.mandarin.roman)
+      : escapeHtml(localized.mandarin.hanzi || "-");
     els.questionHanzi.innerHTML = buildCompareLabeledLine(cantoHanzi, mandoHanzi);
-    els.questionJyutping.innerHTML = buildCompareLabeledLine(cantoRoman, mandoRoman);
+    els.questionJyutping.textContent = "";
     els.questionEnglish.textContent = localized.display.english;
     els.questionLiteral.innerHTML = state.prefs.showGrammarLens
       ? `Literal (Canto): ${analysis.literalHtml || escapeHtml(analysis.literal)}`
       : `Literal (Canto): ${escapeHtml(analysis.literal)}`;
-    els.questionHanzi.classList.remove("pattern-ruby");
+    els.questionHanzi.classList.toggle("pattern-ruby", showRuby);
     els.questionHanzi.classList.add("compare-lines");
     els.questionJyutping.classList.add("compare-lines");
     els.questionEnglish.classList.add("compare-lines");
@@ -4673,6 +4702,28 @@ function buildCompareLabeledLine(cantoHtml, mandarinHtml) {
   return `<span class="compare-prefix">粵:</span> ${cantoHtml || "-"}<br><span class="compare-prefix">普:</span> ${mandarinHtml || "-"}`;
 }
 
+function buildRubyByCharacter(hanziInput, romanInput) {
+  const hanzi = String(hanziInput || "");
+  const romanRaw = String(romanInput || "")
+    .replace(/[，。！？、,.!?/]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const syllables = romanRaw ? romanRaw.split(" ") : [];
+  let syllableIdx = 0;
+  const out = [];
+  for (const ch of Array.from(hanzi)) {
+    if (/\s/.test(ch)) continue;
+    if (isPunctuation(ch)) {
+      out.push(escapeHtml(ch));
+      continue;
+    }
+    const syllable = syllables[syllableIdx] || "";
+    if (syllable) syllableIdx += 1;
+    out.push(`<ruby><rb>${escapeHtml(ch)}</rb>${syllable ? `<rt>${escapeHtml(syllable)}</rt>` : ""}</ruby>`);
+  }
+  return out.join("");
+}
+
 function toneChoiceLabel(item) {
   const localized = localizeEntry(item);
   if (localized.mode === "mandarin") {
@@ -4816,11 +4867,13 @@ function applyVisibilityPrefs() {
   const showJp = !!state.prefs.showJyutping;
   const showEn = !!state.prefs.showEnglish;
   const showLens = !!state.prefs.showGrammarLens;
+  const languageMode = normalizeLanguageMode(state.prefs.languageMode);
+  const inlineRubyCompare = languageMode === "compare";
 
-  els.wordJyutping.classList.toggle("hidden", !showJp);
-  els.patternJyutping.classList.toggle("hidden", !showJp);
+  els.wordJyutping.classList.toggle("hidden", inlineRubyCompare || !showJp);
+  els.patternJyutping.classList.toggle("hidden", inlineRubyCompare || !showJp);
   if (els.questionJyutping) {
-    els.questionJyutping.classList.toggle("hidden", !showJp);
+    els.questionJyutping.classList.toggle("hidden", inlineRubyCompare || !showJp);
   }
 
   els.wordEnglish.classList.toggle("hidden", !showEn);
@@ -4851,7 +4904,7 @@ function applyQuizVisibility() {
 
   if (els.quizHanzi) els.quizHanzi.classList.toggle("hidden", !showHanzi);
   if (els.quizJyutping) {
-    const hideQuizRomanLine = languageMode !== "compare" || !showJp;
+    const hideQuizRomanLine = languageMode === "compare" || !showJp;
     els.quizJyutping.classList.toggle("hidden", hideQuizRomanLine);
   }
   if (els.quizEnglish) els.quizEnglish.classList.toggle("hidden", !showEn);
