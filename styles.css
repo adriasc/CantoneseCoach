@@ -532,20 +532,20 @@ button:hover,
 
 #panel-patterns .pattern-actions {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   justify-content: center;
-  align-items: end;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 2px;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 2px 0;
 }
 
 #panel-patterns .pattern-control-col {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
-  min-width: 0;
+  gap: 6px;
+  min-width: 56px;
 }
 
 #panel-patterns .pattern-control-text {
@@ -1243,8 +1243,7 @@ input[type="file"] {
   }
 
   #panel-patterns .pattern-actions {
-    justify-content: flex-start;
-    gap: 7px;
+    gap: 9px;
   }
 
   #panel-patterns .pattern-mini-btn {

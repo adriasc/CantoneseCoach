@@ -3380,9 +3380,9 @@ function renderPatternActionButtons(showJp, showEn, showLens) {
   setMini(els.togglePatternJyutping, showJp, "粵", "Jyutping on", "Jyutping off");
   setMini(els.togglePatternEnglish, showEn, "EN", "English on", "English off");
 
-  if (els.patternLensText) els.patternLensText.textContent = `Lens ${showLens ? "On" : "Off"}`;
-  if (els.patternJpText) els.patternJpText.textContent = `Jyutping ${showJp ? "On" : "Off"}`;
-  if (els.patternEnText) els.patternEnText.textContent = `English ${showEn ? "On" : "Off"}`;
+  if (els.patternLensText) els.patternLensText.textContent = "Lens";
+  if (els.patternJpText) els.patternJpText.textContent = "Jyutping";
+  if (els.patternEnText) els.patternEnText.textContent = "English";
 }
 
 function toggleGrammarLensState() {
