@@ -1725,25 +1725,27 @@ let layoutResizeObserver = null;
 const softResizeHeights = new WeakMap();
 const modalCloseTimers = new WeakMap();
 
-bindUI();
-ensureDailyGameState();
-syncControlValues();
-initVoiceControls();
-applyTheme(state.prefs.uiTheme || "classic");
-setControlsCollapsed(!!state.prefs.controlsCollapsed);
-applyVisibilityPrefs();
-setControlsMode("words");
-rollWord();
-rollPattern();
-rollQuiz();
-rollQuestion();
-rollTonePair();
-rollExercise();
-refreshStats();
-renderKnownList();
-refreshGameUI();
-registerServiceWorker();
-initSoftLayoutTransitions();
+function initializeApp() {
+  bindUI();
+  ensureDailyGameState();
+  syncControlValues();
+  initVoiceControls();
+  applyTheme(state.prefs.uiTheme || "classic");
+  setControlsCollapsed(!!state.prefs.controlsCollapsed);
+  applyVisibilityPrefs();
+  setControlsMode("words");
+  rollWord();
+  rollPattern();
+  rollQuiz();
+  rollQuestion();
+  rollTonePair();
+  rollExercise();
+  refreshStats();
+  renderKnownList();
+  refreshGameUI();
+  registerServiceWorker();
+  initSoftLayoutTransitions();
+}
 
 function bindUI() {
   els.tabs.forEach((tab) => {
@@ -5284,3 +5286,5 @@ function shuffle(arr) {
   }
   return arr;
 }
+
+initializeApp();
