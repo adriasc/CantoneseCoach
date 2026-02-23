@@ -590,6 +590,13 @@ body.tabs-depth-v1 .fun-tab {
   white-space: pre-line;
 }
 
+.compare-prefix {
+  display: inline-block;
+  min-width: 1.8em;
+  font-weight: 800;
+  color: #4f5f78;
+}
+
 .actions {
   margin-top: 14px;
   display: flex;
@@ -1366,10 +1373,6 @@ button:hover,
 .slot-grid input[type="range"] {
   margin-top: 8px;
   width: 100%;
-}
-
-#panel-patterns #patternJyutping {
-  display: none !important;
 }
 
 .result-box {

@@ -1285,7 +1285,14 @@ const ASPECT_MARKERS = {
   "住": { role: "prog", label: "continuous state" },
   "會": { role: "future", label: "future marker (will)" },
   "將會": { role: "future", label: "future marker (going to/will)" },
-  "已經": { role: "past", label: "already" }
+  "已經": { role: "past", label: "already" },
+  "了": { role: "past", label: "completed action (Mandarin)" },
+  "过": { role: "past", label: "experience in Mandarin" },
+  "着": { role: "prog", label: "continuous state (Mandarin)" },
+  "在": { role: "prog", label: "ongoing action marker (Mandarin)" },
+  "会": { role: "future", label: "future marker (Mandarin)" },
+  "将会": { role: "future", label: "future marker (Mandarin)" },
+  "已经": { role: "past", label: "already (Mandarin)" }
 };
 
 const GRAMMAR_MARKER_DETAILS = {
@@ -1344,6 +1351,55 @@ const GRAMMAR_MARKER_DETAILS = {
     use: "Use to show the action/state happened earlier than expected.",
     contrast: "Compared with just 咗: 已經 adds an 'already' nuance.",
     extra: "Can appear without 咗 in some contexts."
+  },
+  "了": {
+    core: "Mandarin completion/change marker.",
+    pattern: "Verb + 了 / sentence-final 了",
+    use: "Marks completion or change of state depending on position.",
+    contrast: "Closest compare with Cantonese 咗 in many completed-event contexts.",
+    extra: "Position changes nuance, so check the whole sentence."
+  },
+  "过": {
+    core: "Mandarin experiential marker (have done before).",
+    pattern: "Verb + 过",
+    use: "Use for life experience, not one specific finished moment.",
+    contrast: "Comparable to Cantonese 過 for experience.",
+    extra: "Often appears with time expressions like 以前/before."
+  },
+  "着": {
+    core: "Mandarin durative marker for continuing state.",
+    pattern: "Verb + 着",
+    use: "Use when a state/result remains in effect.",
+    contrast: "Roughly parallels Cantonese 住 in many contexts.",
+    extra: "Common with posture and placement verbs."
+  },
+  "在": {
+    core: "Mandarin progressive marker before verb.",
+    pattern: "在 + Verb",
+    use: "Use for action in progress now.",
+    contrast: "Comparable to Cantonese Verb + 緊.",
+    extra: "Note: 在 is also a preposition/location verb."
+  },
+  "会": {
+    core: "Mandarin future/ability modal.",
+    pattern: "Subject + 会 + Verb",
+    use: "Use for future likelihood or learned ability.",
+    contrast: "Comparable to Cantonese 會 by context.",
+    extra: "Meaning depends on context (ability vs future)."
+  },
+  "将会": {
+    core: "Mandarin explicit future marker.",
+    pattern: "Subject + 将会 + Verb",
+    use: "Use in clear future statements, often more formal.",
+    contrast: "Directly parallels Cantonese 將會.",
+    extra: "Can sound formal in very casual talk."
+  },
+  "已经": {
+    core: "Mandarin adverb meaning already.",
+    pattern: "已经 + Verb",
+    use: "Marks completion/state already true.",
+    contrast: "Comparable to Cantonese 已經.",
+    extra: "Often combines with 了 for completion emphasis."
   }
 };
 
@@ -2319,18 +2375,30 @@ function renderPatternSentence() {
   const isCompare = !!built.isCompare;
 
   if (isCompare) {
-    els.patternHanzi.textContent = built.hanzi;
-    els.patternJyutping.textContent = built.jyutping;
+    const localized = localizeEntry(state.currentSentence);
+    const mandoAnalysis = analyzeSentence({
+      hanzi: localized.mandarin.hanzi,
+      jyutping: localized.mandarin.roman
+    });
+    const cantoHanzi = state.prefs.showGrammarLens ? analysis.annotatedHanzi : escapeHtml(localized.cantonese.hanzi || "-");
+    const cantoRoman = state.prefs.showGrammarLens ? (analysis.annotatedJyutping || escapeHtml(localized.cantonese.roman || "-")) : escapeHtml(localized.cantonese.roman || "-");
+    const mandoHanzi = state.prefs.showGrammarLens ? mandoAnalysis.annotatedHanzi : escapeHtml(localized.mandarin.hanzi || "-");
+    const mandoRoman = state.prefs.showGrammarLens ? (mandoAnalysis.annotatedJyutping || escapeHtml(localized.mandarin.roman || "-")) : escapeHtml(localized.mandarin.roman || "-");
+    els.patternHanzi.innerHTML = buildCompareLabeledLine(cantoHanzi, mandoHanzi);
+    els.patternJyutping.innerHTML = buildCompareLabeledLine(cantoRoman, mandoRoman);
     els.patternEnglish.textContent = built.english;
     els.patternHanzi.classList.remove("pattern-ruby");
     els.patternHanzi.classList.add("compare-lines");
     els.patternJyutping.classList.add("compare-lines");
     els.patternEnglish.classList.add("compare-lines");
     if (state.prefs.showGrammarLens) {
-      const notes = analysis.notes.length
+      const cantoNotes = analysis.notes.length
         ? analysis.notes.map((note) => `<div class="grammar-note">${note}</div>`).join("")
-        : `<div class="grammar-note">No tense/aspect marker detected in Cantonese reference sentence.</div>`;
-      els.patternGrammarNotes.innerHTML = `<div class="grammar-note">Compare mode: grammar lens uses Cantonese reference.</div>${notes}`;
+        : `<div class="grammar-note">No tense/aspect marker detected in Cantonese line.</div>`;
+      const mandoNotes = mandoAnalysis.notes.length
+        ? mandoAnalysis.notes.map((note) => `<div class="grammar-note">${note}</div>`).join("")
+        : `<div class="grammar-note">No tense/aspect marker detected in Mandarin line.</div>`;
+      els.patternGrammarNotes.innerHTML = `<div class="grammar-note">Compare mode: lens highlights Cantonese and Mandarin lines.</div>${cantoNotes}${mandoNotes}`;
       els.patternLiteral.innerHTML = `Literal (Canto): ${analysis.literalHtml || escapeHtml(analysis.literal)}`;
     } else {
       els.patternGrammarNotes.innerHTML = "";
@@ -2580,10 +2648,20 @@ function renderQuestionSentence() {
   state.currentQuestionAnalysis = analysis;
   const showRuby = !!state.prefs.showJyutping;
   if (localized.isCompare) {
-    els.questionHanzi.textContent = localized.display.hanzi;
-    els.questionJyutping.textContent = localized.display.roman;
+    const mandoAnalysis = analyzeSentence({
+      hanzi: localized.mandarin.hanzi,
+      jyutping: localized.mandarin.roman
+    });
+    const cantoHanzi = state.prefs.showGrammarLens ? analysis.annotatedHanzi : escapeHtml(localized.cantonese.hanzi || "-");
+    const cantoRoman = state.prefs.showGrammarLens ? (analysis.annotatedJyutping || escapeHtml(localized.cantonese.roman || "-")) : escapeHtml(localized.cantonese.roman || "-");
+    const mandoHanzi = state.prefs.showGrammarLens ? mandoAnalysis.annotatedHanzi : escapeHtml(localized.mandarin.hanzi || "-");
+    const mandoRoman = state.prefs.showGrammarLens ? (mandoAnalysis.annotatedJyutping || escapeHtml(localized.mandarin.roman || "-")) : escapeHtml(localized.mandarin.roman || "-");
+    els.questionHanzi.innerHTML = buildCompareLabeledLine(cantoHanzi, mandoHanzi);
+    els.questionJyutping.innerHTML = buildCompareLabeledLine(cantoRoman, mandoRoman);
     els.questionEnglish.textContent = localized.display.english;
-    els.questionLiteral.textContent = `Literal (Canto): ${analysis.literal}`;
+    els.questionLiteral.innerHTML = state.prefs.showGrammarLens
+      ? `Literal (Canto): ${analysis.literalHtml || escapeHtml(analysis.literal)}`
+      : `Literal (Canto): ${escapeHtml(analysis.literal)}`;
     els.questionHanzi.classList.remove("pattern-ruby");
     els.questionHanzi.classList.add("compare-lines");
     els.questionJyutping.classList.add("compare-lines");
@@ -3633,6 +3711,262 @@ function normalizeLanguageMode(value) {
   return "cantonese";
 }
 
+const TRAD_TO_SIMP_CHAR_MAP = {
+  "萬": "万",
+  "與": "与",
+  "專": "专",
+  "業": "业",
+  "東": "东",
+  "絲": "丝",
+  "丟": "丢",
+  "兩": "两",
+  "嚴": "严",
+  "個": "个",
+  "中": "中",
+  "義": "义",
+  "之": "之",
+  "樂": "乐",
+  "習": "习",
+  "書": "书",
+  "買": "买",
+  "賣": "卖",
+  "亂": "乱",
+  "乾": "干",
+  "了": "了",
+  "亞": "亚",
+  "親": "亲",
+  "們": "们",
+  "傳": "传",
+  "來": "来",
+  "價": "价",
+  "傷": "伤",
+  "傾": "倾",
+  "僅": "仅",
+  "儀": "仪",
+  "儲": "储",
+  "兒": "儿",
+  "興": "兴",
+  "內": "内",
+  "寫": "写",
+  "凍": "冻",
+  "處": "处",
+  "劃": "划",
+  "劇": "剧",
+  "醫": "医",
+  "區": "区",
+  "單": "单",
+  "厲": "厉",
+  "參": "参",
+  "雙": "双",
+  "變": "变",
+  "發": "发",
+  "嗎": "吗",
+  "啟": "启",
+  "喪": "丧",
+  "圍": "围",
+  "國": "国",
+  "圖": "图",
+  "圓": "圆",
+  "場": "场",
+  "壓": "压",
+  "壞": "坏",
+  "夠": "够",
+  "夢": "梦",
+  "頭": "头",
+  "學": "学",
+  "實": "实",
+  "對": "对",
+  "將": "将",
+  "專": "专",
+  "尋": "寻",
+  "導": "导",
+  "層": "层",
+  "歲": "岁",
+  "嶺": "岭",
+  "巿": "市",
+  "幣": "币",
+  "幫": "帮",
+  "幾": "几",
+  "庫": "库",
+  "廚": "厨",
+  "廳": "厅",
+  "廣": "广",
+  "應": "应",
+  "彈": "弹",
+  "當": "当",
+  "後": "后",
+  "徑": "径",
+  "從": "从",
+  "復": "复",
+  "德": "德",
+  "態": "态",
+  "總": "总",
+  "戀": "恋",
+  "戲": "戏",
+  "戶": "户",
+  "拋": "抛",
+  "挾": "挟",
+  "揀": "拣",
+  "揚": "扬",
+  "換": "换",
+  "揾": "找",
+  "搖": "摇",
+  "擇": "择",
+  "攝": "摄",
+  "攣": "挛",
+  "攤": "摊",
+  "數": "数",
+  "敵": "敌",
+  "斷": "断",
+  "時": "时",
+  "晝": "昼",
+  "暈": "晕",
+  "曆": "历",
+  "曉": "晓",
+  "書": "书",
+  "會": "会",
+  "櫃": "柜",
+  "權": "权",
+  "條": "条",
+  "來": "来",
+  "東": "东",
+  "樓": "楼",
+  "樣": "样",
+  "樞": "枢",
+  "機": "机",
+  "檔": "档",
+  "檢": "检",
+  "櫥": "橱",
+  "歡": "欢",
+  "歲": "岁",
+  "歷": "历",
+  "氣": "气",
+  "漢": "汉",
+  "燈": "灯",
+  "爐": "炉",
+  "牆": "墙",
+  "狀": "状",
+  "獲": "获",
+  "現": "现",
+  "環": "环",
+  "畫": "画",
+  "當": "当",
+  "發": "发",
+  "皺": "皱",
+  "盡": "尽",
+  "監": "监",
+  "盤": "盘",
+  "確": "确",
+  "碼": "码",
+  "礙": "碍",
+  "禮": "礼",
+  "種": "种",
+  "稱": "称",
+  "穩": "稳",
+  "窩": "窝",
+  "簾": "帘",
+  "籠": "笼",
+  "簡": "简",
+  "簽": "签",
+  "籌": "筹",
+  "糾": "纠",
+  "結": "结",
+  "經": "经",
+  "緊": "紧",
+  "綠": "绿",
+  "網": "网",
+  "總": "总",
+  "練": "练",
+  "繼": "继",
+  "續": "续",
+  "罐": "罐",
+  "聲": "声",
+  "聰": "聪",
+  "聽": "听",
+  "聯": "联",
+  "腦": "脑",
+  "腳": "脚",
+  "臥": "卧",
+  "舊": "旧",
+  "艙": "舱",
+  "藝": "艺",
+  "藥": "药",
+  "號": "号",
+  "處": "处",
+  "話": "话",
+  "該": "该",
+  "詢": "询",
+  "語": "语",
+  "說": "说",
+  "請": "请",
+  "讀": "读",
+  "誰": "谁",
+  "譯": "译",
+  "變": "变",
+  "讓": "让",
+  "論": "论",
+  "講": "讲",
+  "貓": "猫",
+  "貴": "贵",
+  "賬": "账",
+  "費": "费",
+  "贊": "赞",
+  "趕": "赶",
+  "較": "较",
+  "輕": "轻",
+  "轉": "转",
+  "車": "车",
+  "軟": "软",
+  "辦": "办",
+  "過": "过",
+  "這": "这",
+  "還": "还",
+  "邊": "边",
+  "鄉": "乡",
+  "郵": "邮",
+  "醜": "丑",
+  "醫": "医",
+  "針": "针",
+  "鈴": "铃",
+  "鉛": "铅",
+  "銷": "销",
+  "鋼": "钢",
+  "錄": "录",
+  "錢": "钱",
+  "鍾": "钟",
+  "鏡": "镜",
+  "關": "关",
+  "開": "开",
+  "陣": "阵",
+  "陰": "阴",
+  "陽": "阳",
+  "際": "际",
+  "險": "险",
+  "雖": "虽",
+  "難": "难",
+  "電": "电",
+  "靈": "灵",
+  "靚": "靓",
+  "靜": "静",
+  "響": "响",
+  "頁": "页",
+  "頂": "顶",
+  "順": "顺",
+  "類": "类",
+  "風": "风",
+  "飛": "飞",
+  "飯": "饭",
+  "館": "馆",
+  "馬": "马",
+  "驗": "验",
+  "驚": "惊",
+  "體": "体"
+};
+
+function toSimplified(text) {
+  return Array.from(String(text || "")).map((ch) => TRAD_TO_SIMP_CHAR_MAP[ch] || ch).join("");
+}
+
 const MANDARIN_TOKEN_MAP = {
   "我": "我",
   "你": "你",
@@ -3652,6 +3986,40 @@ const MANDARIN_TOKEN_MAP = {
   "今日": "今天",
   "尋日": "昨天",
   "聽日": "明天",
+  "巴士": "公交车",
+  "餐廳": "餐厅",
+  "學校": "学校",
+  "市場": "市场",
+  "醫院": "医院",
+  "藥房": "药房",
+  "洗手間": "洗手间",
+  "梳化": "沙发",
+  "廚房": "厨房",
+  "客廳": "客厅",
+  "睡房": "卧室",
+  "臥室": "卧室",
+  "陽台": "阳台",
+  "門": "门",
+  "窗簾": "窗帘",
+  "微波爐": "微波炉",
+  "洗衣機": "洗衣机",
+  "乾衣機": "干衣机",
+  "書架": "书架",
+  "櫃子": "柜子",
+  "燈": "灯",
+  "風扇": "风扇",
+  "空調": "空调",
+  "鏡子": "镜子",
+  "嘢": "东西",
+  "啲嘢": "东西",
+  "號": "号",
+  "攰": "累",
+  "凍": "冷",
+  "靚": "漂亮",
+  "醜": "丑",
+  "衰": "糟",
+  "唔係": "不是",
+  "有去過": "去过",
   "下次": "下次",
   "上次": "上次",
   "今次": "这次",
@@ -3708,6 +4076,38 @@ const MANDARIN_PINYIN_MAP = {
   "今天": "jin1 tian1",
   "昨天": "zuo2 tian1",
   "明天": "ming2 tian1",
+  "公交车": "gong1 jiao1 che1",
+  "餐厅": "can1 ting1",
+  "学校": "xue2 xiao4",
+  "市场": "shi4 chang3",
+  "医院": "yi1 yuan4",
+  "药房": "yao4 fang2",
+  "洗手间": "xi3 shou3 jian1",
+  "沙发": "sha1 fa1",
+  "厨房": "chu2 fang2",
+  "客厅": "ke4 ting1",
+  "卧室": "wo4 shi4",
+  "阳台": "yang2 tai2",
+  "门": "men2",
+  "窗帘": "chuang1 lian2",
+  "微波炉": "wei1 bo1 lu2",
+  "洗衣机": "xi3 yi1 ji1",
+  "干衣机": "gan1 yi1 ji1",
+  "书架": "shu1 jia4",
+  "柜子": "gui4 zi",
+  "灯": "deng1",
+  "风扇": "feng1 shan4",
+  "空调": "kong1 tiao2",
+  "镜子": "jing4 zi",
+  "东西": "dong1 xi",
+  "号": "hao4",
+  "累": "lei4",
+  "冷": "leng3",
+  "漂亮": "piao4 liang",
+  "丑": "chou3",
+  "糟": "zao1",
+  "不是": "bu4 shi4",
+  "去过": "qu4 guo4",
   "在": "zai4",
   "不": "bu4",
   "是": "shi4",
@@ -3770,12 +4170,12 @@ const MANDARIN_CHAR_MAP = {
 function mapTokenToMandarinHanzi(token) {
   if (isPunctuation(token)) return token;
   const normalized = normalizeHanzi(token);
-  if (MANDARIN_TOKEN_MAP[normalized]) return MANDARIN_TOKEN_MAP[normalized];
+  if (MANDARIN_TOKEN_MAP[normalized]) return toSimplified(MANDARIN_TOKEN_MAP[normalized]);
   let converted = "";
   for (const ch of normalized) {
     converted += MANDARIN_CHAR_MAP[ch] || ch;
   }
-  return converted || normalized;
+  return toSimplified(converted || normalized);
 }
 
 function mapTokenToMandarinPinyin(cantoToken, mandarinToken) {
@@ -3815,8 +4215,9 @@ function localizeEntry(item) {
   const cantoRoman = String(source.jyutping || "").trim();
   const cantoEnglish = String(source.english || "").trim();
   const fallbackMandarin = deriveMandarinFromCantonese(source);
-  const mandarinHanzi = readLocalizedField(source, ["mandarin_hanzi", "mandarinHanzi"]) || fallbackMandarin.hanzi || cantoHanzi;
-  const mandarinRoman = readLocalizedField(source, ["pinyin", "mandarin_pinyin", "mandarinPinyin"]) || fallbackMandarin.roman || cantoRoman;
+  const rawMandarinHanzi = readLocalizedField(source, ["mandarin_hanzi", "mandarinHanzi"]) || fallbackMandarin.hanzi || cantoHanzi;
+  const mandarinHanzi = toSimplified(rawMandarinHanzi);
+  const mandarinRoman = readLocalizedField(source, ["pinyin", "mandarin_pinyin", "mandarinPinyin"]) || fallbackMandarin.roman || "";
   const mandarinEnglish = readLocalizedField(source, ["mandarin_english", "mandarinEnglish"]) || cantoEnglish;
   const intentId = readLocalizedField(source, ["intent_id", "intentId"]);
   const mode = normalizeLanguageMode(state?.prefs?.languageMode);
@@ -3868,6 +4269,10 @@ function localizeEntry(item) {
 function localizedSpeechText(item) {
   const localized = localizeEntry(item);
   return localized.speechText || localized.cantonese?.hanzi || "";
+}
+
+function buildCompareLabeledLine(cantoHtml, mandarinHtml) {
+  return `<span class="compare-prefix">粵:</span> ${cantoHtml || "-"}<br><span class="compare-prefix">普:</span> ${mandarinHtml || "-"}`;
 }
 
 function toneChoiceLabel(item) {
@@ -4014,12 +4419,12 @@ function applyVisibilityPrefs() {
   const showEn = !!state.prefs.showEnglish;
   const showLens = !!state.prefs.showGrammarLens;
   const languageMode = normalizeLanguageMode(state.prefs.languageMode);
+  const forceCompareRoman = languageMode === "compare";
 
   els.wordJyutping.classList.toggle("hidden", !showJp);
-  els.patternJyutping.classList.toggle("hidden", !showJp);
+  els.patternJyutping.classList.toggle("hidden", !forceCompareRoman && !showJp);
   if (els.questionJyutping) {
-    const hideQuestionRomanLine = languageMode !== "compare" || !showJp;
-    els.questionJyutping.classList.toggle("hidden", hideQuestionRomanLine);
+    els.questionJyutping.classList.toggle("hidden", !forceCompareRoman && !showJp);
   }
 
   els.wordEnglish.classList.toggle("hidden", !showEn);
