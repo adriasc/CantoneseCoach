@@ -562,17 +562,14 @@ button:hover,
 }
 
 #toggleWordJyutping,
-#toggleWordEnglish,
-#togglePatternJyutping,
-#togglePatternEnglish,
-#toggleQuizJyutping,
-#toggleQuizEnglish,
-#toggleToneJyutping,
-#toggleToneEnglish {
+#toggleWordEnglish {
   background: #365173;
 }
 
-#panel-patterns .pattern-actions {
+#panel-patterns .pattern-actions,
+#panel-listening .panel-actions,
+#panel-questions .panel-actions,
+#panel-tones .panel-actions {
   display: flex;
   flex-wrap: nowrap;
   justify-content: center;
@@ -583,7 +580,10 @@ button:hover,
   padding: 2px 0;
 }
 
-#panel-patterns .pattern-control-col {
+#panel-patterns .pattern-control-col,
+#panel-listening .pattern-control-col,
+#panel-questions .pattern-control-col,
+#panel-tones .pattern-control-col {
   display: grid;
   grid-template-rows: 78px 16px;
   align-items: center;
@@ -592,7 +592,10 @@ button:hover,
   min-width: 56px;
 }
 
-#panel-patterns .pattern-control-text {
+#panel-patterns .pattern-control-text,
+#panel-listening .pattern-control-text,
+#panel-questions .pattern-control-text,
+#panel-tones .pattern-control-text {
   margin: 0;
   font-size: 0.84rem;
   font-weight: 600;
@@ -601,7 +604,10 @@ button:hover,
   white-space: nowrap;
 }
 
-#panel-patterns .pattern-mini-btn {
+#panel-patterns .pattern-mini-btn,
+#panel-listening .pattern-mini-btn,
+#panel-questions .pattern-mini-btn,
+#panel-tones .pattern-mini-btn {
   width: 46px;
   min-width: 46px;
   height: 46px;
@@ -620,11 +626,15 @@ button:hover,
   line-height: 1;
 }
 
-#panel-patterns #toggleGrammarLens.pattern-mini-btn {
+#panel-patterns #toggleGrammarLens.pattern-mini-btn,
+#panel-listening #toggleQuizGrammarLens.pattern-mini-btn,
+#panel-questions #toggleQuestionGrammarLens.pattern-mini-btn {
   font-size: 1.22rem;
 }
 
-#panel-patterns #toggleGrammarLens.pattern-mini-btn.is-on {
+#panel-patterns #toggleGrammarLens.pattern-mini-btn.is-on,
+#panel-listening #toggleQuizGrammarLens.pattern-mini-btn.is-on,
+#panel-questions #toggleQuestionGrammarLens.pattern-mini-btn.is-on {
   color: #fff;
   background: linear-gradient(160deg, #ffba34 0%, #ff8e36 50%, #ff6d58 100%);
   border-color: #f0823f;
@@ -636,19 +646,47 @@ button:hover,
   border-color: #2f9bd1;
 }
 
+#panel-listening #toggleQuizJyutping.pattern-mini-btn.is-on,
+#panel-questions #toggleQuestionJyutping.pattern-mini-btn.is-on,
+#panel-tones #toggleToneJyutping.pattern-mini-btn.is-on {
+  color: #fff;
+  background: linear-gradient(160deg, #16d5b8 0%, #19b8db 48%, #3289ff 100%);
+  border-color: #2f9bd1;
+}
+
 #panel-patterns #togglePatternEnglish.pattern-mini-btn.is-on {
   color: #fff;
   background: linear-gradient(160deg, #6ea7ff 0%, #5d90ff 55%, #6d6be8 100%);
   border-color: #6b7ed8;
 }
 
-#panel-patterns .pattern-mini-btn.is-off {
+#panel-listening #toggleQuizEnglish.pattern-mini-btn.is-on,
+#panel-questions #toggleQuestionEnglish.pattern-mini-btn.is-on,
+#panel-tones #toggleToneEnglish.pattern-mini-btn.is-on {
+  color: #fff;
+  background: linear-gradient(160deg, #6ea7ff 0%, #5d90ff 55%, #6d6be8 100%);
+  border-color: #6b7ed8;
+}
+
+#panel-listening #showQuizText.pattern-mini-btn.is-on {
+  color: #fff;
+  background: linear-gradient(160deg, #7ac66f 0%, #42b889 52%, #1ba4a4 100%);
+  border-color: #3aa291;
+}
+
+#panel-patterns .pattern-mini-btn.is-off,
+#panel-listening .pattern-mini-btn.is-off,
+#panel-questions .pattern-mini-btn.is-off,
+#panel-tones .pattern-mini-btn.is-off {
   color: #4f6075;
   background: linear-gradient(180deg, #f8f9fb 0%, #e9edf3 100%);
   border-color: #d2dbe7;
 }
 
-#panel-patterns .pattern-next-btn {
+#panel-patterns .pattern-next-btn,
+#panel-listening .pattern-next-btn,
+#panel-questions .pattern-next-btn,
+#panel-tones .pattern-next-btn {
   width: 46px;
   min-width: 46px;
   height: 46px;
@@ -667,7 +705,9 @@ button:hover,
   justify-content: center;
 }
 
-#panel-patterns #playPatternAudio.pattern-play-main {
+#panel-patterns #playPatternAudio.pattern-play-main,
+#panel-listening #playQuizAudio.pattern-play-main,
+#panel-questions #playQuestionAudio.pattern-play-main {
   width: 78px;
   min-width: 78px;
   height: 78px;
@@ -679,10 +719,16 @@ button:hover,
   box-shadow: 0 8px 22px rgba(225, 80, 95, 0.35);
 }
 
-#playToneA,
-#playToneB,
-#playToneRandom {
-  background: #365173;
+#panel-tones .tone-play-btn {
+  width: 56px;
+  min-width: 56px;
+  height: 56px;
+  min-height: 56px;
+  border-radius: 999px;
+  font-size: 1.4rem;
+  background: linear-gradient(160deg, #ff8f63 0%, #ff646f 48%, #ff4f85 100%);
+  border: 3px solid #fff8f4;
+  box-shadow: 0 6px 16px rgba(225, 80, 95, 0.31);
 }
 
 #playWordAudio,

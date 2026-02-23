@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.2.33</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.2.34</span></p>
         <h1>Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -323,14 +323,30 @@
         <p class="english hidden" id="quizEnglish"></p>
         <p class="literal" id="quizLiteral"></p>
         <div class="grammar-notes" id="quizGrammarNotes"></div>
-        <div class="actions">
-          <button id="playQuizAudio" class="play-icon-btn" aria-label="Play listening clip">▶</button>
-          <button id="nextQuiz">Next quiz</button>
-          <button id="toggleQuizGrammarLens">Grammar Lens: Off</button>
-          <button id="showQuizText">Show Chinese</button>
-          <div class="inline-pair">
-            <button id="toggleQuizJyutping">Show/Hide Jyutping</button>
-            <button id="toggleQuizEnglish">Show/Hide English</button>
+        <div class="actions pattern-actions panel-actions">
+          <div class="pattern-control-col">
+            <button id="nextQuiz" class="pattern-next-btn" aria-label="Next quiz">↗</button>
+            <p class="pattern-control-text">Next</p>
+          </div>
+          <div class="pattern-control-col">
+            <button id="toggleQuizGrammarLens" class="pattern-mini-btn pattern-toggle-btn is-off" aria-pressed="false" aria-label="Toggle grammar lens">◎</button>
+            <p class="pattern-control-text">Lens</p>
+          </div>
+          <div class="pattern-control-col">
+            <button id="playQuizAudio" class="play-icon-btn pattern-play-main" aria-label="Play listening clip">▶</button>
+            <p class="pattern-control-text">Play</p>
+          </div>
+          <div class="pattern-control-col">
+            <button id="showQuizText" class="pattern-mini-btn pattern-toggle-btn is-off" aria-pressed="false" aria-label="Toggle Chinese">中</button>
+            <p class="pattern-control-text">Chinese</p>
+          </div>
+          <div class="pattern-control-col">
+            <button id="toggleQuizJyutping" class="pattern-mini-btn pattern-toggle-btn is-off" aria-pressed="false" aria-label="Toggle Jyutping">粵</button>
+            <p class="pattern-control-text">Jyutping</p>
+          </div>
+          <div class="pattern-control-col">
+            <button id="toggleQuizEnglish" class="pattern-mini-btn pattern-toggle-btn is-off" aria-pressed="false" aria-label="Toggle English">EN</button>
+            <p class="pattern-control-text">English</p>
           </div>
         </div>
         <div class="choices" id="quizChoices"></div>
@@ -349,13 +365,26 @@
           <p class="english" id="questionEnglish"></p>
           <p class="literal" id="questionLiteral"></p>
         </div>
-        <div class="actions">
-          <button id="playQuestionAudio" class="play-icon-btn" aria-label="Play question audio">▶</button>
-          <button id="nextQuestion">Next question</button>
-          <button id="toggleQuestionGrammarLens">Grammar Lens: Off</button>
-          <div class="inline-pair">
-            <button id="toggleQuestionJyutping">Hide Jyutping</button>
-            <button id="toggleQuestionEnglish">Hide English</button>
+        <div class="actions pattern-actions panel-actions">
+          <div class="pattern-control-col">
+            <button id="nextQuestion" class="pattern-next-btn" aria-label="Next question">↗</button>
+            <p class="pattern-control-text">Next</p>
+          </div>
+          <div class="pattern-control-col">
+            <button id="toggleQuestionGrammarLens" class="pattern-mini-btn pattern-toggle-btn is-off" aria-pressed="false" aria-label="Toggle grammar lens">◎</button>
+            <p class="pattern-control-text">Lens</p>
+          </div>
+          <div class="pattern-control-col">
+            <button id="playQuestionAudio" class="play-icon-btn pattern-play-main" aria-label="Play question audio">▶</button>
+            <p class="pattern-control-text">Play</p>
+          </div>
+          <div class="pattern-control-col">
+            <button id="toggleQuestionJyutping" class="pattern-mini-btn pattern-toggle-btn is-off" aria-pressed="false" aria-label="Toggle Jyutping">粵</button>
+            <p class="pattern-control-text">Jyutping</p>
+          </div>
+          <div class="pattern-control-col">
+            <button id="toggleQuestionEnglish" class="pattern-mini-btn pattern-toggle-btn is-off" aria-pressed="false" aria-label="Toggle English">EN</button>
+            <p class="pattern-control-text">English</p>
           </div>
         </div>
       </div>
@@ -372,15 +401,31 @@
           <p class="jyutping tone-line" id="toneJyutping"></p>
           <p class="english tone-line" id="toneEnglish"></p>
         </div>
-        <div class="actions">
-          <button id="playToneA" class="play-icon-btn play-tone-btn" aria-label="Play tone A" data-tone-label="A">▶</button>
-          <button id="playToneB" class="play-icon-btn play-tone-btn" aria-label="Play tone B" data-tone-label="B">▶</button>
-          <button id="playToneRandom" class="play-icon-btn play-tone-btn" aria-label="Play random tone" data-tone-label="?">▶</button>
-          <div class="inline-pair">
-            <button id="toggleToneJyutping">Hide Jyutping</button>
-            <button id="toggleToneEnglish">Hide English</button>
+        <div class="actions pattern-actions panel-actions tone-actions">
+          <div class="pattern-control-col">
+            <button id="playToneA" class="play-icon-btn tone-play-btn" aria-label="Play tone A" data-tone-label="A">▶</button>
+            <p class="pattern-control-text">Play A</p>
           </div>
-          <button id="nextTone">Next pair</button>
+          <div class="pattern-control-col">
+            <button id="playToneB" class="play-icon-btn tone-play-btn" aria-label="Play tone B" data-tone-label="B">▶</button>
+            <p class="pattern-control-text">Play B</p>
+          </div>
+          <div class="pattern-control-col">
+            <button id="playToneRandom" class="play-icon-btn tone-play-btn" aria-label="Play random tone" data-tone-label="?">▶</button>
+            <p class="pattern-control-text">Random</p>
+          </div>
+          <div class="pattern-control-col">
+            <button id="toggleToneJyutping" class="pattern-mini-btn pattern-toggle-btn is-off" aria-pressed="false" aria-label="Toggle Jyutping">粵</button>
+            <p class="pattern-control-text">Jyutping</p>
+          </div>
+          <div class="pattern-control-col">
+            <button id="toggleToneEnglish" class="pattern-mini-btn pattern-toggle-btn is-off" aria-pressed="false" aria-label="Toggle English">EN</button>
+            <p class="pattern-control-text">English</p>
+          </div>
+          <div class="pattern-control-col">
+            <button id="nextTone" class="pattern-next-btn" aria-label="Next tone pair">↗</button>
+            <p class="pattern-control-text">Next</p>
+          </div>
         </div>
         <div class="choices" id="toneChoices"></div>
         <p class="feedback" id="toneFeedback"></p>

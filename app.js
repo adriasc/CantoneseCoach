@@ -1571,6 +1571,8 @@ const state = {
   currentPattern: null,
   patternSelections: {},
   currentQuiz: null,
+  currentQuizAnalysis: null,
+  currentQuestionAnalysis: null,
   currentTonePair: null,
   currentToneKind: "word",
   currentToneSide: null,
@@ -1830,6 +1832,26 @@ function bindUI() {
       openPatternGrammarInfo(idx);
     });
   }
+  if (els.quizHanzi) {
+    els.quizHanzi.addEventListener("click", (event) => {
+      if (!state.quizDisplay.lens) return;
+      const target = event.target?.closest?.(".tok-clickable");
+      if (!target) return;
+      const idx = Number(target.dataset.idx);
+      if (!Number.isFinite(idx)) return;
+      openGrammarInfoFromAnalysis(state.currentQuizAnalysis, idx);
+    });
+  }
+  if (els.questionHanzi) {
+    els.questionHanzi.addEventListener("click", (event) => {
+      if (!state.prefs.showGrammarLens) return;
+      const target = event.target?.closest?.(".tok-clickable");
+      if (!target) return;
+      const idx = Number(target.dataset.idx);
+      if (!Number.isFinite(idx)) return;
+      openGrammarInfoFromAnalysis(state.currentQuestionAnalysis, idx);
+    });
+  }
 
   byId("playPatternAudio").addEventListener("click", () => {
     const built = buildPatternSentence();
@@ -1848,6 +1870,7 @@ function bindUI() {
   if (showQuizTextBtn) {
     showQuizTextBtn.addEventListener("click", () => {
       state.quizDisplay.hanzi = !state.quizDisplay.hanzi;
+      renderQuizGrammar();
       applyQuizVisibility();
     });
   }
@@ -1862,6 +1885,7 @@ function bindUI() {
   if (els.toggleQuizJyutping) {
     els.toggleQuizJyutping.addEventListener("click", () => {
       state.quizDisplay.jyutping = !state.quizDisplay.jyutping;
+      renderQuizGrammar();
       applyQuizVisibility();
     });
   }
@@ -2256,8 +2280,11 @@ function renderPatternSentence() {
 }
 
 function openPatternGrammarInfo(tokenIndex) {
+  openGrammarInfoFromAnalysis(state.currentPatternAnalysis, tokenIndex);
+}
+
+function openGrammarInfoFromAnalysis(analysis, tokenIndex) {
   if (!els.grammarModal || !els.grammarModalBody || !els.grammarModalTitle) return;
-  const analysis = state.currentPatternAnalysis;
   const meta = analysis?.tokenMeta?.[tokenIndex];
   if (!meta) return;
 
@@ -2381,35 +2408,49 @@ function rollQuiz() {
 function renderQuizGrammar() {
   if (!state.currentQuiz) return;
   const analysis = analyzeSentence({ hanzi: state.currentQuiz.hanzi, jyutping: state.currentQuiz.jyutping });
+  state.currentQuizAnalysis = analysis;
+  const showRuby = !!state.quizDisplay.jyutping;
   if (state.quizDisplay.lens) {
-    els.quizHanzi.innerHTML = analysis.annotatedHanzi;
+    els.quizHanzi.innerHTML = showRuby ? analysis.annotatedRubyHanzi : analysis.annotatedHanzi;
     els.quizJyutping.innerHTML = analysis.annotatedJyutping;
     els.quizGrammarNotes.innerHTML = analysis.notes.length
       ? analysis.notes.map((note) => `<div class="grammar-note">${note}</div>`).join("")
       : `<div class="grammar-note">No tense/aspect marker detected in this sentence.</div>`;
     els.quizLiteral.innerHTML = `Literal: ${analysis.literalHtml || escapeHtml(analysis.literal)}`;
   } else {
-    els.quizHanzi.textContent = state.currentQuiz.hanzi;
+    if (showRuby) {
+      els.quizHanzi.innerHTML = analysis.rubyHanzi || escapeHtml(state.currentQuiz.hanzi);
+    } else {
+      els.quizHanzi.textContent = state.currentQuiz.hanzi;
+    }
     els.quizJyutping.textContent = state.currentQuiz.jyutping;
     els.quizGrammarNotes.innerHTML = "";
     els.quizLiteral.textContent = `Literal: ${analysis.literal}`;
   }
+  els.quizHanzi.classList.toggle("pattern-ruby", showRuby);
 }
 
 function renderQuestionSentence() {
   if (!state.currentQuestion || !els.questionHanzi) return;
   const analysis = analyzeSentence({ hanzi: state.currentQuestion.hanzi, jyutping: state.currentQuestion.jyutping });
+  state.currentQuestionAnalysis = analysis;
+  const showRuby = !!state.prefs.showJyutping;
   if (state.prefs.showGrammarLens) {
-    els.questionHanzi.innerHTML = analysis.annotatedHanzi;
+    els.questionHanzi.innerHTML = showRuby ? analysis.annotatedRubyHanzi : analysis.annotatedHanzi;
     els.questionJyutping.innerHTML = analysis.annotatedJyutping || escapeHtml(state.currentQuestion.jyutping);
     els.questionEnglish.textContent = state.currentQuestion.english;
     els.questionLiteral.innerHTML = `Literal: ${analysis.literalHtml || escapeHtml(analysis.literal)}`;
   } else {
-    els.questionHanzi.textContent = state.currentQuestion.hanzi;
+    if (showRuby) {
+      els.questionHanzi.innerHTML = analysis.rubyHanzi || escapeHtml(state.currentQuestion.hanzi);
+    } else {
+      els.questionHanzi.textContent = state.currentQuestion.hanzi;
+    }
     els.questionJyutping.textContent = state.currentQuestion.jyutping;
     els.questionEnglish.textContent = state.currentQuestion.english;
     els.questionLiteral.textContent = `Literal: ${analysis.literal}`;
   }
+  els.questionHanzi.classList.toggle("pattern-ruby", showRuby);
   applyVisibilityPrefs();
 }
 
@@ -2451,9 +2492,13 @@ function renderTonePair() {
   if (!pair || !els.toneLabel || !els.tonePrompt) return;
   const toneA = toneItemForLabel("a");
   const toneB = toneItemForLabel("b");
+  const showToneJp = !!state.prefs.toneShowJyutping;
+  const toneAHanzi = showToneJp ? (analyzeSentence({ hanzi: toneA.hanzi, jyutping: toneA.jyutping }).rubyHanzi || escapeHtml(toneA.hanzi)) : escapeHtml(toneA.hanzi);
+  const toneBHanzi = showToneJp ? (analyzeSentence({ hanzi: toneB.hanzi, jyutping: toneB.jyutping }).rubyHanzi || escapeHtml(toneB.hanzi)) : escapeHtml(toneB.hanzi);
   const modeLabel = state.currentToneKind === "sentence" ? "Sentence tones" : "Word tones";
   els.toneLabel.textContent = `${modeLabel} drill`;
-  els.toneHanzi.textContent = `A: ${toneA.hanzi}   B: ${toneB.hanzi}`;
+  els.toneHanzi.innerHTML = `A: ${toneAHanzi}   B: ${toneBHanzi}`;
+  els.toneHanzi.classList.toggle("pattern-ruby", showToneJp);
   els.toneJyutping.textContent = `A: ${toneA.jyutping}   B: ${toneB.jyutping}`;
   els.toneEnglish.textContent = `A: ${toneA.english}   B: ${toneB.english}`;
   els.toneFeedback.textContent = "";
@@ -3344,6 +3389,16 @@ function refreshVoiceOptions() {
   }
 }
 
+function setMiniToggle(btn, isOn, iconText, onLabel, offLabel) {
+  if (!btn) return;
+  btn.classList.add("pattern-mini-btn", "pattern-toggle-btn");
+  btn.classList.toggle("is-on", !!isOn);
+  btn.classList.toggle("is-off", !isOn);
+  btn.setAttribute("aria-pressed", isOn ? "true" : "false");
+  btn.textContent = iconText;
+  btn.setAttribute("aria-label", isOn ? onLabel : offLabel);
+}
+
 function applyVisibilityPrefs() {
   const showJp = !!state.prefs.showJyutping;
   const showEn = !!state.prefs.showEnglish;
@@ -3351,7 +3406,7 @@ function applyVisibilityPrefs() {
 
   els.wordJyutping.classList.toggle("hidden", !showJp);
   els.patternJyutping.classList.toggle("hidden", !showJp);
-  if (els.questionJyutping) els.questionJyutping.classList.toggle("hidden", !showJp);
+  if (els.questionJyutping) els.questionJyutping.classList.add("hidden");
 
   els.wordEnglish.classList.toggle("hidden", !showEn);
   if (els.wordLiteral) {
@@ -3364,13 +3419,11 @@ function applyVisibilityPrefs() {
   if (els.questionLiteral) els.questionLiteral.classList.toggle("hidden", !showEn);
 
   els.toggleWordJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
-  if (els.toggleQuestionJyutping) els.toggleQuestionJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
+  setMiniToggle(els.toggleQuestionJyutping, showJp, "粵", "Jyutping on", "Jyutping off");
   els.toggleWordEnglish.textContent = showEn ? "Hide English" : "Show English";
-  if (els.toggleQuestionEnglish) els.toggleQuestionEnglish.textContent = showEn ? "Hide English" : "Show English";
+  setMiniToggle(els.toggleQuestionEnglish, showEn, "EN", "English on", "English off");
   renderPatternActionButtons(showJp, showEn, showLens);
-  if (els.toggleQuestionGrammarLens) {
-    els.toggleQuestionGrammarLens.textContent = showLens ? "Grammar Lens: On" : "Grammar Lens: Off";
-  }
+  setMiniToggle(els.toggleQuestionGrammarLens, showLens, "◎", "Lens on", "Lens off");
   applyToneVisibility();
 }
 
@@ -3381,14 +3434,14 @@ function applyQuizVisibility() {
   const showLens = !!state.quizDisplay.lens;
 
   if (els.quizHanzi) els.quizHanzi.classList.toggle("hidden", !showHanzi);
-  if (els.quizJyutping) els.quizJyutping.classList.toggle("hidden", !showJp);
+  if (els.quizJyutping) els.quizJyutping.classList.add("hidden");
   if (els.quizEnglish) els.quizEnglish.classList.toggle("hidden", !showEn);
   if (els.quizLiteral) els.quizLiteral.classList.toggle("hidden", !showEn);
   if (els.quizGrammarNotes) els.quizGrammarNotes.classList.toggle("hidden", !showLens);
-  if (els.toggleQuizGrammarLens) els.toggleQuizGrammarLens.textContent = showLens ? "Grammar Lens: On" : "Grammar Lens: Off";
-  if (els.toggleQuizJyutping) els.toggleQuizJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
-  if (els.toggleQuizEnglish) els.toggleQuizEnglish.textContent = showEn ? "Hide English" : "Show English";
-  if (byId("showQuizText")) byId("showQuizText").textContent = showHanzi ? "Hide Chinese" : "Show Chinese";
+  setMiniToggle(els.toggleQuizGrammarLens, showLens, "◎", "Lens on", "Lens off");
+  setMiniToggle(els.toggleQuizJyutping, showJp, "粵", "Jyutping on", "Jyutping off");
+  setMiniToggle(els.toggleQuizEnglish, showEn, "EN", "English on", "English off");
+  setMiniToggle(byId("showQuizText"), showHanzi, "中", "Chinese on", "Chinese off");
 }
 
 function renderPatternActionButtons(showJp, showEn, showLens) {
@@ -3399,18 +3452,9 @@ function renderPatternActionButtons(showJp, showEn, showLens) {
   if (els.patternNextText) {
     els.patternNextText.textContent = "Next";
   }
-  const setMini = (btn, isOn, iconText, onLabel, offLabel) => {
-    if (!btn) return;
-    btn.classList.add("pattern-mini-btn", "pattern-toggle-btn");
-    btn.classList.toggle("is-on", !!isOn);
-    btn.classList.toggle("is-off", !isOn);
-    btn.setAttribute("aria-pressed", isOn ? "true" : "false");
-    btn.textContent = iconText;
-    btn.setAttribute("aria-label", isOn ? onLabel : offLabel);
-  };
-  setMini(els.toggleGrammarLens, showLens, "◎", "Lens on", "Lens off");
-  setMini(els.togglePatternJyutping, showJp, "粵", "Jyutping on", "Jyutping off");
-  setMini(els.togglePatternEnglish, showEn, "EN", "English on", "English off");
+  setMiniToggle(els.toggleGrammarLens, showLens, "◎", "Lens on", "Lens off");
+  setMiniToggle(els.togglePatternJyutping, showJp, "粵", "Jyutping on", "Jyutping off");
+  setMiniToggle(els.togglePatternEnglish, showEn, "EN", "English on", "English off");
 
   if (els.patternLensText) els.patternLensText.textContent = "Lens";
   if (els.patternJpText) els.patternJpText.textContent = "Jyutping";
@@ -3430,14 +3474,10 @@ function applyToneVisibility() {
   if (!els.toneJyutping || !els.toneEnglish) return;
   const showToneJp = !!state.prefs.toneShowJyutping;
   const showToneEn = !!state.prefs.toneShowEnglish;
-  els.toneJyutping.classList.toggle("hidden", !showToneJp);
+  els.toneJyutping.classList.add("hidden");
   els.toneEnglish.classList.toggle("hidden", !showToneEn);
-  if (els.toggleToneJyutping) {
-    els.toggleToneJyutping.textContent = showToneJp ? "Hide Jyutping" : "Show Jyutping";
-  }
-  if (els.toggleToneEnglish) {
-    els.toggleToneEnglish.textContent = showToneEn ? "Hide English" : "Show English";
-  }
+  setMiniToggle(els.toggleToneJyutping, showToneJp, "粵", "Jyutping on", "Jyutping off");
+  setMiniToggle(els.toggleToneEnglish, showToneEn, "EN", "English on", "English off");
 }
 
 function applyTheme(themeName) {
@@ -3551,6 +3591,8 @@ function togglePref(prefKey) {
   state.prefs[prefKey] = !state.prefs[prefKey];
   saveJson(STORAGE_KEYS.prefs, state.prefs);
   applyVisibilityPrefs();
+  if (state.currentSentence) renderPatternSentence();
+  if (state.currentQuestion) renderQuestionSentence();
 }
 
 function resetRotations() {
