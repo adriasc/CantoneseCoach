@@ -2942,7 +2942,7 @@ function refreshStats() {
   els.knownWords.textContent = `Known words: ${state.known.size}`;
   const reviewedCount = state.reviewed.date === todayString() ? state.reviewed.count : 0;
   els.reviewedWords.textContent = `Reviewed today: ${reviewedCount}`;
-  els.streakBadge.textContent = `🔥 ${state.streak.days}Day`;
+  els.streakBadge.textContent = `🔥 ${state.streak.days}${ordinalSuffix(state.streak.days)}-Day`;
 }
 
 function renderKnownList() {
@@ -3420,7 +3420,18 @@ function applyTheme(themeName) {
 function setControlsCollapsed(collapsed) {
   if (!els.controlsCard || !els.toggleControlsCard) return;
   els.controlsCard.classList.toggle("is-collapsed", collapsed);
-  els.toggleControlsCard.textContent = collapsed ? "▼" : "▲";
+  els.toggleControlsCard.textContent = collapsed ? ">" : "V";
+}
+
+function ordinalSuffix(n) {
+  const v = Math.abs(Number(n) || 0);
+  const mod100 = v % 100;
+  if (mod100 >= 11 && mod100 <= 13) return "th";
+  const mod10 = v % 10;
+  if (mod10 === 1) return "st";
+  if (mod10 === 2) return "nd";
+  if (mod10 === 3) return "rd";
+  return "th";
 }
 
 function togglePref(prefKey) {
