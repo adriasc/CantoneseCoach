@@ -515,6 +515,10 @@ h1 {
   font-size: 1.1rem;
 }
 
+.compare-lines {
+  white-space: pre-line;
+}
+
 .actions {
   margin-top: 14px;
   display: flex;

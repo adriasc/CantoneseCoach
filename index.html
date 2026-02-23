@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.2.37</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.3.0</span></p>
         <h1>Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -167,6 +167,14 @@
               <option value="neon-extreme">HK Neon Extreme</option>
               <option value="ink">Ink Newspaper</option>
               <option value="poster">HK Poster Pop</option>
+            </select>
+          </div>
+          <div>
+            <label for="languageMode">Language View (Global)</label>
+            <select id="languageMode">
+              <option value="cantonese">Cantonese (Hanzi + Jyutping)</option>
+              <option value="mandarin">Mandarin (Hanzi + Pinyin)</option>
+              <option value="compare">Compare (Cantonese + Mandarin)</option>
             </select>
           </div>
           <div>
@@ -466,7 +474,11 @@
       "id": "w1",
       "hanzi": "我",
       "jyutping": "ngo5",
+      "mandarin_hanzi": "我",
+      "pinyin": "wǒ",
       "english": "I / me",
+      "mandarin_english": "I / me",
+      "intent_id": "pronoun_i",
       "category": "pronoun",
       "example": "我學廣東話。"
     }

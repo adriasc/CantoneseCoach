@@ -1549,6 +1549,7 @@ const state = {
     questionTense: "mixed",
     questionTheme: "mixed",
     uiTheme: "classic",
+    languageMode: "cantonese",
     controlsCollapsed: false,
     toneExerciseMode: "word",
     showJyutping: true,
@@ -1616,6 +1617,7 @@ const els = {
   audioNoiseValue: byId("audioNoiseValue"),
   toneExerciseMode: byId("toneExerciseMode"),
   themeStyle: byId("themeStyle"),
+  languageMode: byId("languageMode"),
   testVoice: byId("testVoice"),
   applyControls: byId("applyControls"),
   controlsCard: document.querySelector(".controls-card"),
@@ -1787,7 +1789,7 @@ function bindUI() {
   });
 
   byId("playWordAudio").addEventListener("click", () => {
-    if (state.currentWord) speak(state.currentWord.hanzi);
+    if (state.currentWord) speak(localizedSpeechText(state.currentWord));
   });
 
   els.revealExample.addEventListener("click", () => {
@@ -1856,13 +1858,13 @@ function bindUI() {
   byId("playPatternAudio").addEventListener("click", () => {
     const built = buildPatternSentence();
     incrementMission("patterns", 1);
-    speak(built.hanzi);
+    speak(built.speechText || built.analysisHanzi || built.hanzi);
   });
 
   byId("playQuizAudio").addEventListener("click", () => {
     if (state.currentQuiz) {
       incrementMission("listens", 1);
-      speak(state.currentQuiz.hanzi);
+      speak(localizedSpeechText(state.currentQuiz));
     }
   });
 
@@ -1928,7 +1930,7 @@ function bindUI() {
     byId("playQuestionAudio").addEventListener("click", () => {
       if (!state.currentQuestion) return;
       incrementMission("listens", 1);
-      speak(state.currentQuestion.hanzi);
+      speak(localizedSpeechText(state.currentQuestion));
     });
   }
   if (els.questionLevel) {
@@ -1985,8 +1987,8 @@ function bindUI() {
         return;
       }
       incrementMission("listens", 1);
-      if (q.type === "quiz") speak(q.sentence.hanzi);
-      if (q.type === "tone") speak(q.item.hanzi);
+      if (q.type === "quiz") speak(localizedSpeechText(q.sentence));
+      if (q.type === "tone") speak(localizedSpeechText(q.item));
     });
   }
 
@@ -1999,6 +2001,18 @@ function bindUI() {
       state.prefs.uiTheme = els.themeStyle.value || "classic";
       saveJson(STORAGE_KEYS.prefs, state.prefs);
       applyTheme(state.prefs.uiTheme);
+    });
+  }
+  if (els.languageMode) {
+    els.languageMode.addEventListener("change", () => {
+      state.prefs.languageMode = normalizeLanguageMode(els.languageMode.value);
+      saveJson(STORAGE_KEYS.prefs, state.prefs);
+      renderWordCard();
+      renderPatternSentence();
+      renderQuizGrammar();
+      renderQuestionSentence();
+      renderTonePair();
+      renderKnownList();
     });
   }
   els.audioVoice.addEventListener("change", () => {
@@ -2038,7 +2052,11 @@ function bindUI() {
     });
   }
   els.testVoice.addEventListener("click", () => {
-    speak("你好，我哋而家開始練習廣東話。");
+    const mode = normalizeLanguageMode(state.prefs.languageMode);
+    const sample = mode === "mandarin"
+      ? "你好，我们现在开始练习中文。"
+      : "你好，我哋而家開始練習廣東話。";
+    speak(sample);
   });
   els.applyControls.addEventListener("click", applyGlobalControls);
   if (els.toggleControlsCard) {
@@ -2089,6 +2107,7 @@ function applyGlobalControls() {
   const prevTense = state.prefs.tense || "mixed";
   const prevWordFilter = state.prefs.wordFilter || "mixed";
   const prevTheme = state.prefs.theme || "mixed";
+  const prevLanguageMode = normalizeLanguageMode(state.prefs.languageMode);
   const prevToneMode = state.prefs.toneExerciseMode || "word";
   const prevQLevel = state.prefs.questionLevel || "basic";
   const prevQTense = state.prefs.questionTense || "mixed";
@@ -2101,6 +2120,7 @@ function applyGlobalControls() {
   state.prefs.questionTense = els.questionTense?.value || "mixed";
   state.prefs.questionTheme = els.questionTheme?.value || "mixed";
   state.prefs.uiTheme = els.themeStyle?.value || "classic";
+  state.prefs.languageMode = normalizeLanguageMode(els.languageMode?.value || state.prefs.languageMode);
   state.prefs.toneExerciseMode = els.toneExerciseMode?.value || "word";
   state.prefs.audioNoiseOn = (els.audioNoiseOn?.value || "off") === "on";
   state.prefs.audioNoiseLevel = Number(els.audioNoiseLevel?.value || 0.25) || 0.25;
@@ -2111,6 +2131,7 @@ function applyGlobalControls() {
     || prevTense !== state.prefs.tense
     || prevWordFilter !== state.prefs.wordFilter
     || prevTheme !== state.prefs.theme;
+  const languageModeChanged = prevLanguageMode !== normalizeLanguageMode(state.prefs.languageMode);
   const toneModeChanged = prevToneMode !== state.prefs.toneExerciseMode;
   const questionChanged = prevQLevel !== state.prefs.questionLevel
     || prevQTense !== state.prefs.questionTense
@@ -2130,6 +2151,14 @@ function applyGlobalControls() {
   if (!coreChanged && questionChanged) {
     state.rotation.questionSentences = [];
     rollQuestion();
+  }
+  if (!coreChanged && !questionChanged && !toneModeChanged && languageModeChanged) {
+    renderWordCard();
+    renderPatternSentence();
+    renderQuizGrammar();
+    renderQuestionSentence();
+    renderTonePair();
+    renderKnownList();
   }
 }
 
@@ -2228,9 +2257,13 @@ function rollWord() {
 function renderWordCard() {
   if (!state.currentWord) return;
   const word = state.currentWord;
-  els.wordHanzi.textContent = word.hanzi || "-";
-  els.wordJyutping.textContent = word.jyutping || "-";
-  els.wordEnglish.textContent = word.english || "-";
+  const localized = localizeEntry(word);
+  els.wordHanzi.textContent = localized.display.hanzi || "-";
+  els.wordJyutping.textContent = localized.display.roman || "-";
+  els.wordEnglish.textContent = localized.display.english || "-";
+  els.wordHanzi.classList.toggle("compare-lines", localized.isCompare);
+  els.wordJyutping.classList.toggle("compare-lines", localized.isCompare);
+  els.wordEnglish.classList.toggle("compare-lines", localized.isCompare);
   if (els.wordLiteral) {
     els.wordLiteral.textContent = "";
     els.wordLiteral.classList.add("hidden");
@@ -2253,9 +2286,37 @@ function renderPatternControls() {
 
 function renderPatternSentence() {
   const built = buildPatternSentence();
-  const analysis = analyzeSentence({ hanzi: built.hanzi, jyutping: built.jyutping });
+  const analysis = analyzeSentence({ hanzi: built.analysisHanzi, jyutping: built.analysisJyutping });
   state.currentPatternAnalysis = analysis;
   const showRuby = !!state.prefs.showJyutping;
+  const isCompare = !!built.isCompare;
+
+  if (isCompare) {
+    els.patternHanzi.textContent = built.hanzi;
+    els.patternJyutping.textContent = built.jyutping;
+    els.patternEnglish.textContent = built.english;
+    els.patternHanzi.classList.remove("pattern-ruby");
+    els.patternHanzi.classList.add("compare-lines");
+    els.patternJyutping.classList.add("compare-lines");
+    els.patternEnglish.classList.add("compare-lines");
+    if (state.prefs.showGrammarLens) {
+      const notes = analysis.notes.length
+        ? analysis.notes.map((note) => `<div class="grammar-note">${note}</div>`).join("")
+        : `<div class="grammar-note">No tense/aspect marker detected in Cantonese reference sentence.</div>`;
+      els.patternGrammarNotes.innerHTML = `<div class="grammar-note">Compare mode: grammar lens uses Cantonese reference.</div>${notes}`;
+      els.patternLiteral.innerHTML = `Literal (Canto): ${analysis.literalHtml || escapeHtml(analysis.literal)}`;
+    } else {
+      els.patternGrammarNotes.innerHTML = "";
+      els.patternLiteral.textContent = `Literal (Canto): ${analysis.literal}`;
+    }
+    applyVisibilityPrefs();
+    return;
+  }
+
+  els.patternHanzi.classList.remove("compare-lines");
+  els.patternJyutping.classList.remove("compare-lines");
+  els.patternEnglish.classList.remove("compare-lines");
+
   if (state.prefs.showGrammarLens) {
     els.patternHanzi.innerHTML = showRuby ? analysis.annotatedRubyHanzi : analysis.annotatedHanzi;
     els.patternJyutping.innerHTML = analysis.annotatedJyutping;
@@ -2356,11 +2417,26 @@ function openGrammarInfoFromAnalysis(analysis, tokenIndex) {
 }
 
 function buildPatternSentence() {
-  if (!state.currentSentence) return { hanzi: "", jyutping: "", english: "" };
+  if (!state.currentSentence) {
+    return {
+      hanzi: "",
+      jyutping: "",
+      english: "",
+      analysisHanzi: "",
+      analysisJyutping: "",
+      speechText: ""
+    };
+  }
+  const localized = localizeEntry(state.currentSentence);
   return {
-    hanzi: state.currentSentence.hanzi,
-    jyutping: state.currentSentence.jyutping,
-    english: state.currentSentence.english
+    hanzi: localized.display.hanzi,
+    jyutping: localized.display.roman,
+    english: localized.display.english,
+    analysisHanzi: localized.analysis.hanzi || localized.cantonese.hanzi,
+    analysisJyutping: localized.analysis.roman || localized.cantonese.roman,
+    speechText: localized.speechText,
+    mode: localized.mode,
+    isCompare: localized.isCompare
   };
 }
 
@@ -2368,11 +2444,13 @@ function rollQuiz() {
   const quiz = state.game.fixMode ? getFixQuizPool() : getFilteredSentences();
   if (!quiz.length) return;
   state.currentQuiz = takeFromRotation("quizSentences", quiz, (q) => q.id);
+  const localized = localizeEntry(state.currentQuiz);
+  const correctAnswer = localized.answerEnglish || state.currentQuiz.english;
   els.quizFeedback.textContent = "";
   els.quizFeedback.className = "feedback";
-  els.quizHanzi.textContent = state.currentQuiz.hanzi;
-  els.quizJyutping.textContent = state.currentQuiz.jyutping;
-  els.quizEnglish.textContent = state.currentQuiz.english;
+  els.quizHanzi.textContent = localized.display.hanzi;
+  els.quizJyutping.textContent = localized.display.roman;
+  els.quizEnglish.textContent = localized.display.english;
   state.quizDisplay.hanzi = false;
   state.quizDisplay.jyutping = false;
   state.quizDisplay.english = false;
@@ -2380,7 +2458,21 @@ function rollQuiz() {
   renderQuizGrammar();
   applyQuizVisibility();
 
-  const answers = [state.currentQuiz.english, ...pickDistractors(state.currentQuiz.id, state.currentQuiz.english, 3)];
+  const distractors = shuffle(
+    Array.from(new Set(
+      quiz
+        .filter((item) => item.id !== state.currentQuiz.id)
+        .map((item) => localizeEntry(item).answerEnglish || item.english)
+        .filter((text) => text && text !== correctAnswer)
+    ))
+  ).slice(0, 3);
+  if (distractors.length < 3) {
+    pickDistractors(state.currentQuiz.id, correctAnswer, 3).forEach((d) => {
+      if (!d || d === correctAnswer || distractors.includes(d)) return;
+      distractors.push(d);
+    });
+  }
+  const answers = [correctAnswer, ...distractors.slice(0, 3)];
   shuffle(answers);
   els.quizChoices.innerHTML = "";
   answers.forEach((text) => {
@@ -2388,13 +2480,13 @@ function rollQuiz() {
     btn.className = "choice";
     btn.textContent = text;
     btn.addEventListener("click", () => {
-      const ok = text === state.currentQuiz.english;
-      els.quizFeedback.textContent = ok ? "Correct" : `Not quite. Correct: ${state.currentQuiz.english}`;
+      const ok = text === correctAnswer;
+      els.quizFeedback.textContent = ok ? "Correct" : `Not quite. Correct: ${correctAnswer}`;
       els.quizFeedback.className = `feedback ${ok ? "ok" : "bad"}`;
       const buttons = [...els.quizChoices.querySelectorAll("button")];
       buttons.forEach((button) => {
         button.disabled = true;
-        if (button.textContent === state.currentQuiz.english) button.classList.add("is-correct");
+        if (button.textContent === correctAnswer) button.classList.add("is-correct");
       });
       if (!ok) btn.classList.add("is-wrong");
       else btn.classList.add("is-correct");
@@ -2407,9 +2499,32 @@ function rollQuiz() {
 
 function renderQuizGrammar() {
   if (!state.currentQuiz) return;
-  const analysis = analyzeSentence({ hanzi: state.currentQuiz.hanzi, jyutping: state.currentQuiz.jyutping });
+  const localized = localizeEntry(state.currentQuiz);
+  const analysis = analyzeSentence({ hanzi: localized.analysis.hanzi, jyutping: localized.analysis.roman });
   state.currentQuizAnalysis = analysis;
   const showRuby = !!state.quizDisplay.jyutping;
+  if (localized.isCompare) {
+    els.quizHanzi.textContent = localized.display.hanzi;
+    els.quizJyutping.textContent = localized.display.roman;
+    els.quizEnglish.textContent = localized.display.english;
+    els.quizHanzi.classList.remove("pattern-ruby");
+    els.quizHanzi.classList.add("compare-lines");
+    els.quizJyutping.classList.add("compare-lines");
+    els.quizEnglish.classList.add("compare-lines");
+    if (state.quizDisplay.lens) {
+      els.quizGrammarNotes.innerHTML = `<div class="grammar-note">Compare mode: grammar lens uses Cantonese reference.</div>`;
+      els.quizLiteral.textContent = `Literal (Canto): ${analysis.literal}`;
+    } else {
+      els.quizGrammarNotes.innerHTML = "";
+      els.quizLiteral.textContent = `Literal (Canto): ${analysis.literal}`;
+    }
+    return;
+  }
+
+  els.quizHanzi.classList.remove("compare-lines");
+  els.quizJyutping.classList.remove("compare-lines");
+  els.quizEnglish.classList.remove("compare-lines");
+
   if (state.quizDisplay.lens) {
     els.quizHanzi.innerHTML = showRuby ? analysis.annotatedRubyHanzi : analysis.annotatedHanzi;
     els.quizJyutping.innerHTML = analysis.annotatedJyutping;
@@ -2419,35 +2534,54 @@ function renderQuizGrammar() {
     els.quizLiteral.innerHTML = `Literal: ${analysis.literalHtml || escapeHtml(analysis.literal)}`;
   } else {
     if (showRuby) {
-      els.quizHanzi.innerHTML = analysis.rubyHanzi || escapeHtml(state.currentQuiz.hanzi);
+      els.quizHanzi.innerHTML = analysis.rubyHanzi || escapeHtml(localized.display.hanzi);
     } else {
-      els.quizHanzi.textContent = state.currentQuiz.hanzi;
+      els.quizHanzi.textContent = localized.display.hanzi;
     }
-    els.quizJyutping.textContent = state.currentQuiz.jyutping;
+    els.quizJyutping.textContent = localized.display.roman;
     els.quizGrammarNotes.innerHTML = "";
     els.quizLiteral.textContent = `Literal: ${analysis.literal}`;
   }
+  els.quizEnglish.textContent = localized.display.english;
   els.quizHanzi.classList.toggle("pattern-ruby", showRuby);
 }
 
 function renderQuestionSentence() {
   if (!state.currentQuestion || !els.questionHanzi) return;
-  const analysis = analyzeSentence({ hanzi: state.currentQuestion.hanzi, jyutping: state.currentQuestion.jyutping });
+  const localized = localizeEntry(state.currentQuestion);
+  const analysis = analyzeSentence({ hanzi: localized.analysis.hanzi, jyutping: localized.analysis.roman });
   state.currentQuestionAnalysis = analysis;
   const showRuby = !!state.prefs.showJyutping;
+  if (localized.isCompare) {
+    els.questionHanzi.textContent = localized.display.hanzi;
+    els.questionJyutping.textContent = localized.display.roman;
+    els.questionEnglish.textContent = localized.display.english;
+    els.questionLiteral.textContent = `Literal (Canto): ${analysis.literal}`;
+    els.questionHanzi.classList.remove("pattern-ruby");
+    els.questionHanzi.classList.add("compare-lines");
+    els.questionJyutping.classList.add("compare-lines");
+    els.questionEnglish.classList.add("compare-lines");
+    applyVisibilityPrefs();
+    return;
+  }
+
+  els.questionHanzi.classList.remove("compare-lines");
+  els.questionJyutping.classList.remove("compare-lines");
+  els.questionEnglish.classList.remove("compare-lines");
+
   if (state.prefs.showGrammarLens) {
     els.questionHanzi.innerHTML = showRuby ? analysis.annotatedRubyHanzi : analysis.annotatedHanzi;
-    els.questionJyutping.innerHTML = analysis.annotatedJyutping || escapeHtml(state.currentQuestion.jyutping);
-    els.questionEnglish.textContent = state.currentQuestion.english;
+    els.questionJyutping.innerHTML = analysis.annotatedJyutping || escapeHtml(localized.display.roman);
+    els.questionEnglish.textContent = localized.display.english;
     els.questionLiteral.innerHTML = `Literal: ${analysis.literalHtml || escapeHtml(analysis.literal)}`;
   } else {
     if (showRuby) {
-      els.questionHanzi.innerHTML = analysis.rubyHanzi || escapeHtml(state.currentQuestion.hanzi);
+      els.questionHanzi.innerHTML = analysis.rubyHanzi || escapeHtml(localized.display.hanzi);
     } else {
-      els.questionHanzi.textContent = state.currentQuestion.hanzi;
+      els.questionHanzi.textContent = localized.display.hanzi;
     }
-    els.questionJyutping.textContent = state.currentQuestion.jyutping;
-    els.questionEnglish.textContent = state.currentQuestion.english;
+    els.questionJyutping.textContent = localized.display.roman;
+    els.questionEnglish.textContent = localized.display.english;
     els.questionLiteral.textContent = `Literal: ${analysis.literal}`;
   }
   els.questionHanzi.classList.toggle("pattern-ruby", showRuby);
@@ -2492,15 +2626,23 @@ function renderTonePair() {
   if (!pair || !els.toneLabel || !els.tonePrompt) return;
   const toneA = toneItemForLabel("a");
   const toneB = toneItemForLabel("b");
+  const toneALocal = localizeEntry(toneA);
+  const toneBLocal = localizeEntry(toneB);
   const showToneJp = !!state.prefs.toneShowJyutping;
-  const toneAHanzi = showToneJp ? (analyzeSentence({ hanzi: toneA.hanzi, jyutping: toneA.jyutping }).rubyHanzi || escapeHtml(toneA.hanzi)) : escapeHtml(toneA.hanzi);
-  const toneBHanzi = showToneJp ? (analyzeSentence({ hanzi: toneB.hanzi, jyutping: toneB.jyutping }).rubyHanzi || escapeHtml(toneB.hanzi)) : escapeHtml(toneB.hanzi);
+  const toneAHanzi = showToneJp
+    ? (analyzeSentence({ hanzi: toneALocal.analysis.hanzi, jyutping: toneALocal.analysis.roman }).rubyHanzi || escapeHtml(toneALocal.display.hanzi))
+    : escapeHtml(toneALocal.display.hanzi);
+  const toneBHanzi = showToneJp
+    ? (analyzeSentence({ hanzi: toneBLocal.analysis.hanzi, jyutping: toneBLocal.analysis.roman }).rubyHanzi || escapeHtml(toneBLocal.display.hanzi))
+    : escapeHtml(toneBLocal.display.hanzi);
   const modeLabel = state.currentToneKind === "sentence" ? "Sentence tones" : "Word tones";
   els.toneLabel.textContent = `${modeLabel} drill`;
   els.toneHanzi.innerHTML = `A: ${toneAHanzi}   B: ${toneBHanzi}`;
   els.toneHanzi.classList.toggle("pattern-ruby", showToneJp);
-  els.toneJyutping.textContent = `A: ${toneA.jyutping}   B: ${toneB.jyutping}`;
-  els.toneEnglish.textContent = `A: ${toneA.english}   B: ${toneB.english}`;
+  els.toneJyutping.textContent = `A: ${toneChoiceLabel(toneA)}   B: ${toneChoiceLabel(toneB)}`;
+  els.toneEnglish.textContent = `A: ${toneALocal.display.english}   B: ${toneBLocal.display.english}`;
+  els.toneJyutping.classList.toggle("compare-lines", toneALocal.isCompare || toneBLocal.isCompare);
+  els.toneEnglish.classList.toggle("compare-lines", toneALocal.isCompare || toneBLocal.isCompare);
   els.toneFeedback.textContent = "";
   els.toneFeedback.className = "feedback";
   els.tonePrompt.textContent = state.currentToneKind === "sentence"
@@ -2515,7 +2657,7 @@ function renderToneChoices() {
   if (!pair || !els.toneChoices) return;
   const toneA = toneItemForLabel("a");
   const toneB = toneItemForLabel("b");
-  const options = [toneA.jyutping, toneB.jyutping];
+  const options = [toneChoiceLabel(toneA), toneChoiceLabel(toneB)];
   const selected = normalizePracticeLevel(state.prefs.level);
   if (state.currentToneKind === "word" && selected !== 1) {
     const extra = pickThirdToneOption(options);
@@ -2535,7 +2677,7 @@ function renderToneChoices() {
 function pickThirdToneOption(existingOptions) {
   const normalizedExisting = new Set(existingOptions.map((o) => String(o || "").trim()));
   const candidates = getFilteredTonePairs()
-    .flatMap((pair) => [pair.a?.jyutping, pair.b?.jyutping])
+    .flatMap((pair) => [toneChoiceLabel(pair.a), toneChoiceLabel(pair.b)])
     .filter((jp) => jp && !normalizedExisting.has(String(jp).trim()));
   if (!candidates.length) return "";
   const unique = Array.from(new Set(candidates));
@@ -2551,13 +2693,14 @@ function checkToneAnswer(selected, clickedBtn) {
     return;
   }
   const target = toneItemForLabel(state.currentToneSide);
-  const expected = target.jyutping;
+  const expected = toneChoiceLabel(target);
+  const localizedTarget = localizeEntry(target);
   const ok = selected === expected;
   state.toneScore.total += 1;
   if (ok) state.toneScore.correct += 1;
   els.toneFeedback.textContent = ok
     ? "Correct"
-    : `Not quite. Clip was: ${target.hanzi} (${target.jyutping}) = ${target.english}`;
+    : `Not quite. Clip was: ${localizedTarget.display.hanzi} (${expected}) = ${localizedTarget.display.english}`;
   els.toneFeedback.className = `feedback ${ok ? "ok" : "bad"}`;
   const buttons = [...els.toneChoices.querySelectorAll("button")];
   buttons.forEach((button) => {
@@ -2584,18 +2727,18 @@ function playToneClip(which) {
   if (which === "a") {
     state.currentToneSide = "a";
     els.tonePrompt.textContent = `You played A. Choose the ${answerType} for A.`;
-    speak(toneItemForLabel("a").hanzi);
+    speak(localizedSpeechText(toneItemForLabel("a")));
     return;
   }
   if (which === "b") {
     state.currentToneSide = "b";
     els.tonePrompt.textContent = `You played B. Choose the ${answerType} for B.`;
-    speak(toneItemForLabel("b").hanzi);
+    speak(localizedSpeechText(toneItemForLabel("b")));
     return;
   }
   state.currentToneSide = randomUnit() < 0.5 ? "a" : "b";
   els.tonePrompt.textContent = `You played Random. Choose the ${answerType} for the random clip.`;
-  speak(toneItemForLabel(state.currentToneSide).hanzi);
+  speak(localizedSpeechText(toneItemForLabel(state.currentToneSide)));
 }
 
 function toneItemForLabel(label) {
@@ -3025,9 +3168,11 @@ function renderKnownList() {
   }
   els.knownListMeta.textContent = `${items.length} words marked as known.`;
   items.forEach((w) => {
+    const localized = localizeEntry(w);
+    const rowClass = localized.isCompare ? "known-item compare-lines" : "known-item";
     const row = document.createElement("div");
-    row.className = "known-item";
-    row.innerHTML = `<p class="hanzi">${escapeHtml(w.hanzi || "-")}</p><p class="jyutping">${escapeHtml(w.jyutping || "-")}</p><p class="english">${escapeHtml(w.english || "-")}</p>`;
+    row.className = rowClass;
+    row.innerHTML = `<p class="hanzi">${escapeHtml(localized.display.hanzi || "-")}</p><p class="jyutping">${escapeHtml(localized.display.roman || "-")}</p><p class="english">${escapeHtml(localized.display.english || "-")}</p>`;
     els.knownList.appendChild(row);
   });
 }
@@ -3044,7 +3189,8 @@ function speak(text) {
     ? state.availableVoices
     : window.speechSynthesis.getVoices();
   const selected = selectVoiceForSpeech(voices);
-  utterance.lang = selected?.lang || "zh-HK";
+  const mode = normalizeLanguageMode(state.prefs.languageMode);
+  utterance.lang = selected?.lang || (mode === "mandarin" ? "zh-CN" : "zh-HK");
   if (selected) utterance.voice = selected;
   utterance.rate = Math.min(1.2, Math.max(0.6, Number(state.prefs.voiceRate) || 0.9));
   utterance.pitch = 1;
@@ -3234,6 +3380,14 @@ function selectVoiceForSpeech(voices) {
     const exact = voices.find((v) => v.voiceURI === state.prefs.voiceURI);
     if (exact) return exact;
   }
+  const mode = normalizeLanguageMode(state.prefs.languageMode);
+  if (mode === "mandarin") {
+    return voices.find((v) => /mandarin|putonghua|guoyu/i.test(`${v.lang} ${v.name}`))
+      || voices.find((v) => /^zh-cn$/i.test(v.lang))
+      || voices.find((v) => /^zh-tw$/i.test(v.lang))
+      || voices.find((v) => /^zh/i.test(v.lang))
+      || voices[0];
+  }
   return voices.find((v) => /yue|cantonese/i.test(`${v.lang} ${v.name}`))
     || voices.find((v) => /^zh-hk$/i.test(v.lang))
     || voices.find((v) => /^yue/i.test(v.lang))
@@ -3271,12 +3425,18 @@ function loadContent() {
 }
 
 function normalizeContent(input) {
+  const source = input && typeof input === "object" ? input : {};
   const clean = {
-    words: Array.isArray(input.words) ? input.words : deepClone(DEFAULT_DATA.words),
-    patterns: Array.isArray(input.patterns) && input.patterns.length ? input.patterns : deepClone(DEFAULT_DATA.patterns),
-    quiz: Array.isArray(input.quiz) && input.quiz.length ? input.quiz : deepClone(DEFAULT_DATA.quiz)
+    words: Array.isArray(source.words) ? source.words : deepClone(DEFAULT_DATA.words),
+    patterns: Array.isArray(source.patterns) && source.patterns.length ? source.patterns : deepClone(DEFAULT_DATA.patterns),
+    quiz: Array.isArray(source.quiz) && source.quiz.length ? source.quiz : deepClone(DEFAULT_DATA.quiz)
   };
-  clean.words = ensureCoreWords(clean.words);
+  clean.words = ensureCoreWords(clean.words)
+    .map((word, idx) => normalizeLocalizedWordEntry(word, idx));
+  clean.patterns = clean.patterns
+    .map((sentence, idx) => normalizeLocalizedSentenceEntry(sentence, idx, "p"));
+  clean.quiz = clean.quiz
+    .map((sentence, idx) => normalizeLocalizedSentenceEntry(sentence, idx, "q"));
   return clean;
 }
 
@@ -3316,6 +3476,138 @@ function normalizeHanzi(value) {
   return String(value || "").replace(/\s+/g, "").trim();
 }
 
+function normalizeLanguageMode(value) {
+  const mode = String(value || "").toLowerCase().trim();
+  if (mode === "mandarin" || mode === "compare") return mode;
+  return "cantonese";
+}
+
+function readLocalizedField(item, keys) {
+  if (!item || typeof item !== "object") return "";
+  for (let i = 0; i < keys.length; i += 1) {
+    const raw = item[keys[i]];
+    if (raw === null || raw === undefined) continue;
+    const text = String(raw).trim();
+    if (text) return text;
+  }
+  return "";
+}
+
+function localizeEntry(item) {
+  const source = item && typeof item === "object" ? item : {};
+  const cantoHanzi = String(source.hanzi || "").trim();
+  const cantoRoman = String(source.jyutping || "").trim();
+  const cantoEnglish = String(source.english || "").trim();
+  const mandarinHanzi = readLocalizedField(source, ["mandarin_hanzi", "mandarinHanzi"]) || cantoHanzi;
+  const mandarinRoman = readLocalizedField(source, ["pinyin", "mandarin_pinyin", "mandarinPinyin"]) || cantoRoman;
+  const mandarinEnglish = readLocalizedField(source, ["mandarin_english", "mandarinEnglish"]) || cantoEnglish;
+  const intentId = readLocalizedField(source, ["intent_id", "intentId"]);
+  const mode = normalizeLanguageMode(state?.prefs?.languageMode);
+
+  const localized = {
+    mode,
+    isCompare: mode === "compare",
+    intentId,
+    cantonese: { hanzi: cantoHanzi, roman: cantoRoman, english: cantoEnglish },
+    mandarin: { hanzi: mandarinHanzi, roman: mandarinRoman, english: mandarinEnglish },
+    display: { hanzi: cantoHanzi, roman: cantoRoman, english: cantoEnglish },
+    analysis: { hanzi: cantoHanzi, roman: cantoRoman },
+    answerEnglish: cantoEnglish,
+    speechText: cantoHanzi
+  };
+
+  if (mode === "mandarin") {
+    localized.display = {
+      hanzi: mandarinHanzi || cantoHanzi,
+      roman: mandarinRoman || cantoRoman,
+      english: mandarinEnglish || cantoEnglish
+    };
+    localized.analysis = {
+      hanzi: localized.display.hanzi,
+      roman: localized.display.roman
+    };
+    localized.answerEnglish = localized.display.english;
+    localized.speechText = localized.display.hanzi || cantoHanzi;
+    return localized;
+  }
+
+  if (mode === "compare") {
+    localized.display = {
+      hanzi: `粵: ${cantoHanzi || "-"}\n普: ${mandarinHanzi || "-"}`,
+      roman: `粵: ${cantoRoman || "-"}\n普: ${mandarinRoman || "-"}`,
+      english: cantoEnglish && mandarinEnglish && cantoEnglish !== mandarinEnglish
+        ? `C: ${cantoEnglish}\nM: ${mandarinEnglish}`
+        : (cantoEnglish || mandarinEnglish)
+    };
+    localized.analysis = { hanzi: cantoHanzi, roman: cantoRoman };
+    localized.answerEnglish = cantoEnglish || mandarinEnglish;
+    localized.speechText = cantoHanzi || mandarinHanzi;
+    return localized;
+  }
+
+  return localized;
+}
+
+function localizedSpeechText(item) {
+  const localized = localizeEntry(item);
+  return localized.speechText || localized.cantonese?.hanzi || "";
+}
+
+function toneChoiceLabel(item) {
+  const localized = localizeEntry(item);
+  if (localized.mode === "mandarin") {
+    return localized.mandarin.roman || localized.cantonese.roman || "-";
+  }
+  if (localized.mode === "compare") {
+    return `${localized.cantonese.roman || "-"} / ${localized.mandarin.roman || "-"}`;
+  }
+  return localized.cantonese.roman || localized.display.roman || "-";
+}
+
+function romanToggleIcon() {
+  const mode = normalizeLanguageMode(state?.prefs?.languageMode);
+  if (mode === "mandarin") return "拼";
+  if (mode === "compare") return "粵/拼";
+  return "粵";
+}
+
+function romanToggleLabelState(isOn) {
+  const mode = normalizeLanguageMode(state?.prefs?.languageMode);
+  if (mode === "mandarin") return isOn ? "Pinyin on" : "Pinyin off";
+  if (mode === "compare") return isOn ? "Romanization on" : "Romanization off";
+  return isOn ? "Jyutping on" : "Jyutping off";
+}
+
+function normalizeLocalizedWordEntry(word, idx) {
+  const safe = word && typeof word === "object" ? { ...word } : {};
+  return {
+    ...safe,
+    id: String(safe.id || `w_${idx + 1}`),
+    hanzi: String(safe.hanzi || "").trim(),
+    jyutping: String(safe.jyutping || "").trim(),
+    english: String(safe.english || "").trim(),
+    mandarin_hanzi: readLocalizedField(safe, ["mandarin_hanzi", "mandarinHanzi"]),
+    pinyin: readLocalizedField(safe, ["pinyin", "mandarin_pinyin", "mandarinPinyin"]),
+    mandarin_english: readLocalizedField(safe, ["mandarin_english", "mandarinEnglish"]),
+    intent_id: readLocalizedField(safe, ["intent_id", "intentId"])
+  };
+}
+
+function normalizeLocalizedSentenceEntry(sentence, idx, fallbackIdPrefix) {
+  const safe = sentence && typeof sentence === "object" ? { ...sentence } : {};
+  return {
+    ...safe,
+    id: String(safe.id || `${fallbackIdPrefix}_${idx + 1}`),
+    hanzi: String(safe.hanzi || "").trim(),
+    jyutping: String(safe.jyutping || "").trim(),
+    english: normalizeEnglishSentence(safe.english || ""),
+    mandarin_hanzi: readLocalizedField(safe, ["mandarin_hanzi", "mandarinHanzi"]),
+    pinyin: readLocalizedField(safe, ["pinyin", "mandarin_pinyin", "mandarinPinyin"]),
+    mandarin_english: readLocalizedField(safe, ["mandarin_english", "mandarinEnglish"]),
+    intent_id: readLocalizedField(safe, ["intent_id", "intentId"])
+  };
+}
+
 function isMissingMeaning(english) {
   const value = String(english || "").trim();
   return !value || /^\[.*\]$/.test(value);
@@ -3346,6 +3638,7 @@ function syncControlValues() {
   if (els.questionTheme) els.questionTheme.value = state.prefs.questionTheme || "mixed";
   if (els.toneExerciseMode) els.toneExerciseMode.value = state.prefs.toneExerciseMode || "word";
   if (els.themeStyle) els.themeStyle.value = state.prefs.uiTheme || "classic";
+  if (els.languageMode) els.languageMode.value = normalizeLanguageMode(state.prefs.languageMode);
   els.audioRate.value = String(state.prefs.voiceRate || 0.9);
   els.audioRateValue.textContent = `${Number(state.prefs.voiceRate || 0.9).toFixed(2)}x`;
   if (els.audioNoiseOn) els.audioNoiseOn.value = state.prefs.audioNoiseOn ? "on" : "off";
@@ -3403,10 +3696,14 @@ function applyVisibilityPrefs() {
   const showJp = !!state.prefs.showJyutping;
   const showEn = !!state.prefs.showEnglish;
   const showLens = !!state.prefs.showGrammarLens;
+  const languageMode = normalizeLanguageMode(state.prefs.languageMode);
 
   els.wordJyutping.classList.toggle("hidden", !showJp);
   els.patternJyutping.classList.toggle("hidden", !showJp);
-  if (els.questionJyutping) els.questionJyutping.classList.add("hidden");
+  if (els.questionJyutping) {
+    const hideQuestionRomanLine = languageMode !== "compare" || !showJp;
+    els.questionJyutping.classList.toggle("hidden", hideQuestionRomanLine);
+  }
 
   els.wordEnglish.classList.toggle("hidden", !showEn);
   if (els.wordLiteral) {
@@ -3418,8 +3715,8 @@ function applyVisibilityPrefs() {
   if (els.questionEnglish) els.questionEnglish.classList.toggle("hidden", !showEn);
   if (els.questionLiteral) els.questionLiteral.classList.toggle("hidden", !showEn);
 
-  setMiniToggle(els.toggleWordJyutping, showJp, "粵", "Jyutping on", "Jyutping off");
-  setMiniToggle(els.toggleQuestionJyutping, showJp, "粵", "Jyutping on", "Jyutping off");
+  setMiniToggle(els.toggleWordJyutping, showJp, romanToggleIcon(), romanToggleLabelState(true), romanToggleLabelState(false));
+  setMiniToggle(els.toggleQuestionJyutping, showJp, romanToggleIcon(), romanToggleLabelState(true), romanToggleLabelState(false));
   setMiniToggle(els.toggleWordEnglish, showEn, "EN", "English on", "English off");
   setMiniToggle(els.toggleQuestionEnglish, showEn, "EN", "English on", "English off");
   renderPatternActionButtons(showJp, showEn, showLens);
@@ -3432,14 +3729,18 @@ function applyQuizVisibility() {
   const showJp = !!state.quizDisplay.jyutping;
   const showEn = !!state.quizDisplay.english;
   const showLens = !!state.quizDisplay.lens;
+  const languageMode = normalizeLanguageMode(state.prefs.languageMode);
 
   if (els.quizHanzi) els.quizHanzi.classList.toggle("hidden", !showHanzi);
-  if (els.quizJyutping) els.quizJyutping.classList.add("hidden");
+  if (els.quizJyutping) {
+    const hideQuizRomanLine = languageMode !== "compare" || !showJp;
+    els.quizJyutping.classList.toggle("hidden", hideQuizRomanLine);
+  }
   if (els.quizEnglish) els.quizEnglish.classList.toggle("hidden", !showEn);
   if (els.quizLiteral) els.quizLiteral.classList.toggle("hidden", !showEn);
   if (els.quizGrammarNotes) els.quizGrammarNotes.classList.toggle("hidden", !showLens);
   setMiniToggle(els.toggleQuizGrammarLens, showLens, "◎", "Lens on", "Lens off");
-  setMiniToggle(els.toggleQuizJyutping, showJp, "粵", "Jyutping on", "Jyutping off");
+  setMiniToggle(els.toggleQuizJyutping, showJp, romanToggleIcon(), romanToggleLabelState(true), romanToggleLabelState(false));
   setMiniToggle(els.toggleQuizEnglish, showEn, "EN", "English on", "English off");
   setMiniToggle(byId("showQuizText"), showHanzi, "中", "Chinese on", "Chinese off");
 }
@@ -3453,11 +3754,14 @@ function renderPatternActionButtons(showJp, showEn, showLens) {
     els.patternNextText.textContent = "Next";
   }
   setMiniToggle(els.toggleGrammarLens, showLens, "◎", "Lens on", "Lens off");
-  setMiniToggle(els.togglePatternJyutping, showJp, "粵", "Jyutping on", "Jyutping off");
+  setMiniToggle(els.togglePatternJyutping, showJp, romanToggleIcon(), romanToggleLabelState(true), romanToggleLabelState(false));
   setMiniToggle(els.togglePatternEnglish, showEn, "EN", "English on", "English off");
 
   if (els.patternLensText) els.patternLensText.textContent = "Lens";
-  if (els.patternJpText) els.patternJpText.textContent = "Jyutping";
+  if (els.patternJpText) {
+    const mode = normalizeLanguageMode(state.prefs.languageMode);
+    els.patternJpText.textContent = mode === "mandarin" ? "Pinyin" : (mode === "compare" ? "Roman" : "Jyutping");
+  }
   if (els.patternEnText) els.patternEnText.textContent = "English";
 }
 
@@ -3476,7 +3780,7 @@ function applyToneVisibility() {
   const showToneEn = !!state.prefs.toneShowEnglish;
   els.toneJyutping.classList.add("hidden");
   els.toneEnglish.classList.toggle("hidden", !showToneEn);
-  setMiniToggle(els.toggleToneJyutping, showToneJp, "粵", "Jyutping on", "Jyutping off");
+  setMiniToggle(els.toggleToneJyutping, showToneJp, romanToggleIcon(), romanToggleLabelState(true), romanToggleLabelState(false));
   setMiniToggle(els.toggleToneEnglish, showToneEn, "EN", "English on", "English off");
 }
 
@@ -3735,6 +4039,8 @@ function buildWordExample(word) {
 
 function buildWordExampleEnglish(word, exampleHanzi) {
   if (!word) return "";
+  const localized = localizeEntry(word);
+  const wordMeaning = localized.answerEnglish || word.english || "this word";
   const exact = ALL_SENTENCES.find((s) => normalizeHanzi(s.hanzi) === normalizeHanzi(exampleHanzi));
   if (exact?.english) return exact.english;
   const key = normalizeHanzi(word.hanzi);
@@ -3744,11 +4050,11 @@ function buildWordExampleEnglish(word, exampleHanzi) {
     const fromExampleSentence = ALL_SENTENCES.find((s) => normalizeHanzi(s.hanzi) === normalizeHanzi(word.example));
     if (fromExampleSentence?.english) return fromExampleSentence.english;
   }
-  if (word.category === "time") return `At ${word.english || "this time"}, I study Cantonese.`;
-  if (word.category === "verb") return `I ${word.english || "do this action"}.`;
-  if (word.category === "adjective") return `This is very ${word.english || "good"}.`;
-  if (word.category === "place") return `I am at ${word.english || "this place"}.`;
-  return `I can see ${word.english || "this word"} at home.`;
+  if (word.category === "time") return `At ${wordMeaning || "this time"}, I study Cantonese.`;
+  if (word.category === "verb") return `I ${wordMeaning || "do this action"}.`;
+  if (word.category === "adjective") return `This is very ${wordMeaning || "good"}.`;
+  if (word.category === "place") return `I am at ${wordMeaning || "this place"}.`;
+  return `I can see ${wordMeaning || "this word"} at home.`;
 }
 
 function wordLevel(word) {
