@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.2.34</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.2.35</span></p>
         <h1>Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -344,7 +344,7 @@
             <button id="toggleQuizJyutping" class="pattern-mini-btn pattern-toggle-btn is-off" aria-pressed="false" aria-label="Toggle Jyutping">粵</button>
             <p class="pattern-control-text">Jyutping</p>
           </div>
-          <div class="pattern-control-col">
+          <div class="pattern-control-col hidden" id="quizEnglishControl">
             <button id="toggleQuizEnglish" class="pattern-mini-btn pattern-toggle-btn is-off" aria-pressed="false" aria-label="Toggle English">EN</button>
             <p class="pattern-control-text">English</p>
           </div>
@@ -414,8 +414,8 @@
             <button id="playToneRandom" class="play-icon-btn tone-play-btn" aria-label="Play random tone" data-tone-label="?">▶</button>
             <p class="pattern-control-text">Random</p>
           </div>
-          <div class="pattern-control-col">
-            <button id="toggleToneJyutping" class="pattern-mini-btn pattern-toggle-btn is-off" aria-pressed="false" aria-label="Toggle Jyutping">粵</button>
+          <div class="pattern-control-col hidden" id="toneJyutpingControl">
+            <button id="toggleToneJyutping" class="pattern-mini-btn pattern-toggle-btn is-off" aria-pressed="false" aria-label="Toggle Jyutping" disabled>粵</button>
             <p class="pattern-control-text">Jyutping</p>
           </div>
           <div class="pattern-control-col">

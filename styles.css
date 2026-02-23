@@ -1252,6 +1252,12 @@ button:hover,
   padding: 12px 14px;
 }
 
+#panel-tones .choice {
+  font-size: 1.2rem;
+  line-height: 1.45;
+  padding: 13px 15px;
+}
+
 .choice.is-correct {
   border-color: #0a7d6f;
   background: #e9fbf5;
