@@ -3449,7 +3449,7 @@ function closeSettingsModal() {
     els.settingsModal.classList.add("hidden");
     els.settingsModal.classList.remove("is-closing");
     settingsModalTimer = null;
-  }, 190);
+  }, 270);
 }
 
 function ordinalSuffix(n) {
