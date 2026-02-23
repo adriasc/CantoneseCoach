@@ -3319,6 +3319,7 @@ function refreshVoiceOptions() {
 function applyVisibilityPrefs() {
   const showJp = !!state.prefs.showJyutping;
   const showEn = !!state.prefs.showEnglish;
+  const showLens = !!state.prefs.showGrammarLens;
 
   els.wordJyutping.classList.toggle("hidden", !showJp);
   els.patternJyutping.classList.toggle("hidden", !showJp);
@@ -3338,21 +3339,37 @@ function applyVisibilityPrefs() {
   if (els.questionLiteral) els.questionLiteral.classList.toggle("hidden", !showEn);
 
   els.toggleWordJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
-  els.togglePatternJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
   els.toggleQuizJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
   if (els.toggleQuestionJyutping) els.toggleQuestionJyutping.textContent = showJp ? "Hide Jyutping" : "Show Jyutping";
   els.toggleWordEnglish.textContent = showEn ? "Hide English" : "Show English";
-  els.togglePatternEnglish.textContent = showEn ? "Hide English" : "Show English";
   els.toggleQuizEnglish.textContent = showEn ? "Hide English" : "Show English";
   if (els.toggleQuestionEnglish) els.toggleQuestionEnglish.textContent = showEn ? "Hide English" : "Show English";
-  els.toggleGrammarLens.textContent = state.prefs.showGrammarLens ? "Grammar Lens: On" : "Grammar Lens: Off";
+  renderPatternActionButtons(showJp, showEn, showLens);
   if (els.toggleQuizGrammarLens) {
-    els.toggleQuizGrammarLens.textContent = state.prefs.showGrammarLens ? "Grammar Lens: On" : "Grammar Lens: Off";
+    els.toggleQuizGrammarLens.textContent = showLens ? "Grammar Lens: On" : "Grammar Lens: Off";
   }
   if (els.toggleQuestionGrammarLens) {
-    els.toggleQuestionGrammarLens.textContent = state.prefs.showGrammarLens ? "Grammar Lens: On" : "Grammar Lens: Off";
+    els.toggleQuestionGrammarLens.textContent = showLens ? "Grammar Lens: On" : "Grammar Lens: Off";
   }
   applyToneVisibility();
+}
+
+function renderPatternActionButtons(showJp, showEn, showLens) {
+  if (els.newPattern) {
+    els.newPattern.classList.add("pattern-icon-btn");
+    els.newPattern.innerHTML = `<span class="pattern-btn-icon" aria-hidden="true">⏭</span><span>Next</span>`;
+  }
+  const setToggle = (btn, icon, label, isOn) => {
+    if (!btn) return;
+    btn.classList.add("pattern-icon-btn", "pattern-toggle-btn");
+    btn.classList.toggle("is-on", !!isOn);
+    btn.classList.toggle("is-off", !isOn);
+    btn.setAttribute("aria-pressed", isOn ? "true" : "false");
+    btn.innerHTML = `<span class="pattern-btn-icon" aria-hidden="true">${icon}</span><span>${label} ${isOn ? "On" : "Off"}</span>`;
+  };
+  setToggle(els.toggleGrammarLens, "🧩", "Lens", showLens);
+  setToggle(els.togglePatternJyutping, "🗣", "Jyutping", showJp);
+  setToggle(els.togglePatternEnglish, "🌐", "English", showEn);
 }
 
 function toggleGrammarLensState() {

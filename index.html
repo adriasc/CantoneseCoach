@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.2.20</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.2.21</span></p>
         <h1>Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -291,11 +291,11 @@
         </div>
         <div class="actions">
           <button id="playPatternAudio" class="play-icon-btn" aria-label="Play pattern sentence">▶</button>
-          <button id="newPattern">Next pattern</button>
-          <button id="toggleGrammarLens">Grammar Lens: Off</button>
+          <button id="newPattern" class="pattern-icon-btn"><span class="pattern-btn-icon" aria-hidden="true">⏭</span><span>Next</span></button>
+          <button id="toggleGrammarLens" class="pattern-icon-btn pattern-toggle-btn is-off" aria-pressed="false"><span class="pattern-btn-icon" aria-hidden="true">🧩</span><span>Lens Off</span></button>
           <div class="inline-pair">
-            <button id="togglePatternJyutping">Hide Jyutping</button>
-            <button id="togglePatternEnglish">Hide English</button>
+            <button id="togglePatternJyutping" class="pattern-icon-btn pattern-toggle-btn is-off" aria-pressed="false"><span class="pattern-btn-icon" aria-hidden="true">🗣</span><span>Jyutping Off</span></button>
+            <button id="togglePatternEnglish" class="pattern-icon-btn pattern-toggle-btn is-off" aria-pressed="false"><span class="pattern-btn-icon" aria-hidden="true">🌐</span><span>English Off</span></button>
           </div>
         </div>
       </div>

@@ -530,6 +530,39 @@ button:hover,
   background: #365173;
 }
 
+#panel-patterns .pattern-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 10px 13px;
+  font-weight: 700;
+}
+
+#panel-patterns .pattern-btn-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+#panel-patterns #newPattern.pattern-icon-btn {
+  background: var(--accent);
+  color: #fff;
+}
+
+#panel-patterns .pattern-toggle-btn.is-on {
+  background: #1f9d63;
+  color: #fff;
+}
+
+#panel-patterns .pattern-toggle-btn.is-off {
+  background: #e7edf4;
+  color: #2f435a;
+}
+
+#panel-patterns .pattern-toggle-btn.is-off:hover {
+  background: #dde6f0;
+}
+
 #playToneA,
 #playToneB,
 #playToneRandom {
