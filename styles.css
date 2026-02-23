@@ -268,8 +268,8 @@ h1 {
 }
 
 .streak {
-  background: var(--soft);
-  border: 2px solid var(--accent-2);
+  background: color-mix(in srgb, var(--soft) 82%, transparent);
+  border: 1px solid rgba(53, 95, 125, 0.2);
   border-radius: 999px;
   padding: 4px 8px;
   font-weight: 600;
@@ -286,8 +286,8 @@ h1 {
 }
 
 .tab {
-  border: 0;
-  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(116, 141, 171, 0.28);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(237, 244, 252, 0.86) 100%);
   border-radius: 12px;
   padding: 10px 8px;
   cursor: pointer;
@@ -295,10 +295,13 @@ h1 {
   font-size: 1.03rem;
   line-height: 1.15;
   color: var(--ink);
+  box-shadow: none;
+  transition: background 140ms ease, border-color 140ms ease;
 }
 
 .tab.is-active {
-  background: var(--ink);
+  background: linear-gradient(160deg, #ff8f63 0%, #ff646f 48%, #ff4f85 100%);
+  border-color: rgba(233, 108, 111, 0.62);
   color: #fff;
 }
 
@@ -418,8 +421,8 @@ body.tabs-depth-v1 .fun-tab {
 .gear-lines::before,
 .gear-lines::after {
   display: block;
-  width: 18px;
-  height: 2.2px;
+  width: 20px;
+  height: 2.1px;
   border-radius: 999px;
   background: #5d6d7e;
   content: "";
@@ -432,13 +435,13 @@ body.tabs-depth-v1 .fun-tab {
 .gear-lines::before {
   position: absolute;
   left: 0;
-  top: -6px;
+  top: -6.5px;
 }
 
 .gear-lines::after {
   position: absolute;
   left: 0;
-  top: 6px;
+  top: 6.5px;
 }
 
 .inactive-control {
@@ -546,6 +549,11 @@ body.tabs-depth-v1 .fun-tab {
 }
 
 #panel-words #wordHanzi {
+  text-align: center;
+}
+
+#panel-words #wordJyutping,
+#panel-words #wordEnglish {
   text-align: center;
 }
 
