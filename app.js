@@ -3357,7 +3357,7 @@ function applyVisibilityPrefs() {
 function renderPatternActionButtons(showJp, showEn, showLens) {
   if (els.newPattern) {
     els.newPattern.classList.add("pattern-icon-btn");
-    els.newPattern.textContent = "Next pattern";
+    els.newPattern.textContent = "NEXT";
   }
   const setToggle = (btn, label, isOn) => {
     if (!btn) return;
