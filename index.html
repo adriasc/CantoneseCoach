@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.3.5</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.0</span></p>
         <h1>Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -34,6 +34,7 @@
       <button class="tab" data-tab="listening">Listen &amp; Choose</button>
       <button class="tab" data-tab="questions">Ask &amp; Answer</button>
       <button class="tab" data-tab="tones">Tone Drill</button>
+      <button class="tab" data-tab="exercises">Exercises</button>
       <button class="tab" data-tab="settings">Content</button>
       <button class="tab fun-tab" id="openFunLoop" type="button">Fun Loop</button>
     </nav>
@@ -453,6 +454,38 @@
         <div class="choices" id="toneChoices"></div>
         <p class="feedback" id="toneFeedback"></p>
         <p class="example" id="toneScore">Tone score: 0 / 0</p>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-exercises">
+      <div class="card">
+        <h2>Exercises</h2>
+        <p>Read the English line, then tap the Hanzi blocks to build the correct sentence.</p>
+        <p class="formula" id="exercisePrompt"></p>
+        <div class="result-box">
+          <p class="hanzi" id="exerciseBuilt"></p>
+          <div class="exercise-selected" id="exerciseSelected"></div>
+        </div>
+        <div class="exercise-bank" id="exerciseTokenBank"></div>
+        <div class="actions pattern-actions panel-actions exercise-actions">
+          <div class="pattern-control-col">
+            <button id="clearExercise" class="pattern-mini-btn pattern-toggle-btn is-off" aria-label="Clear current exercise">↺</button>
+            <p class="pattern-control-text">Clear</p>
+          </div>
+          <div class="pattern-control-col">
+            <button id="checkExercise" class="pattern-mini-btn pattern-toggle-btn is-on" aria-label="Check answer">✓</button>
+            <p class="pattern-control-text">Check</p>
+          </div>
+          <div class="pattern-control-col">
+            <button id="playExerciseAudio" class="play-icon-btn pattern-play-main" aria-label="Play exercise sentence">▶</button>
+            <p class="pattern-control-text">Play</p>
+          </div>
+          <div class="pattern-control-col">
+            <button id="nextExercise" class="pattern-next-btn" aria-label="Next exercise">↗</button>
+            <p class="pattern-control-text">Next</p>
+          </div>
+        </div>
+        <p class="feedback" id="exerciseFeedback"></p>
       </div>
     </section>
 

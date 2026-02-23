@@ -645,7 +645,8 @@ button:hover,
 #panel-patterns .pattern-actions,
 #panel-listening .panel-actions,
 #panel-questions .panel-actions,
-#panel-tones .panel-actions {
+#panel-tones .panel-actions,
+#panel-exercises .panel-actions {
   display: flex;
   flex-wrap: nowrap;
   justify-content: center;
@@ -660,7 +661,8 @@ button:hover,
 #panel-patterns .pattern-control-col,
 #panel-listening .pattern-control-col,
 #panel-questions .pattern-control-col,
-#panel-tones .pattern-control-col {
+#panel-tones .pattern-control-col,
+#panel-exercises .pattern-control-col {
   display: grid;
   grid-template-rows: 78px 16px;
   align-items: center;
@@ -673,7 +675,8 @@ button:hover,
 #panel-patterns .pattern-control-text,
 #panel-listening .pattern-control-text,
 #panel-questions .pattern-control-text,
-#panel-tones .pattern-control-text {
+#panel-tones .pattern-control-text,
+#panel-exercises .pattern-control-text {
   margin: 0;
   font-size: 0.84rem;
   font-weight: 600;
@@ -686,7 +689,8 @@ button:hover,
 #panel-patterns .pattern-mini-btn,
 #panel-listening .pattern-mini-btn,
 #panel-questions .pattern-mini-btn,
-#panel-tones .pattern-mini-btn {
+#panel-tones .pattern-mini-btn,
+#panel-exercises .pattern-mini-btn {
   width: 46px;
   min-width: 46px;
   height: 46px;
@@ -759,7 +763,8 @@ button:hover,
 #panel-patterns .pattern-mini-btn.is-off,
 #panel-listening .pattern-mini-btn.is-off,
 #panel-questions .pattern-mini-btn.is-off,
-#panel-tones .pattern-mini-btn.is-off {
+#panel-tones .pattern-mini-btn.is-off,
+#panel-exercises .pattern-mini-btn.is-off {
   color: #4f6075;
   background: linear-gradient(180deg, #f8f9fb 0%, #e9edf3 100%);
   border-color: #d2dbe7;
@@ -769,7 +774,8 @@ button:hover,
 #panel-patterns .pattern-next-btn,
 #panel-listening .pattern-next-btn,
 #panel-questions .pattern-next-btn,
-#panel-tones .pattern-next-btn {
+#panel-tones .pattern-next-btn,
+#panel-exercises .pattern-next-btn {
   width: 46px;
   min-width: 46px;
   height: 46px;
@@ -791,7 +797,8 @@ button:hover,
 #panel-words #playWordAudio.pattern-play-main,
 #panel-patterns #playPatternAudio.pattern-play-main,
 #panel-listening #playQuizAudio.pattern-play-main,
-#panel-questions #playQuestionAudio.pattern-play-main {
+#panel-questions #playQuestionAudio.pattern-play-main,
+#panel-exercises #playExerciseAudio.pattern-play-main {
   width: 78px;
   min-width: 78px;
   height: 78px;
@@ -813,6 +820,49 @@ button:hover,
   background: linear-gradient(160deg, #ff8f63 0%, #ff646f 48%, #ff4f85 100%);
   border: 3px solid #fff8f4;
   box-shadow: 0 6px 16px rgba(225, 80, 95, 0.31);
+}
+
+#panel-exercises #checkExercise.pattern-mini-btn.is-on {
+  color: #fff;
+  background: linear-gradient(160deg, #19b67b 0%, #0fa97b 50%, #168cb2 100%);
+  border-color: #1f9e88;
+}
+
+#panel-exercises #clearExercise.pattern-mini-btn {
+  font-size: 1.08rem;
+}
+
+.exercise-bank,
+.exercise-selected {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#exerciseBuilt {
+  text-align: center;
+}
+
+.exercise-chip {
+  border: 1px solid #c8d6ea;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #2a3f58;
+  padding: 8px 11px;
+  font-size: 1.06rem;
+  font-weight: 650;
+  line-height: 1.15;
+  box-shadow: 0 2px 6px rgba(34, 54, 80, 0.09);
+}
+
+.exercise-chip:hover {
+  transform: translateY(-1px);
+}
+
+.exercise-chip.selected {
+  background: #eaf6ff;
+  border-color: #8fb7dd;
 }
 
 #panel-words #markKnown.pattern-mini-btn {

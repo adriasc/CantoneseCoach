@@ -1564,7 +1564,7 @@ const state = {
     audioNoiseType: "white"
   }),
   availableVoices: [],
-  rotation: { words: [], patternSentences: [], quizSentences: [], questionSentences: [], tonePairs: [] },
+  rotation: { words: [], patternSentences: [], quizSentences: [], questionSentences: [], tonePairs: [], exerciseSentences: [] },
   currentWord: null,
   currentSentence: null,
   currentPatternAnalysis: null,
@@ -1575,6 +1575,7 @@ const state = {
   currentQuizAnalysis: null,
   currentQuestionAnalysis: null,
   currentTonePair: null,
+  currentExercise: null,
   currentToneKind: "word",
   currentToneSide: null,
   toneLabelMap: { a: "a", b: "b" },
@@ -1675,6 +1676,11 @@ const els = {
   toneChoices: byId("toneChoices"),
   toneFeedback: byId("toneFeedback"),
   toneScore: byId("toneScore"),
+  exercisePrompt: byId("exercisePrompt"),
+  exerciseBuilt: byId("exerciseBuilt"),
+  exerciseSelected: byId("exerciseSelected"),
+  exerciseTokenBank: byId("exerciseTokenBank"),
+  exerciseFeedback: byId("exerciseFeedback"),
   openFunLoop: byId("openFunLoop"),
   closeFunLoop: byId("closeFunLoop"),
   funModal: byId("funModal"),
@@ -1732,6 +1738,7 @@ rollPattern();
 rollQuiz();
 rollQuestion();
 rollTonePair();
+rollExercise();
 refreshStats();
 renderKnownList();
 refreshGameUI();
@@ -1958,6 +1965,16 @@ function bindUI() {
   if (byId("playToneA")) byId("playToneA").addEventListener("click", () => { incrementMission("listens", 1); playToneClip("a"); });
   if (byId("playToneB")) byId("playToneB").addEventListener("click", () => { incrementMission("listens", 1); playToneClip("b"); });
   if (byId("playToneRandom")) byId("playToneRandom").addEventListener("click", () => { incrementMission("listens", 1); playToneClip("random"); });
+  if (byId("nextExercise")) byId("nextExercise").addEventListener("click", rollExercise);
+  if (byId("playExerciseAudio")) {
+    byId("playExerciseAudio").addEventListener("click", () => {
+      if (!state.currentExercise?.sentence) return;
+      incrementMission("listens", 1);
+      speak(localizedSpeechText(state.currentExercise.sentence));
+    });
+  }
+  if (byId("clearExercise")) byId("clearExercise").addEventListener("click", clearExerciseSelection);
+  if (byId("checkExercise")) byId("checkExercise").addEventListener("click", checkExerciseAnswer);
   if (els.toggleFixMode) {
     els.toggleFixMode.addEventListener("click", () => {
       state.game.fixMode = !state.game.fixMode;
@@ -2012,6 +2029,7 @@ function bindUI() {
       renderQuizGrammar();
       renderQuestionSentence();
       renderTonePair();
+      rollExercise();
       renderKnownList();
     });
   }
@@ -2093,6 +2111,7 @@ function bindUI() {
     rollQuiz();
     rollQuestion();
     rollTonePair();
+    rollExercise();
     refreshStats();
     renderKnownList();
   });
@@ -2144,6 +2163,7 @@ function applyGlobalControls() {
     rollQuiz();
     rollTonePair();
     rollQuestion();
+    rollExercise();
   } else if (toneModeChanged) {
     state.rotation.tonePairs = [];
     rollTonePair();
@@ -2158,6 +2178,7 @@ function applyGlobalControls() {
     renderQuizGrammar();
     renderQuestionSentence();
     renderTonePair();
+    rollExercise();
     renderKnownList();
   }
 }
@@ -2168,6 +2189,10 @@ function switchTab(tabName) {
   setControlsMode(tabName);
   if (tabName === "patterns" && state.currentSentence) {
     renderPatternSentence();
+  }
+  if (tabName === "exercises") {
+    if (state.currentExercise) renderExercise();
+    else rollExercise();
   }
 }
 
@@ -2596,6 +2621,129 @@ function rollQuestion() {
   const modeLabel = (state.prefs.questionLevel || "basic") === "advanced" ? "Advanced Questions" : "Basic Questions";
   els.questionFormula.textContent = `${modeLabel} · ${state.currentQuestion.tense} · ${state.currentQuestion.theme}`;
   renderQuestionSentence();
+}
+
+function getExerciseSentencePool() {
+  const pool = getFilteredSentences();
+  return pool.filter((sentence) => {
+    const localized = localizeEntry(sentence);
+    const tokens = tokenizeSentence(localized.analysis.hanzi).filter((token) => !isPunctuation(token));
+    return tokens.length >= 3;
+  });
+}
+
+function rollExercise() {
+  if (!els.exercisePrompt || !els.exerciseTokenBank || !els.exerciseBuilt) return;
+  const pool = getExerciseSentencePool();
+  if (!pool.length) {
+    state.currentExercise = null;
+    renderExercise();
+    return;
+  }
+  const sentence = takeFromRotation("exerciseSentences", pool, (s) => s.id);
+  const localized = localizeEntry(sentence);
+  const analysis = analyzeSentence({ hanzi: localized.analysis.hanzi, jyutping: localized.analysis.roman });
+  const targetTokens = (analysis.tokens || []).filter((token) => !isPunctuation(token));
+  const tiles = targetTokens.map((token, idx) => ({
+    uid: `${sentence.id || "ex"}-${idx}-${Math.random().toString(36).slice(2, 8)}`,
+    token
+  }));
+  state.currentExercise = {
+    sentence,
+    localized,
+    targetTokens,
+    selected: [],
+    available: shuffle(tiles.slice()),
+    feedback: "",
+    feedbackClass: "feedback",
+    solved: false
+  };
+  renderExercise();
+}
+
+function renderExercise() {
+  if (!els.exercisePrompt || !els.exerciseBuilt || !els.exerciseTokenBank || !els.exerciseSelected || !els.exerciseFeedback) return;
+  if (!state.currentExercise) {
+    els.exercisePrompt.textContent = "No sentence available for this filter.";
+    els.exerciseBuilt.textContent = "-";
+    els.exerciseSelected.innerHTML = "";
+    els.exerciseTokenBank.innerHTML = "";
+    els.exerciseFeedback.textContent = "";
+    els.exerciseFeedback.className = "feedback";
+    return;
+  }
+
+  const ex = state.currentExercise;
+  const promptText = ex.localized?.answerEnglish || ex.localized?.display?.english || ex.sentence?.english || "";
+  els.exercisePrompt.textContent = `Build: ${promptText}`;
+  els.exerciseBuilt.textContent = ex.selected.map((tile) => tile.token).join("") || "…";
+
+  els.exerciseSelected.innerHTML = "";
+  ex.selected.forEach((tile, idx) => {
+    const btn = document.createElement("button");
+    btn.className = "exercise-chip selected";
+    btn.textContent = tile.token;
+    btn.addEventListener("click", () => {
+      ex.selected.splice(idx, 1);
+      ex.available.push(tile);
+      ex.feedback = "";
+      ex.feedbackClass = "feedback";
+      renderExercise();
+    });
+    els.exerciseSelected.appendChild(btn);
+  });
+
+  els.exerciseTokenBank.innerHTML = "";
+  ex.available.forEach((tile) => {
+    const btn = document.createElement("button");
+    btn.className = "exercise-chip";
+    btn.textContent = tile.token;
+    btn.addEventListener("click", () => {
+      const pos = ex.available.findIndex((entry) => entry.uid === tile.uid);
+      if (pos < 0) return;
+      const [picked] = ex.available.splice(pos, 1);
+      ex.selected.push(picked);
+      ex.feedback = "";
+      ex.feedbackClass = "feedback";
+      renderExercise();
+    });
+    els.exerciseTokenBank.appendChild(btn);
+  });
+
+  els.exerciseFeedback.textContent = ex.feedback || "";
+  els.exerciseFeedback.className = ex.feedbackClass || "feedback";
+}
+
+function clearExerciseSelection() {
+  if (!state.currentExercise) return;
+  const ex = state.currentExercise;
+  ex.available = shuffle(ex.available.concat(ex.selected));
+  ex.selected = [];
+  ex.feedback = "";
+  ex.feedbackClass = "feedback";
+  renderExercise();
+}
+
+function checkExerciseAnswer() {
+  if (!state.currentExercise) return;
+  const ex = state.currentExercise;
+  const selectedTokens = ex.selected.map((tile) => tile.token);
+  const targetTokens = ex.targetTokens || [];
+  const sameLength = selectedTokens.length === targetTokens.length;
+  const sameOrder = sameLength && selectedTokens.every((token, idx) => token === targetTokens[idx]);
+  if (sameOrder) {
+    ex.feedback = "Correct";
+    ex.feedbackClass = "feedback ok";
+    if (!ex.solved) {
+      ex.solved = true;
+      markReviewed();
+      incrementMission("patterns", 1);
+    }
+  } else {
+    ex.feedback = `Not yet. Correct: ${targetTokens.join("")}`;
+    ex.feedbackClass = "feedback bad";
+  }
+  renderExercise();
 }
 
 function rollTonePair() {
@@ -3411,6 +3559,7 @@ function importDataFile(event) {
       rollPattern();
       rollQuiz();
       rollQuestion();
+      rollExercise();
       renderKnownList();
     } catch (err) {
       els.contentMessage.textContent = "Import failed. Please use valid JSON format.";
@@ -3832,7 +3981,8 @@ function initSoftLayoutTransitions() {
     document.querySelector("#panel-words .card"),
     document.querySelector("#panel-patterns .card"),
     document.querySelector("#panel-listening .card"),
-    document.querySelector("#panel-questions .card")
+    document.querySelector("#panel-questions .card"),
+    document.querySelector("#panel-exercises .card")
   ].filter(Boolean);
   if (!targets.length) return;
 
@@ -3900,7 +4050,7 @@ function togglePref(prefKey) {
 }
 
 function resetRotations() {
-  state.rotation = { words: [], patternSentences: [], quizSentences: [], questionSentences: [], tonePairs: [] };
+  state.rotation = { words: [], patternSentences: [], quizSentences: [], questionSentences: [], tonePairs: [], exerciseSentences: [] };
 }
 
 function takeFromRotation(key, pool, getId) {
