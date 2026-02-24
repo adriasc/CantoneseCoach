@@ -361,8 +361,20 @@ h1 {
 }
 
 .bottom-nav-icon {
-  font-size: 1.06rem;
   line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bottom-nav-icon svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .bottom-nav-label {
@@ -380,28 +392,16 @@ body.stories-mode .tabs {
   gap: 10px;
 }
 
-.stories-nav {
+.stories-top-tabs {
+  margin-top: 12px;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
+  display: none;
 }
 
 .stories-nav-btn {
-  border: 1px solid rgba(116, 141, 171, 0.2);
-  background: rgba(255, 255, 255, 0.72);
-  border-radius: 11px;
-  padding: 10px 8px;
-  cursor: pointer;
-  font-weight: 700;
-  font-size: 0.92rem;
-  color: var(--ink);
-  box-shadow: 0 3px 8px rgba(37, 62, 93, 0.12);
-}
-
-.stories-nav-btn.is-active {
-  background: linear-gradient(160deg, #ff8f63 0%, #ff646f 48%, #ff4f85 100%);
-  border-color: rgba(233, 108, 111, 0.62);
-  color: #fff;
+  font-size: 0.95rem;
 }
 
 .stories-subpanel {
@@ -415,6 +415,10 @@ body.stories-mode .tabs {
 
 .stories-subpanel.is-active {
   display: block;
+}
+
+body.stories-mode .stories-top-tabs {
+  display: grid;
 }
 
 .side-panel {
@@ -1810,7 +1814,7 @@ input[type="file"] {
     font-size: 0.68rem;
   }
 
-  .stories-nav {
+  .stories-top-tabs {
     grid-template-columns: 1fr;
   }
 }
