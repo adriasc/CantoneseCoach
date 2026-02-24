@@ -392,6 +392,14 @@ body.stories-mode .tabs {
   gap: 10px;
 }
 
+.stories-card > h2 {
+  margin: 0;
+}
+
+.stories-intro {
+  margin: -2px 0 0;
+}
+
 .stories-top-tabs {
   margin-top: 12px;
   display: grid;
@@ -469,6 +477,40 @@ body.stories-mode .stories-top-tabs {
 .side-stats {
   margin-top: 8px;
   margin-bottom: 12px;
+}
+
+.side-panel-section {
+  background: color-mix(in srgb, #fff 84%, var(--soft));
+  border: 1px solid rgba(114, 144, 178, 0.16);
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.side-panel-section h3 {
+  margin: 0 0 8px;
+  font-size: 0.98rem;
+}
+
+.side-panel-section label {
+  display: block;
+  margin: 0 0 4px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.side-panel-section input[type="text"] {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid #d6e2ef;
+  background: #fff;
+  color: var(--ink);
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  margin-bottom: 8px;
 }
 
 /* Additive top-tab depth skin (keeps original tab styles above intact). */

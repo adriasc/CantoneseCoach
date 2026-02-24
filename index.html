@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.19</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.20</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -502,7 +502,7 @@
     <section class="panel" id="panel-stories">
       <div class="card stories-card">
         <h2>Stories</h2>
-        <p>Story area with a focused sub-menu. We can expand each section with full read-along content.</p>
+        <p class="stories-intro">Story area with a focused sub-menu. We can expand each section with full read-along content.</p>
         <section class="stories-subpanel is-active" id="stories-curiosities">
           <p class="formula">Curiosities</p>
           <p>Cantonese keeps many sentence-final particles (呀, 喇, 嘅) that change tone/feeling more than core meaning.</p>
@@ -621,7 +621,27 @@
         <p id="userPanelKnown">Known words: 0</p>
         <p id="userPanelReviewed">Reviewed today: 0</p>
         <p id="userPanelMode">Language mode: Cantonese</p>
+        <p id="userPanelVersion">App version: v?</p>
       </div>
+      <section class="side-panel-section">
+        <h3>Account</h3>
+        <label for="userIdInput">User ID</label>
+        <input id="userIdInput" type="text" placeholder="your_user_id">
+        <div class="actions">
+          <button id="saveUserId" type="button">Save User ID</button>
+          <button id="changePasswordBtn" type="button">Change Password</button>
+        </div>
+        <p id="userAccountMsg" class="example"></p>
+      </section>
+      <section class="side-panel-section">
+        <h3>Help</h3>
+        <div class="actions">
+          <button id="helpGuideBtn" type="button">Quick Guide</button>
+          <button id="helpFaqBtn" type="button">FAQ</button>
+          <button id="helpContactBtn" type="button">Contact</button>
+        </div>
+        <p id="userHelpMsg" class="example"></p>
+      </section>
       <div class="actions">
         <button id="userPanelGoWords" type="button">Go to Learn</button>
         <button id="openSettingsFromUser" type="button">Audio &amp; Display</button>

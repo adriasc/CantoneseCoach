@@ -6,7 +6,8 @@ const STORAGE_KEYS = {
   streak: "cancoach_streak_v1",
   reviewed: "cancoach_reviewed_v1",
   prefs: "cancoach_prefs_v1",
-  game: "cancoach_game_v1"
+  game: "cancoach_game_v1",
+  profile: "cancoach_profile_v1"
 };
 
 const USER_CORE_WORDS = [
@@ -1596,6 +1597,7 @@ function normalizeGameState(input) {
 const state = {
   content: loadContent(),
   known: new Set(loadJson(STORAGE_KEYS.known, [])),
+  profile: loadJson(STORAGE_KEYS.profile, { userId: "" }),
   reviewed: loadJson(STORAGE_KEYS.reviewed, { date: todayString(), count: 0 }),
   streak: loadJson(STORAGE_KEYS.streak, { lastDate: null, days: 0 }),
   prefs: loadJson(STORAGE_KEYS.prefs, {
@@ -1656,6 +1658,15 @@ const els = {
   userPanelKnown: byId("userPanelKnown"),
   userPanelReviewed: byId("userPanelReviewed"),
   userPanelMode: byId("userPanelMode"),
+  userPanelVersion: byId("userPanelVersion"),
+  userIdInput: byId("userIdInput"),
+  saveUserId: byId("saveUserId"),
+  changePasswordBtn: byId("changePasswordBtn"),
+  userAccountMsg: byId("userAccountMsg"),
+  helpGuideBtn: byId("helpGuideBtn"),
+  helpContactBtn: byId("helpContactBtn"),
+  helpFaqBtn: byId("helpFaqBtn"),
+  userHelpMsg: byId("userHelpMsg"),
   userPanelGoWords: byId("userPanelGoWords"),
   openSettingsFromUser: byId("openSettingsFromUser"),
   storyTabs: [...document.querySelectorAll(".stories-nav-btn")],
@@ -1859,6 +1870,36 @@ function bindUI() {
       closeUserSidePanel();
       syncControlValues();
       openModalAnimated(els.settingsModal);
+    });
+  }
+  if (els.saveUserId && els.userIdInput) {
+    els.saveUserId.addEventListener("click", () => {
+      const nextId = String(els.userIdInput.value || "").trim();
+      state.profile.userId = nextId;
+      saveJson(STORAGE_KEYS.profile, state.profile);
+      if (els.userAccountMsg) {
+        els.userAccountMsg.textContent = nextId ? "User ID saved on this device." : "User ID cleared.";
+      }
+    });
+  }
+  if (els.changePasswordBtn && els.userAccountMsg) {
+    els.changePasswordBtn.addEventListener("click", () => {
+      els.userAccountMsg.textContent = "Password change requires backend login. We can enable this in next phase.";
+    });
+  }
+  if (els.helpGuideBtn && els.userHelpMsg) {
+    els.helpGuideBtn.addEventListener("click", () => {
+      els.userHelpMsg.textContent = "Quick Guide: Learn -> Tones -> Questions -> Stories (10 minutes/day).";
+    });
+  }
+  if (els.helpFaqBtn && els.userHelpMsg) {
+    els.helpFaqBtn.addEventListener("click", () => {
+      els.userHelpMsg.textContent = "FAQ: Audio missing? Refresh app + check iPhone mute/silent switch + press Play once.";
+    });
+  }
+  if (els.helpContactBtn && els.userHelpMsg) {
+    els.helpContactBtn.addEventListener("click", () => {
+      els.userHelpMsg.textContent = "Support contact can be linked to your email or website in the next update.";
     });
   }
   els.storyTabs.forEach((tab) => {
@@ -2425,6 +2466,13 @@ function renderUserPanel() {
   if (els.userPanelKnown) els.userPanelKnown.textContent = `Known words: ${state.known.size}`;
   if (els.userPanelReviewed) els.userPanelReviewed.textContent = `Reviewed today: ${reviewedCount}`;
   if (els.userPanelMode) els.userPanelMode.textContent = `Language mode: ${modeLabel}`;
+  if (els.userPanelVersion) {
+    const appVer = document.querySelector(".version-tag")?.textContent || "v?";
+    els.userPanelVersion.textContent = `App version: ${appVer}`;
+  }
+  if (els.userIdInput && document.activeElement !== els.userIdInput) {
+    els.userIdInput.value = String(state.profile.userId || "");
+  }
 }
 
 function setControlsMode(tabName) {
