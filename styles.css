@@ -551,6 +551,17 @@ body.stories-mode .stories-top-tabs {
   line-height: 1.25;
 }
 
+.side-select {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(179, 111, 84, 0.34);
+  background: rgba(255, 255, 255, 0.82);
+  color: #3b2b28;
+  padding: 8px 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
 .side-inline {
   display: flex;
   align-items: center;
@@ -1409,7 +1420,7 @@ button:hover,
 .modal {
   position: fixed;
   inset: 0;
-  z-index: 20;
+  z-index: 60;
   background: rgba(5, 11, 28, 0.58);
   display: flex;
   align-items: center;
@@ -1455,12 +1466,12 @@ button:hover,
 }
 
 #settingsModal .modal-card {
-  background: linear-gradient(180deg, #f7f8fa 0%, #f0f2f5 100%);
-  border: 1px solid #d3d9e2;
+  background: linear-gradient(170deg, #ffe7d4 0%, #ffdccc 48%, #ffe8c9 100%);
+  border: 1px solid rgba(200, 133, 102, 0.36);
 }
 
 #settingsModal .card-head h2 {
-  color: #2f4258;
+  color: #7c3b1f;
 }
 
 #closeSettings {
@@ -1477,6 +1488,31 @@ button:hover,
 #closeSettings:hover {
   color: #3f4a58;
   transform: scale(1.04);
+}
+
+#settingsModal .slot-grid {
+  gap: 10px;
+}
+
+#settingsModal .slot-grid label {
+  color: #8d563f;
+}
+
+#settingsModal .slot-grid select,
+#settingsModal .slot-grid input[type="range"] {
+  border: 1px solid rgba(179, 111, 84, 0.34);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+#settingsModal .actions {
+  margin-top: 10px;
+}
+
+#settingsModal .play-icon-btn {
+  width: 50px;
+  min-width: 50px;
+  height: 50px;
+  min-height: 50px;
 }
 
 .grammar-modal-card {

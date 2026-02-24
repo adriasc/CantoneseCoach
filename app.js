@@ -1655,6 +1655,7 @@ const els = {
   closeUserPanel: byId("closeUserPanel"),
   closeUserPanelBackdrop: byId("closeUserPanelBackdrop"),
   userPanelVersion: byId("userPanelVersion"),
+  userLanguageMode: byId("userLanguageMode"),
   changePasswordBtn: byId("changePasswordBtn"),
   logOutBtn: byId("logOutBtn"),
   openTermsBtn: byId("openTermsBtn"),
@@ -1867,6 +1868,23 @@ function bindUI() {
       closeUserSidePanel();
       syncControlValues();
       openModalAnimated(els.settingsModal);
+    });
+  }
+  if (els.userLanguageMode) {
+    els.userLanguageMode.addEventListener("change", () => {
+      const nextMode = normalizeLanguageMode(els.userLanguageMode.value);
+      state.prefs.languageMode = nextMode;
+      if (els.languageMode) els.languageMode.value = nextMode;
+      saveJson(STORAGE_KEYS.prefs, state.prefs);
+      applyVisibilityPrefs();
+      renderAppTitle();
+      renderWordCard();
+      renderPatternSentence();
+      renderQuizGrammar();
+      renderQuestionSentence();
+      renderTonePair();
+      renderKnownList();
+      renderStoryOfDay();
     });
   }
   if (els.changePasswordBtn && els.userPanelMsg) {
@@ -2586,6 +2604,9 @@ function renderUserPanel() {
   if (els.userPanelVersion) {
     const appVer = document.querySelector(".version-tag")?.textContent || "v?";
     els.userPanelVersion.textContent = appVer;
+  }
+  if (els.userLanguageMode) {
+    els.userLanguageMode.value = normalizeLanguageMode(state.prefs.languageMode);
   }
 }
 
