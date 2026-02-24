@@ -425,6 +425,53 @@ body.stories-mode .tabs {
   display: block;
 }
 
+.story-day-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.story-day-head .formula {
+  margin: 0;
+}
+
+#playStoryAudio {
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+  min-height: 42px;
+}
+
+.story-lines {
+  display: grid;
+  gap: 10px;
+}
+
+.story-line-block {
+  border: 1px solid rgba(110, 143, 181, 0.16);
+  border-radius: 10px;
+  padding: 9px 10px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.story-hanzi-line {
+  margin: 0 0 4px;
+  line-height: 1.6;
+}
+
+.story-jyutping-line {
+  margin: 0 0 4px;
+}
+
+.story-english-line {
+  margin: 0 0 4px;
+}
+
+.story-literal-line {
+  margin: 0;
+}
+
 body.stories-mode .stories-top-tabs {
   display: grid;
 }

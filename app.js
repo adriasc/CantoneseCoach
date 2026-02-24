@@ -1636,6 +1636,8 @@ const state = {
   currentQuestionAnalysis: null,
   currentTonePair: null,
   currentExercise: null,
+  currentStory: null,
+  currentStoryAnalyses: [],
   currentToneKind: "word",
   currentToneSide: null,
   storyTab: "curiosities",
@@ -1671,6 +1673,11 @@ const els = {
   openSettingsFromUser: byId("openSettingsFromUser"),
   storyTabs: [...document.querySelectorAll(".stories-nav-btn")],
   storyPanels: [...document.querySelectorAll(".stories-subpanel")],
+  storyOfDayLabel: byId("storyOfDayLabel"),
+  storyOfDayMeta: byId("storyOfDayMeta"),
+  storyOfDayLines: byId("storyOfDayLines"),
+  storyTapHint: byId("storyTapHint"),
+  playStoryAudio: byId("playStoryAudio"),
   panels: [...document.querySelectorAll(".panel")],
   wordCategory: byId("wordCategory"),
   wordHanzi: byId("wordHanzi"),
@@ -1812,6 +1819,7 @@ let bossAdvanceTimer = null;
 let layoutResizeObserver = null;
 const softResizeHeights = new WeakMap();
 const modalCloseTimers = new WeakMap();
+let storyBankCache = null;
 
 function initializeApp() {
   configureBottomMenu();
@@ -1830,6 +1838,7 @@ function initializeApp() {
   rollQuestion();
   rollTonePair();
   rollExercise();
+  renderStoryOfDay();
   refreshStats();
   renderKnownList();
   refreshGameUI();
@@ -1909,6 +1918,29 @@ function bindUI() {
       switchStoryTab(nextTab);
     });
   });
+  if (els.playStoryAudio) {
+    els.playStoryAudio.addEventListener("click", () => {
+      if (!state.currentStory || !Array.isArray(state.currentStory.lines)) return;
+      const speechText = state.currentStory.lines.map((line) => line.hanzi).filter(Boolean).join("。");
+      if (speechText) {
+        incrementMission("listens", 1);
+        speak(speechText);
+      }
+    });
+  }
+  if (els.storyOfDayLines) {
+    els.storyOfDayLines.addEventListener("click", (event) => {
+      const tokenEl = event.target?.closest?.(".tok-clickable");
+      if (!tokenEl) return;
+      const lineWrap = tokenEl.closest("[data-story-line]");
+      const lineIndex = Number(lineWrap?.dataset.storyLine);
+      const tokenIndex = Number(tokenEl.dataset.idx);
+      if (!Number.isFinite(lineIndex) || !Number.isFinite(tokenIndex)) return;
+      const analysis = state.currentStoryAnalyses?.[lineIndex];
+      if (!analysis) return;
+      openGrammarInfoFromAnalysis(analysis, tokenIndex);
+    });
+  }
   if (els.openFunLoop && els.funModal) {
     els.openFunLoop.addEventListener("click", () => {
       ensureDailyGameState();
@@ -2424,6 +2456,116 @@ function switchStoryTab(tabName) {
   state.storyTab = safeName;
   els.storyTabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.storyTab === safeName));
   els.storyPanels.forEach((panel) => panel.classList.toggle("is-active", panel.id === panelId));
+  if (safeName === "curiosities") {
+    renderStoryOfDay();
+  }
+}
+
+function storyThemeLabel(theme) {
+  const map = {
+    daily: "Daily Life",
+    home: "Home",
+    friends: "Friends",
+    travel: "Travel",
+    holiday: "Holiday"
+  };
+  return map[theme] || "Daily Life";
+}
+
+function dayNumberFromIso(dateIso) {
+  const value = String(dateIso || todayString());
+  const parsed = new Date(`${value}T00:00:00Z`).getTime();
+  if (!Number.isFinite(parsed)) return Math.floor(Date.now() / 86400000);
+  return Math.floor(parsed / 86400000);
+}
+
+function getStoryOfDayBank() {
+  if (Array.isArray(storyBankCache) && storyBankCache.length) return storyBankCache;
+  const themes = ["daily", "home", "friends", "travel", "holiday"];
+  const bank = [];
+
+  themes.forEach((theme) => {
+    const pool = (ALL_SENTENCES || [])
+      .filter((s) => s.theme === theme && Number(s.level) <= 3)
+      .sort((a, b) => String(a.id || "").localeCompare(String(b.id || "")));
+    if (pool.length < 3) return;
+    const storyCount = Math.min(6, Math.floor(pool.length / 3));
+    for (let i = 0; i < storyCount; i += 1) {
+      const start = (i * 3) % pool.length;
+      const lines = [pool[start], pool[(start + 1) % pool.length], pool[(start + 2) % pool.length]].map((s) => ({
+        hanzi: String(s.hanzi || "").trim(),
+        jyutping: String(s.jyutping || "").trim(),
+        english: normalizeEnglishSentence(s.english || "")
+      }));
+      bank.push({
+        id: `story_${theme}_${i + 1}`,
+        title: `${storyThemeLabel(theme)} Story ${i + 1}`,
+        theme,
+        lines
+      });
+    }
+  });
+
+  if (!bank.length) {
+    bank.push({
+      id: "story_fallback",
+      title: "Daily Story",
+      theme: "daily",
+      lines: [
+        { hanzi: "今日我哋去市場買嘢。", jyutping: "gam1 jat6 ngo5 dei6 heoi3 si5 coeng4 maai5 je5", english: "Today we go to the market to buy things." },
+        { hanzi: "之後我哋去餐廳食嘢。", jyutping: "zi1 hau6 ngo5 dei6 heoi3 caan1 teng1 sik6 je5", english: "After that, we go to a restaurant to eat." },
+        { hanzi: "晚上我哋回酒店休息。", jyutping: "maan5 soeng6 ngo5 dei6 wui4 zau2 dim3 jau1 sik1", english: "In the evening, we return to the hotel to rest." }
+      ]
+    });
+  }
+
+  storyBankCache = bank;
+  return storyBankCache;
+}
+
+function getStoryOfDay() {
+  const bank = getStoryOfDayBank();
+  if (!bank.length) return null;
+  const idx = ((dayNumberFromIso(todayString()) % bank.length) + bank.length) % bank.length;
+  return bank[idx];
+}
+
+function renderStoryOfDay() {
+  if (!els.storyOfDayLines) return;
+  const story = getStoryOfDay();
+  if (!story || !Array.isArray(story.lines) || !story.lines.length) {
+    els.storyOfDayLines.innerHTML = "<p class=\"example\">No story available.</p>";
+    if (els.storyOfDayMeta) els.storyOfDayMeta.textContent = "";
+    return;
+  }
+
+  state.currentStory = story;
+  state.currentStoryAnalyses = story.lines.map((line) => analyzeSentence({ hanzi: line.hanzi, jyutping: line.jyutping }));
+
+  if (els.storyOfDayLabel) els.storyOfDayLabel.textContent = `Story of the day · ${todayString()}`;
+  if (els.storyOfDayMeta) {
+    els.storyOfDayMeta.textContent = `${story.title} · ${storyThemeLabel(story.theme)}`;
+  }
+
+  const html = story.lines.map((line, lineIndex) => {
+    const analysis = state.currentStoryAnalyses[lineIndex];
+    const annotatedHanzi = String(analysis?.annotatedHanzi || escapeHtml(line.hanzi || "-"))
+      .replace(/data-idx="(\d+)"/g, `data-idx="$1" data-story-line="${lineIndex}"`);
+    const annotatedJyutping = analysis?.annotatedJyutping || escapeHtml(line.jyutping || "-");
+    const literalHtml = analysis?.literalHtml || escapeHtml(analysis?.literal || "");
+    const english = normalizeEnglishSentence(line.english || "-");
+    return `<article class="story-line-block">
+      <p class="hanzi story-hanzi-line" data-story-line="${lineIndex}">${annotatedHanzi}</p>
+      <p class="jyutping story-jyutping-line">${annotatedJyutping}</p>
+      <p class="english story-english-line">${escapeHtml(english)}</p>
+      <p class="literal story-literal-line">Literal: ${literalHtml}</p>
+    </article>`;
+  }).join("");
+
+  els.storyOfDayLines.innerHTML = html;
+  if (els.storyTapHint) {
+    els.storyTapHint.textContent = "Tap any highlighted Hanzi to open quick explanation.";
+  }
 }
 
 function openUserSidePanel() {

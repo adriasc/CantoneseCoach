@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.20</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.21</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -504,9 +504,13 @@
         <h2>Stories</h2>
         <p class="stories-intro">Story area with a focused sub-menu. We can expand each section with full read-along content.</p>
         <section class="stories-subpanel is-active" id="stories-curiosities">
-          <p class="formula">Curiosities</p>
-          <p>Cantonese keeps many sentence-final particles (呀, 喇, 嘅) that change tone/feeling more than core meaning.</p>
-          <p class="example">Good for training: hear the same sentence with different final particles.</p>
+          <div class="story-day-head">
+            <p class="formula" id="storyOfDayLabel">Story of the day</p>
+            <button id="playStoryAudio" class="play-icon-btn" type="button" aria-label="Play story of the day">▶</button>
+          </div>
+          <p class="example" id="storyOfDayMeta">Loading daily story...</p>
+          <div id="storyOfDayLines" class="story-lines"></div>
+          <p class="example" id="storyTapHint">Tap any highlighted Hanzi to open quick explanation.</p>
         </section>
         <section class="stories-subpanel" id="stories-facts">
           <p class="formula">Fun Facts</p>
