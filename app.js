@@ -4755,7 +4755,7 @@ function romanToggleLabelState(isOn) {
 function appTitleForMode(modeInput) {
   const mode = normalizeLanguageMode(modeInput);
   if (mode === "mandarin") return "Mandarin Coach";
-  if (mode === "compare") return "Canton + Mandarin Coach";
+  if (mode === "compare") return "canton+mand Coach";
   return "Cantonese Coach";
 }
 

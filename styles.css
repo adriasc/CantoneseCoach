@@ -267,10 +267,6 @@ h1 {
   font-size: clamp(1.5rem, 3vw, 2rem);
 }
 
-#appTitle {
-  white-space: nowrap;
-}
-
 .streak {
   background: color-mix(in srgb, var(--soft) 62%, transparent);
   border: 1px solid rgba(53, 95, 125, 0.14);
