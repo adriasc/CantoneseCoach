@@ -34,6 +34,30 @@ const USER_CORE_WORDS = [
   { hanzi: "黃昏", category: "time" },
   { hanzi: "晚上", category: "time" },
   { hanzi: "嗰陣", category: "time" },
+  // Numbers
+  { hanzi: "零", category: "number" },
+  { hanzi: "一", category: "number" },
+  { hanzi: "二", category: "number" },
+  { hanzi: "兩", category: "number" },
+  { hanzi: "三", category: "number" },
+  { hanzi: "四", category: "number" },
+  { hanzi: "五", category: "number" },
+  { hanzi: "六", category: "number" },
+  { hanzi: "七", category: "number" },
+  { hanzi: "八", category: "number" },
+  { hanzi: "九", category: "number" },
+  { hanzi: "十", category: "number" },
+  { hanzi: "二十", category: "number" },
+  { hanzi: "三十", category: "number" },
+  { hanzi: "一百", category: "number" },
+  { hanzi: "一千", category: "number" },
+  { hanzi: "十二", category: "number" },
+  { hanzi: "十五", category: "number" },
+  { hanzi: "二十一", category: "number" },
+  { hanzi: "三十五", category: "number" },
+  { hanzi: "九十九", category: "number" },
+  { hanzi: "二百五十", category: "number" },
+  { hanzi: "半", category: "number" },
   // Location
   { hanzi: "呢度", category: "place" },
   { hanzi: "嗰度", category: "place" },
@@ -305,6 +329,29 @@ const CORE_WORD_MEANINGS = {
   "黃昏": "dusk / sunset time",
   "晚上": "evening / night",
   "嗰陣": "then / at that time",
+  "零": "zero",
+  "一": "one",
+  "二": "two",
+  "兩": "two (before measure words)",
+  "三": "three",
+  "四": "four",
+  "五": "five",
+  "六": "six",
+  "七": "seven",
+  "八": "eight",
+  "九": "nine",
+  "十": "ten",
+  "二十": "twenty",
+  "三十": "thirty",
+  "一百": "one hundred",
+  "一千": "one thousand",
+  "十二": "twelve",
+  "十五": "fifteen",
+  "二十一": "twenty-one",
+  "三十五": "thirty-five",
+  "九十九": "ninety-nine",
+  "二百五十": "two hundred and fifty",
+  "半": "half",
   "呢度": "here",
   "嗰度": "there",
   "餐廳": "restaurant",
@@ -563,6 +610,29 @@ const CORE_WORD_JYUTPING = {
   "黃昏": "wong4 fan1",
   "晚上": "maan5 soeng6",
   "嗰陣": "go2 zan6",
+  "零": "ling4",
+  "一": "jat1",
+  "二": "ji6",
+  "兩": "loeng5",
+  "三": "saam1",
+  "四": "sei3",
+  "五": "ng5",
+  "六": "luk6",
+  "七": "cat1",
+  "八": "baat3",
+  "九": "gau2",
+  "十": "sap6",
+  "二十": "ji6 sap6",
+  "三十": "saam1 sap6",
+  "一百": "jat1 baak3",
+  "一千": "jat1 cin1",
+  "十二": "sap6 ji6",
+  "十五": "sap6 ng5",
+  "二十一": "ji6 sap6 jat1",
+  "三十五": "saam1 sap6 ng5",
+  "九十九": "gau2 sap6 gau2",
+  "二百五十": "ji6 baak3 ng5 sap6",
+  "半": "bun3",
   "呢度": "ni1 dou6",
   "嗰度": "go2 dou6",
   "餐廳": "caan1 teng1",
@@ -4391,6 +4461,29 @@ const MANDARIN_TOKEN_MAP = {
   "今日": "今天",
   "尋日": "昨天",
   "聽日": "明天",
+  "零": "零",
+  "一": "一",
+  "二": "二",
+  "兩": "两",
+  "三": "三",
+  "四": "四",
+  "五": "五",
+  "六": "六",
+  "七": "七",
+  "八": "八",
+  "九": "九",
+  "十": "十",
+  "十二": "十二",
+  "十五": "十五",
+  "二十": "二十",
+  "二十一": "二十一",
+  "三十": "三十",
+  "三十五": "三十五",
+  "九十九": "九十九",
+  "一百": "一百",
+  "二百五十": "二百五十",
+  "一千": "一千",
+  "半": "半",
   "巴士": "公交车",
   "咩": "什么",
   "邊個": "谁",
@@ -4528,6 +4621,29 @@ const MANDARIN_PINYIN_MAP = {
   "今天": "jin1 tian1",
   "昨天": "zuo2 tian1",
   "明天": "ming2 tian1",
+  "零": "ling2",
+  "一": "yi1",
+  "二": "er4",
+  "两": "liang3",
+  "三": "san1",
+  "四": "si4",
+  "五": "wu3",
+  "六": "liu4",
+  "七": "qi1",
+  "八": "ba1",
+  "九": "jiu3",
+  "十": "shi2",
+  "十二": "shi2 er4",
+  "十五": "shi2 wu3",
+  "二十": "er4 shi2",
+  "二十一": "er4 shi2 yi1",
+  "三十": "san1 shi2",
+  "三十五": "san1 shi2 wu3",
+  "九十九": "jiu3 shi2 jiu3",
+  "一百": "yi1 bai3",
+  "二百五十": "er4 bai3 wu3 shi2",
+  "一千": "yi1 qian1",
+  "半": "ban4",
   "什么": "shen2 me",
   "谁": "shei2",
   "多少": "duo1 shao3",
@@ -4714,7 +4830,19 @@ const MANDARIN_CHAR_PINYIN_MAP = {
   "解": "jie3",
   "一": "yi1",
   "二": "er4",
+  "兩": "liang3",
+  "两": "liang3",
   "三": "san1",
+  "四": "si4",
+  "五": "wu3",
+  "六": "liu4",
+  "七": "qi1",
+  "八": "ba1",
+  "九": "jiu3",
+  "零": "ling2",
+  "百": "bai3",
+  "千": "qian1",
+  "半": "ban4",
   "后": "hou4",
   "後": "hou4",
   "天": "tian1",
@@ -5578,6 +5706,8 @@ function wordMatchesFilter(word, selectedFilter) {
     adjectives: new Set(["adjective"]),
     adverb: new Set(["adverb"]),
     adverbs: new Set(["adverb"]),
+    number: new Set(["number"]),
+    numbers: new Set(["number"]),
     pronoun: new Set(["pronoun"]),
     pronouns: new Set(["pronoun"]),
     place: new Set(["place"]),
@@ -5607,6 +5737,10 @@ function buildWordExample(word) {
   const fromSentence = ALL_SENTENCES.find((s) => normalizeHanzi(s.hanzi).includes(key));
   if (fromSentence) return fromSentence.hanzi;
   if (word.category === "time") return `${word.hanzi}我學廣東話。`;
+  if (word.category === "number") {
+    if (key === "半") return "半杯水。";
+    return `我有${word.hanzi}個朋友。`;
+  }
   if (word.category === "verb") return `我${word.hanzi}。`;
   if (word.category === "adjective") return `呢個好${word.hanzi}。`;
   if (word.category === "place") return `我喺${word.hanzi}。`;
@@ -5617,9 +5751,9 @@ function buildWordExampleEnglish(word, exampleHanzi) {
   if (!word) return "";
   const localized = localizeEntry(word);
   const wordMeaning = localized.answerEnglish || word.english || "this word";
+  const key = normalizeHanzi(word.hanzi);
   const exact = ALL_SENTENCES.find((s) => normalizeHanzi(s.hanzi) === normalizeHanzi(exampleHanzi));
   if (exact?.english) return exact.english;
-  const key = normalizeHanzi(word.hanzi);
   const fromSentence = ALL_SENTENCES.find((s) => normalizeHanzi(s.hanzi).includes(key));
   if (fromSentence?.english) return fromSentence.english;
   if (word.example) {
@@ -5627,6 +5761,10 @@ function buildWordExampleEnglish(word, exampleHanzi) {
     if (fromExampleSentence?.english) return fromExampleSentence.english;
   }
   if (word.category === "time") return `At ${wordMeaning || "this time"}, I study Cantonese.`;
+  if (word.category === "number") {
+    if (key === "半") return "Half a cup of water.";
+    return `I have ${wordMeaning || "this number"} friends.`;
+  }
   if (word.category === "verb") return `I ${wordMeaning || "do this action"}.`;
   if (word.category === "adjective") return `This is very ${wordMeaning || "good"}.`;
   if (word.category === "place") return `I am at ${wordMeaning || "this place"}.`;
