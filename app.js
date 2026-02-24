@@ -6,8 +6,7 @@ const STORAGE_KEYS = {
   streak: "cancoach_streak_v1",
   reviewed: "cancoach_reviewed_v1",
   prefs: "cancoach_prefs_v1",
-  game: "cancoach_game_v1",
-  profile: "cancoach_profile_v1"
+  game: "cancoach_game_v1"
 };
 
 const USER_CORE_WORDS = [
@@ -1597,7 +1596,6 @@ function normalizeGameState(input) {
 const state = {
   content: loadContent(),
   known: new Set(loadJson(STORAGE_KEYS.known, [])),
-  profile: loadJson(STORAGE_KEYS.profile, { userId: "" }),
   reviewed: loadJson(STORAGE_KEYS.reviewed, { date: todayString(), count: 0 }),
   streak: loadJson(STORAGE_KEYS.streak, { lastDate: null, days: 0 }),
   prefs: loadJson(STORAGE_KEYS.prefs, {
@@ -1656,21 +1654,17 @@ const els = {
   userPanel: byId("userPanel"),
   closeUserPanel: byId("closeUserPanel"),
   closeUserPanelBackdrop: byId("closeUserPanelBackdrop"),
-  userPanelStreak: byId("userPanelStreak"),
-  userPanelKnown: byId("userPanelKnown"),
-  userPanelReviewed: byId("userPanelReviewed"),
-  userPanelMode: byId("userPanelMode"),
   userPanelVersion: byId("userPanelVersion"),
-  userIdInput: byId("userIdInput"),
-  saveUserId: byId("saveUserId"),
   changePasswordBtn: byId("changePasswordBtn"),
-  userAccountMsg: byId("userAccountMsg"),
-  helpGuideBtn: byId("helpGuideBtn"),
-  helpContactBtn: byId("helpContactBtn"),
-  helpFaqBtn: byId("helpFaqBtn"),
-  userHelpMsg: byId("userHelpMsg"),
-  userPanelGoWords: byId("userPanelGoWords"),
+  logOutBtn: byId("logOutBtn"),
+  openTermsBtn: byId("openTermsBtn"),
+  openAboutBtn: byId("openAboutBtn"),
+  userPanelMsg: byId("userPanelMsg"),
   openSettingsFromUser: byId("openSettingsFromUser"),
+  infoModal: byId("infoModal"),
+  closeInfoModal: byId("closeInfoModal"),
+  infoModalTitle: byId("infoModalTitle"),
+  infoModalBody: byId("infoModalBody"),
   storyTabs: [...document.querySelectorAll(".stories-nav-btn")],
   storyPanels: [...document.querySelectorAll(".stories-subpanel")],
   storyOfDayLabel: byId("storyOfDayLabel"),
@@ -1868,12 +1862,6 @@ function bindUI() {
   if (els.closeUserPanelBackdrop) {
     els.closeUserPanelBackdrop.addEventListener("click", () => closeUserSidePanel());
   }
-  if (els.userPanelGoWords) {
-    els.userPanelGoWords.addEventListener("click", () => {
-      closeUserSidePanel();
-      switchTab("words");
-    });
-  }
   if (els.openSettingsFromUser && els.settingsModal) {
     els.openSettingsFromUser.addEventListener("click", () => {
       closeUserSidePanel();
@@ -1881,34 +1869,29 @@ function bindUI() {
       openModalAnimated(els.settingsModal);
     });
   }
-  if (els.saveUserId && els.userIdInput) {
-    els.saveUserId.addEventListener("click", () => {
-      const nextId = String(els.userIdInput.value || "").trim();
-      state.profile.userId = nextId;
-      saveJson(STORAGE_KEYS.profile, state.profile);
-      if (els.userAccountMsg) {
-        els.userAccountMsg.textContent = nextId ? "User ID saved on this device." : "User ID cleared.";
-      }
-    });
-  }
-  if (els.changePasswordBtn && els.userAccountMsg) {
+  if (els.changePasswordBtn && els.userPanelMsg) {
     els.changePasswordBtn.addEventListener("click", () => {
-      els.userAccountMsg.textContent = "Password change requires backend login. We can enable this in next phase.";
+      els.userPanelMsg.textContent = "Password change/reset requires backend auth. We can enable it in next phase.";
     });
   }
-  if (els.helpGuideBtn && els.userHelpMsg) {
-    els.helpGuideBtn.addEventListener("click", () => {
-      els.userHelpMsg.textContent = "Quick Guide: Learn -> Tones -> Questions -> Stories (10 minutes/day).";
+  if (els.logOutBtn && els.userPanelMsg) {
+    els.logOutBtn.addEventListener("click", () => {
+      els.userPanelMsg.textContent = "Logged off (demo mode).";
+      closeUserSidePanel();
     });
   }
-  if (els.helpFaqBtn && els.userHelpMsg) {
-    els.helpFaqBtn.addEventListener("click", () => {
-      els.userHelpMsg.textContent = "FAQ: Audio missing? Refresh app + check iPhone mute/silent switch + press Play once.";
-    });
+  if (els.openTermsBtn) {
+    els.openTermsBtn.addEventListener("click", () => showInfoModal("terms"));
   }
-  if (els.helpContactBtn && els.userHelpMsg) {
-    els.helpContactBtn.addEventListener("click", () => {
-      els.userHelpMsg.textContent = "Support contact can be linked to your email or website in the next update.";
+  if (els.openAboutBtn) {
+    els.openAboutBtn.addEventListener("click", () => showInfoModal("about"));
+  }
+  if (els.closeInfoModal && els.infoModal) {
+    els.closeInfoModal.addEventListener("click", () => closeModalAnimated(els.infoModal));
+  }
+  if (els.infoModal) {
+    els.infoModal.addEventListener("click", (event) => {
+      if (event.target === els.infoModal) closeModalAnimated(els.infoModal);
     });
   }
   els.storyTabs.forEach((tab) => {
@@ -2600,21 +2583,32 @@ function closeUserSidePanel(duration = 230) {
 }
 
 function renderUserPanel() {
-  if (!els.userPanelStreak) return;
-  const reviewedCount = state.reviewed.date === todayString() ? state.reviewed.count : 0;
-  const mode = normalizeLanguageMode(state.prefs.languageMode);
-  const modeLabel = mode === "compare" ? "Cantonese + Mandarin" : (mode === "mandarin" ? "Mandarin" : "Cantonese");
-  els.userPanelStreak.textContent = `Streak: ${state.streak.days}${ordinalSuffix(state.streak.days)}-Day`;
-  if (els.userPanelKnown) els.userPanelKnown.textContent = `Known words: ${state.known.size}`;
-  if (els.userPanelReviewed) els.userPanelReviewed.textContent = `Reviewed today: ${reviewedCount}`;
-  if (els.userPanelMode) els.userPanelMode.textContent = `Language mode: ${modeLabel}`;
   if (els.userPanelVersion) {
     const appVer = document.querySelector(".version-tag")?.textContent || "v?";
-    els.userPanelVersion.textContent = `App version: ${appVer}`;
+    els.userPanelVersion.textContent = appVer;
   }
-  if (els.userIdInput && document.activeElement !== els.userIdInput) {
-    els.userIdInput.value = String(state.profile.userId || "");
+}
+
+function showInfoModal(kind) {
+  if (!els.infoModal || !els.infoModalTitle || !els.infoModalBody) return;
+  const type = String(kind || "").trim();
+  if (type === "about") {
+    els.infoModalTitle.textContent = "About Us";
+    els.infoModalBody.innerHTML = [
+      "<p><strong>Canton+Mand Coach</strong> helps learners practice practical Cantonese with optional Mandarin comparison.</p>",
+      "<p>Focus: listening, daily sentence flow, tone contrast, and clear structure with literal + natural meaning.</p>",
+      "<p>Built for short daily sessions and real Hong Kong conversation use.</p>"
+    ].join("");
+  } else {
+    els.infoModalTitle.textContent = "Terms of Use";
+    els.infoModalBody.innerHTML = [
+      "<p>By using this app, you agree to use it for lawful learning purposes only.</p>",
+      "<p>Learning content is for educational support and may contain updates over time; always verify critical usage with trusted sources.</p>",
+      "<p>Your local settings and progress can be stored on your device. Do not share sensitive personal data in public areas of the app.</p>",
+      "<p>Features and access levels (free/premium/pro) may change as the product evolves.</p>"
+    ].join("");
   }
+  openModalAnimated(els.infoModal);
 }
 
 function setControlsMode(tabName) {

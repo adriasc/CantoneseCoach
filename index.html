@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.21</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.22</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -257,6 +257,16 @@
           <button id="closeGrammarModal" class="ghost-btn" type="button">✕</button>
         </div>
         <div id="grammarModalBody" class="grammar-modal-body"></div>
+      </div>
+    </div>
+
+    <div class="modal hidden" id="infoModal">
+      <div class="modal-card info-modal-card">
+        <div class="card-head">
+          <h2 id="infoModalTitle">Info</h2>
+          <button id="closeInfoModal" class="ghost-btn" type="button">✕</button>
+        </div>
+        <div id="infoModalBody" class="grammar-modal-body"></div>
       </div>
     </div>
 
@@ -619,37 +629,34 @@
         <h2>Your Space</h2>
         <button id="closeUserPanel" class="ghost-btn" type="button">✕</button>
       </div>
-      <p class="example">Login/profile is local for now. Full account sync can be connected later.</p>
-      <div class="mini-stats side-stats">
-        <p id="userPanelStreak">Streak: 0th-Day</p>
-        <p id="userPanelKnown">Known words: 0</p>
-        <p id="userPanelReviewed">Reviewed today: 0</p>
-        <p id="userPanelMode">Language mode: Cantonese</p>
-        <p id="userPanelVersion">App version: v?</p>
-      </div>
-      <section class="side-panel-section">
-        <h3>Account</h3>
-        <label for="userIdInput">User ID</label>
-        <input id="userIdInput" type="text" placeholder="your_user_id">
-        <div class="actions">
-          <button id="saveUserId" type="button">Save User ID</button>
-          <button id="changePasswordBtn" type="button">Change Password</button>
+      <div class="side-simple-list">
+        <div class="side-kv">
+          <span class="side-k">User name</span>
+          <strong class="side-v">Adria Salvado</strong>
         </div>
-        <p id="userAccountMsg" class="example"></p>
-      </section>
-      <section class="side-panel-section">
-        <h3>Help</h3>
-        <div class="actions">
-          <button id="helpGuideBtn" type="button">Quick Guide</button>
-          <button id="helpFaqBtn" type="button">FAQ</button>
-          <button id="helpContactBtn" type="button">Contact</button>
+        <div class="side-kv">
+          <span class="side-k">Password</span>
+          <div class="side-inline">
+            <strong class="side-v">••••••••</strong>
+            <button id="changePasswordBtn" class="side-action-btn side-action-soft" type="button">Reset/Change</button>
+          </div>
         </div>
-        <p id="userHelpMsg" class="example"></p>
-      </section>
-      <div class="actions">
-        <button id="userPanelGoWords" type="button">Go to Learn</button>
-        <button id="openSettingsFromUser" type="button">Audio &amp; Display</button>
+        <div class="side-kv">
+          <span class="side-k">Account type</span>
+          <strong class="side-v">Premium</strong>
+        </div>
+        <div class="side-kv">
+          <span class="side-k">App</span>
+          <strong id="userPanelVersion" class="side-v">v?</strong>
+        </div>
       </div>
+      <div class="side-actions-grid">
+        <button id="openSettingsFromUser" class="side-action-btn" type="button">Settings</button>
+        <button id="logOutBtn" class="side-action-btn side-action-soft" type="button">Log Off</button>
+        <button id="openTermsBtn" class="side-action-btn side-action-soft" type="button">Terms of Use</button>
+        <button id="openAboutBtn" class="side-action-btn side-action-soft" type="button">About Us</button>
+      </div>
+      <p id="userPanelMsg" class="example side-msg"></p>
     </aside>
   </div>
 
