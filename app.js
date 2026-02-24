@@ -1,3 +1,5 @@
+const ENABLE_BOTTOM_MENU_V1 = true;
+
 const STORAGE_KEYS = {
   content: "cancoach_content_v1",
   known: "cancoach_known_v1",
@@ -1643,6 +1645,8 @@ const state = {
 const els = {
   appTitle: byId("appTitle"),
   tabs: [...document.querySelectorAll(".tab")],
+  bottomNav: byId("bottomNav"),
+  bottomTabs: [...document.querySelectorAll(".bottom-nav-btn")],
   panels: [...document.querySelectorAll(".panel")],
   wordCategory: byId("wordCategory"),
   wordHanzi: byId("wordHanzi"),
@@ -1786,6 +1790,7 @@ const softResizeHeights = new WeakMap();
 const modalCloseTimers = new WeakMap();
 
 function initializeApp() {
+  configureBottomMenu();
   bindUI();
   ensureDailyGameState();
   syncControlValues();
@@ -1813,6 +1818,12 @@ function bindUI() {
     tab.addEventListener("click", () => {
       if (!tab.dataset.tab) return;
       switchTab(tab.dataset.tab);
+    });
+  });
+  els.bottomTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      if (!tab.dataset.bottomTab) return;
+      switchTab(tab.dataset.bottomTab);
     });
   });
   if (els.openFunLoop && els.funModal) {
@@ -2276,8 +2287,12 @@ function applyGlobalControls() {
 }
 
 function switchTab(tabName) {
+  const targetPanelId = `panel-${tabName}`;
+  const panelExists = els.panels.some((panel) => panel.id === targetPanelId);
+  if (!panelExists) return;
   els.tabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.tab === tabName));
-  els.panels.forEach((panel) => panel.classList.toggle("is-active", panel.id === `panel-${tabName}`));
+  els.bottomTabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.bottomTab === tabName));
+  els.panels.forEach((panel) => panel.classList.toggle("is-active", panel.id === targetPanelId));
   setControlsMode(tabName);
   if (tabName === "patterns" && state.currentSentence) {
     renderPatternSentence();
@@ -2288,7 +2303,21 @@ function switchTab(tabName) {
   }
 }
 
+function configureBottomMenu() {
+  const enabled = !!ENABLE_BOTTOM_MENU_V1;
+  document.body.classList.toggle("bottom-nav-enabled", enabled);
+  if (els.bottomNav) {
+    els.bottomNav.classList.toggle("hidden", !enabled);
+  }
+}
+
 function setControlsMode(tabName) {
+  const hideControls = tabName === "stories";
+  if (els.controlsCard) {
+    els.controlsCard.classList.toggle("hidden", hideControls);
+  }
+  if (hideControls) return;
+
   const isQuestions = tabName === "questions";
   const isWords = tabName === "words";
   const isTones = tabName === "tones";
@@ -4755,7 +4784,7 @@ function romanToggleLabelState(isOn) {
 function appTitleForMode(modeInput) {
   const mode = normalizeLanguageMode(modeInput);
   if (mode === "mandarin") return "Mandarin Coach";
-  if (mode === "compare") return "canton+mand Coach";
+  if (mode === "compare") return "Canton+Mand Coach";
   return "Cantonese Coach";
 }
 
