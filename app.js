@@ -1789,6 +1789,7 @@ function initializeApp() {
   bindUI();
   ensureDailyGameState();
   syncControlValues();
+  renderAppTitle();
   initVoiceControls();
   applyTheme(state.prefs.uiTheme || "classic");
   setControlsCollapsed(!!state.prefs.controlsCollapsed);
@@ -2114,6 +2115,7 @@ function bindUI() {
     els.languageMode.addEventListener("change", () => {
       state.prefs.languageMode = normalizeLanguageMode(els.languageMode.value);
       saveJson(STORAGE_KEYS.prefs, state.prefs);
+      renderAppTitle();
       renderWordCard();
       renderPatternSentence();
       renderQuizGrammar();
@@ -4753,7 +4755,7 @@ function romanToggleLabelState(isOn) {
 function appTitleForMode(modeInput) {
   const mode = normalizeLanguageMode(modeInput);
   if (mode === "mandarin") return "Mandarin Coach";
-  if (mode === "compare") return "Cantonese + Mandarin Coach";
+  if (mode === "compare") return "Canton + Mandarin Coach";
   return "Cantonese Coach";
 }
 
