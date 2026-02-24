@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.16</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.17</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -493,10 +493,35 @@
     </section>
 
     <section class="panel" id="panel-stories">
-      <div class="card">
+      <div class="card stories-card">
         <h2>Stories</h2>
-        <p>This section is ready for short Cantonese stories with audio, Jyutping, and English.</p>
-        <p class="example">Next step: add story packs (home, travel, friends) and read-along mode.</p>
+        <p>Story area with a focused sub-menu. We can expand each section with full read-along content.</p>
+        <nav class="stories-nav" aria-label="Stories sections">
+          <button class="stories-nav-btn is-active" type="button" data-story-tab="curiosities">Curiosities</button>
+          <button class="stories-nav-btn" type="button" data-story-tab="facts">Fun Facts</button>
+          <button class="stories-nav-btn" type="button" data-story-tab="dialogs">Mini Dialogs</button>
+          <button class="stories-nav-btn" type="button" data-story-tab="culture">Street Culture</button>
+        </nav>
+        <section class="stories-subpanel is-active" id="stories-curiosities">
+          <p class="formula">Curiosities</p>
+          <p>Cantonese keeps many sentence-final particles (呀, 喇, 嘅) that change tone/feeling more than core meaning.</p>
+          <p class="example">Good for training: hear the same sentence with different final particles.</p>
+        </section>
+        <section class="stories-subpanel" id="stories-facts">
+          <p class="formula">Fun Facts</p>
+          <p>Some words share Hanzi with Mandarin but sound very different, so romanization comparison is useful for memory.</p>
+          <p class="example">Use compare mode to spot Cantonese vs Mandarin pronunciation quickly.</p>
+        </section>
+        <section class="stories-subpanel" id="stories-dialogs">
+          <p class="formula">Mini Dialogs</p>
+          <p>Short 2-turn exchanges are ideal for street conversation speed: ask, answer, follow-up.</p>
+          <p class="example">Next upgrade: play line 1, pause, then line 2 with optional noise mode.</p>
+        </section>
+        <section class="stories-subpanel" id="stories-culture">
+          <p class="formula">Street Culture</p>
+          <p>Transport, wet market, and cha chaan teng phrases should be grouped by real situations to improve recall.</p>
+          <p class="example">Next upgrade: add HK location packs and one-tap drill playlists.</p>
+        </section>
       </div>
     </section>
 
@@ -537,11 +562,44 @@
   </main>
 
   <nav id="bottomNav" class="bottom-nav hidden" aria-label="Basic navigation">
-    <button class="bottom-nav-btn is-active" type="button" data-bottom-tab="words">Home</button>
-    <button class="bottom-nav-btn" type="button" data-bottom-tab="tones">Tones</button>
-    <button class="bottom-nav-btn" type="button" data-bottom-tab="stories">Stories</button>
-    <button class="bottom-nav-btn" type="button" data-bottom-tab="patterns">Learn</button>
+    <button id="openUserPanel" class="bottom-nav-btn utility-btn" type="button" aria-label="Open profile and login settings">
+      <span class="bottom-nav-icon" aria-hidden="true">⌂</span>
+      <span class="bottom-nav-label">Home</span>
+    </button>
+    <button class="bottom-nav-btn" type="button" data-bottom-tab="tones" data-bottom-group="tones" aria-label="Open tones">
+      <span class="bottom-nav-icon" aria-hidden="true">♫</span>
+      <span class="bottom-nav-label">Tones</span>
+    </button>
+    <button class="bottom-nav-btn" type="button" data-bottom-tab="stories" data-bottom-group="stories" aria-label="Open stories">
+      <span class="bottom-nav-icon" aria-hidden="true">☰</span>
+      <span class="bottom-nav-label">Stories</span>
+    </button>
+    <button class="bottom-nav-btn is-active" type="button" data-bottom-tab="words" data-bottom-group="learn" aria-label="Open learning tabs">
+      <span class="bottom-nav-icon" aria-hidden="true">◎</span>
+      <span class="bottom-nav-label">Learn</span>
+    </button>
   </nav>
+
+  <div id="userPanel" class="side-panel hidden" aria-hidden="true">
+    <button id="closeUserPanelBackdrop" class="side-panel-backdrop" type="button" aria-label="Close user panel"></button>
+    <aside class="side-panel-drawer" role="dialog" aria-label="User panel">
+      <div class="card-head">
+        <h2>Your Space</h2>
+        <button id="closeUserPanel" class="ghost-btn" type="button">✕</button>
+      </div>
+      <p class="example">Login/profile is local for now. Full account sync can be connected later.</p>
+      <div class="mini-stats side-stats">
+        <p id="userPanelStreak">Streak: 0th-Day</p>
+        <p id="userPanelKnown">Known words: 0</p>
+        <p id="userPanelReviewed">Reviewed today: 0</p>
+        <p id="userPanelMode">Language mode: Cantonese</p>
+      </div>
+      <div class="actions">
+        <button id="userPanelGoWords" type="button">Go to Learn</button>
+        <button id="openSettingsFromUser" type="button">Audio &amp; Display</button>
+      </div>
+    </aside>
+  </div>
 
   <div id="fxLayer" class="fx-layer" aria-hidden="true"></div>
   <script src="app.js"></script>

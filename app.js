@@ -1636,6 +1636,7 @@ const state = {
   currentExercise: null,
   currentToneKind: "word",
   currentToneSide: null,
+  storyTab: "curiosities",
   toneLabelMap: { a: "a", b: "b" },
   toneScore: { correct: 0, total: 0 },
   quizDisplay: { hanzi: false, jyutping: false, english: false, lens: false },
@@ -1647,6 +1648,18 @@ const els = {
   tabs: [...document.querySelectorAll(".tab")],
   bottomNav: byId("bottomNav"),
   bottomTabs: [...document.querySelectorAll(".bottom-nav-btn")],
+  openUserPanel: byId("openUserPanel"),
+  userPanel: byId("userPanel"),
+  closeUserPanel: byId("closeUserPanel"),
+  closeUserPanelBackdrop: byId("closeUserPanelBackdrop"),
+  userPanelStreak: byId("userPanelStreak"),
+  userPanelKnown: byId("userPanelKnown"),
+  userPanelReviewed: byId("userPanelReviewed"),
+  userPanelMode: byId("userPanelMode"),
+  userPanelGoWords: byId("userPanelGoWords"),
+  openSettingsFromUser: byId("openSettingsFromUser"),
+  storyTabs: [...document.querySelectorAll(".stories-nav-btn")],
+  storyPanels: [...document.querySelectorAll(".stories-subpanel")],
   panels: [...document.querySelectorAll(".panel")],
   wordCategory: byId("wordCategory"),
   wordHanzi: byId("wordHanzi"),
@@ -1824,6 +1837,35 @@ function bindUI() {
     tab.addEventListener("click", () => {
       if (!tab.dataset.bottomTab) return;
       switchTab(tab.dataset.bottomTab);
+    });
+  });
+  if (els.openUserPanel) {
+    els.openUserPanel.addEventListener("click", () => openUserSidePanel());
+  }
+  if (els.closeUserPanel) {
+    els.closeUserPanel.addEventListener("click", () => closeUserSidePanel());
+  }
+  if (els.closeUserPanelBackdrop) {
+    els.closeUserPanelBackdrop.addEventListener("click", () => closeUserSidePanel());
+  }
+  if (els.userPanelGoWords) {
+    els.userPanelGoWords.addEventListener("click", () => {
+      closeUserSidePanel();
+      switchTab("words");
+    });
+  }
+  if (els.openSettingsFromUser && els.settingsModal) {
+    els.openSettingsFromUser.addEventListener("click", () => {
+      closeUserSidePanel();
+      syncControlValues();
+      openModalAnimated(els.settingsModal);
+    });
+  }
+  els.storyTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const nextTab = String(tab.dataset.storyTab || "").trim();
+      if (!nextTab) return;
+      switchStoryTab(nextTab);
     });
   });
   if (els.openFunLoop && els.funModal) {
@@ -2290,10 +2332,17 @@ function switchTab(tabName) {
   const targetPanelId = `panel-${tabName}`;
   const panelExists = els.panels.some((panel) => panel.id === targetPanelId);
   if (!panelExists) return;
+  if (els.userPanel && !els.userPanel.classList.contains("hidden")) {
+    closeUserSidePanel(160);
+  }
   els.tabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.tab === tabName));
-  els.bottomTabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.bottomTab === tabName));
+  syncBottomTabState(tabName);
   els.panels.forEach((panel) => panel.classList.toggle("is-active", panel.id === targetPanelId));
+  document.body.classList.toggle("stories-mode", tabName === "stories");
   setControlsMode(tabName);
+  if (tabName === "stories") {
+    switchStoryTab(state.storyTab || "curiosities");
+  }
   if (tabName === "patterns" && state.currentSentence) {
     renderPatternSentence();
   }
@@ -2303,12 +2352,79 @@ function switchTab(tabName) {
   }
 }
 
+function syncBottomTabState(tabName) {
+  let activeGroup = "learn";
+  if (tabName === "tones") activeGroup = "tones";
+  if (tabName === "stories") activeGroup = "stories";
+  els.bottomTabs.forEach((tab) => {
+    const group = String(tab.dataset.bottomGroup || tab.dataset.bottomTab || "").trim();
+    if (!group) {
+      tab.classList.remove("is-active");
+      return;
+    }
+    tab.classList.toggle("is-active", group === activeGroup);
+  });
+}
+
 function configureBottomMenu() {
   const enabled = !!ENABLE_BOTTOM_MENU_V1;
   document.body.classList.toggle("bottom-nav-enabled", enabled);
   if (els.bottomNav) {
     els.bottomNav.classList.toggle("hidden", !enabled);
   }
+  syncBottomTabState("words");
+}
+
+function switchStoryTab(tabName) {
+  const safeName = String(tabName || "").trim() || "curiosities";
+  const panelId = `stories-${safeName}`;
+  const hasPanel = els.storyPanels.some((panel) => panel.id === panelId);
+  if (!hasPanel) return;
+  state.storyTab = safeName;
+  els.storyTabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.storyTab === safeName));
+  els.storyPanels.forEach((panel) => panel.classList.toggle("is-active", panel.id === panelId));
+}
+
+function openUserSidePanel() {
+  if (!els.userPanel) return;
+  renderUserPanel();
+  if (modalCloseTimers.has(els.userPanel)) {
+    clearTimeout(modalCloseTimers.get(els.userPanel));
+    modalCloseTimers.delete(els.userPanel);
+  }
+  els.userPanel.classList.remove("hidden", "is-closing");
+  els.userPanel.setAttribute("aria-hidden", "false");
+  requestAnimationFrame(() => {
+    els.userPanel.classList.add("is-open");
+  });
+}
+
+function closeUserSidePanel(duration = 230) {
+  if (!els.userPanel || els.userPanel.classList.contains("hidden")) return;
+  if (modalCloseTimers.has(els.userPanel)) {
+    clearTimeout(modalCloseTimers.get(els.userPanel));
+    modalCloseTimers.delete(els.userPanel);
+  }
+  els.userPanel.classList.remove("is-open");
+  els.userPanel.classList.add("is-closing");
+  const timerId = setTimeout(() => {
+    els.userPanel.classList.add("hidden");
+    els.userPanel.classList.remove("is-closing");
+    els.userPanel.setAttribute("aria-hidden", "true");
+    modalCloseTimers.delete(els.userPanel);
+  }, duration);
+  modalCloseTimers.set(els.userPanel, timerId);
+}
+
+function renderUserPanel() {
+  if (!els.userPanelStreak) return;
+  const reviewedCount = state.reviewed.date === todayString() ? state.reviewed.count : 0;
+  const mode = normalizeLanguageMode(state.prefs.languageMode);
+  const modeLabel = mode === "compare" ? "Cantonese + Mandarin" : (mode === "mandarin" ? "Mandarin" : "Cantonese");
+  els.userPanelStreak.textContent = `Streak: ${state.streak.days}${ordinalSuffix(state.streak.days)}-Day`;
+  if (els.userPanelKnown) els.userPanelKnown.textContent = `Known words: ${state.known.size}`;
+  if (els.userPanelReviewed) els.userPanelReviewed.textContent = `Reviewed today: ${reviewedCount}`;
+  if (els.userPanelMode) els.userPanelMode.textContent = `Language mode: ${modeLabel}`;
 }
 
 function setControlsMode(tabName) {
@@ -3463,6 +3579,7 @@ function refreshStats() {
   const reviewedCount = state.reviewed.date === todayString() ? state.reviewed.count : 0;
   els.reviewedWords.textContent = `Reviewed today: ${reviewedCount}`;
   els.streakBadge.textContent = `🔥 ${state.streak.days}${ordinalSuffix(state.streak.days)}-Day`;
+  renderUserPanel();
 }
 
 function renderKnownList() {

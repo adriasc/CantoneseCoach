@@ -228,7 +228,7 @@ body[data-theme="poster"] .bg-shape {
 }
 
 body.bottom-nav-enabled .app-shell {
-  padding-bottom: calc(104px + env(safe-area-inset-bottom));
+  padding-bottom: calc(88px + env(safe-area-inset-bottom));
 }
 
 .topbar {
@@ -311,17 +311,18 @@ h1 {
 
 .bottom-nav {
   position: fixed;
-  left: 50%;
-  bottom: calc(10px + env(safe-area-inset-bottom));
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 30;
-  width: min(560px, calc(100vw - 20px));
-  padding: 8px;
-  border-radius: 16px;
+  width: 100%;
+  padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+  border-radius: 14px 14px 0 0;
   border: 1px solid rgba(86, 120, 156, 0.22);
+  border-bottom: 0;
   background: color-mix(in srgb, var(--soft) 76%, transparent);
   backdrop-filter: blur(12px);
-  box-shadow: 0 10px 24px rgba(16, 37, 63, 0.22);
+  box-shadow: 0 -6px 20px rgba(16, 37, 63, 0.2);
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 7px;
@@ -331,14 +332,20 @@ h1 {
   border: 1px solid rgba(116, 141, 171, 0.2);
   background: rgba(255, 255, 255, 0.7);
   border-radius: 11px;
-  padding: 9px 6px;
+  padding: 7px 6px 6px;
   cursor: pointer;
   font-weight: 700;
-  font-size: 0.9rem;
-  line-height: 1.1;
+  font-size: 0.85rem;
+  line-height: 1;
   color: var(--ink);
   box-shadow: 0 3px 8px rgba(37, 62, 93, 0.12);
   transition: background 140ms ease, border-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 49px;
 }
 
 .bottom-nav-btn.is-active {
@@ -346,6 +353,118 @@ h1 {
   border-color: rgba(233, 108, 111, 0.62);
   color: #fff;
   box-shadow: 0 7px 14px rgba(184, 71, 92, 0.28);
+}
+
+.bottom-nav-btn.utility-btn {
+  background: rgba(255, 255, 255, 0.6);
+  border-color: rgba(103, 126, 152, 0.2);
+}
+
+.bottom-nav-icon {
+  font-size: 1.06rem;
+  line-height: 1;
+}
+
+.bottom-nav-label {
+  font-size: 0.72rem;
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+body.stories-mode .tabs {
+  display: none;
+}
+
+.stories-card {
+  display: grid;
+  gap: 10px;
+}
+
+.stories-nav {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.stories-nav-btn {
+  border: 1px solid rgba(116, 141, 171, 0.2);
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 11px;
+  padding: 10px 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--ink);
+  box-shadow: 0 3px 8px rgba(37, 62, 93, 0.12);
+}
+
+.stories-nav-btn.is-active {
+  background: linear-gradient(160deg, #ff8f63 0%, #ff646f 48%, #ff4f85 100%);
+  border-color: rgba(233, 108, 111, 0.62);
+  color: #fff;
+}
+
+.stories-subpanel {
+  display: none;
+  background: color-mix(in srgb, #fff 82%, var(--soft));
+  border: 1px solid rgba(114, 144, 178, 0.16);
+  border-radius: 12px;
+  padding: 12px;
+  animation: fade 200ms ease-out;
+}
+
+.stories-subpanel.is-active {
+  display: block;
+}
+
+.side-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+}
+
+.side-panel-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(13, 25, 44, 0.38);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.side-panel-drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: min(380px, 92vw);
+  height: 100%;
+  background: var(--soft);
+  box-shadow: -12px 0 32px rgba(11, 31, 59, 0.22);
+  padding: 18px 14px max(18px, env(safe-area-inset-bottom));
+  transform: translateX(106%);
+  transition: transform 220ms ease;
+  overflow: auto;
+}
+
+.side-panel.is-open .side-panel-backdrop {
+  opacity: 1;
+}
+
+.side-panel.is-open .side-panel-drawer {
+  transform: translateX(0);
+}
+
+.side-panel.is-closing .side-panel-backdrop {
+  opacity: 0;
+}
+
+.side-panel.is-closing .side-panel-drawer {
+  transform: translateX(106%);
+}
+
+.side-stats {
+  margin-top: 8px;
+  margin-bottom: 12px;
 }
 
 /* Additive top-tab depth skin (keeps original tab styles above intact). */
@@ -1676,14 +1795,23 @@ input[type="file"] {
   }
 
   .bottom-nav {
-    width: calc(100vw - 12px);
-    padding: 6px;
+    width: 100%;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
     gap: 6px;
+    border-radius: 12px 12px 0 0;
   }
 
   .bottom-nav-btn {
-    padding: 9px 4px;
-    font-size: 0.84rem;
+    padding: 6px 4px;
+    font-size: 0.8rem;
+  }
+
+  .bottom-nav-label {
+    font-size: 0.68rem;
+  }
+
+  .stories-nav {
+    grid-template-columns: 1fr;
   }
 }
 
