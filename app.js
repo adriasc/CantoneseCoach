@@ -1869,7 +1869,12 @@ const els = {
   bossPlayAudio: byId("bossPlayAudio"),
   bossSkip: byId("bossSkip"),
   fxLayer: byId("fxLayer"),
-  contentMessage: byId("contentMessage")
+  contentMessage: byId("contentMessage"),
+  searchInput: byId("searchInput"),
+  runSearch: byId("runSearch"),
+  clearSearch: byId("clearSearch"),
+  searchHint: byId("searchHint"),
+  searchResults: byId("searchResults")
 };
 
 const speechNoise = {
@@ -1906,6 +1911,7 @@ function initializeApp() {
   renderStoryOfDay();
   refreshStats();
   renderKnownList();
+  renderSearchHint();
   refreshGameUI();
   registerServiceWorker();
   initSoftLayoutTransitions();
@@ -1955,6 +1961,8 @@ function bindUI() {
       renderTonePair();
       renderKnownList();
       renderStoryOfDay();
+      if (els.searchInput && String(els.searchInput.value || "").trim()) runWordSearch();
+      else renderSearchHint();
     });
   }
   if (els.changePasswordBtn && els.userPanelMsg) {
@@ -2047,6 +2055,37 @@ function bindUI() {
   if (els.grammarModal) {
     els.grammarModal.addEventListener("click", (event) => {
       if (event.target === els.grammarModal) closeModalAnimated(els.grammarModal);
+    });
+  }
+  if (els.runSearch) {
+    els.runSearch.addEventListener("click", () => {
+      runWordSearch();
+    });
+  }
+  if (els.searchInput) {
+    els.searchInput.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") return;
+      event.preventDefault();
+      runWordSearch();
+    });
+  }
+  if (els.clearSearch) {
+    els.clearSearch.addEventListener("click", () => {
+      if (els.searchInput) els.searchInput.value = "";
+      renderSearchHint();
+      if (els.searchInput) els.searchInput.focus();
+    });
+  }
+  if (els.searchResults) {
+    els.searchResults.addEventListener("click", (event) => {
+      const playBtn = event.target?.closest?.(".search-play-btn");
+      if (!playBtn) return;
+      const wordId = String(playBtn.dataset.wordId || "").trim();
+      if (!wordId) return;
+      const targetWord = (state.content?.words || []).find((w) => String(w.id) === wordId);
+      if (!targetWord) return;
+      incrementMission("listens", 1);
+      speak(localizedSpeechText(targetWord));
     });
   }
 
@@ -2320,6 +2359,8 @@ function bindUI() {
       renderTonePair();
       rollExercise();
       renderKnownList();
+      if (els.searchInput && String(els.searchInput.value || "").trim()) runWordSearch();
+      else renderSearchHint();
     });
   }
   els.audioVoice.addEventListener("change", () => {
@@ -2403,6 +2444,8 @@ function bindUI() {
     rollExercise();
     refreshStats();
     renderKnownList();
+    if (els.searchInput && String(els.searchInput.value || "").trim()) runWordSearch();
+    else renderSearchHint();
   });
 }
 
@@ -2469,6 +2512,8 @@ function applyGlobalControls() {
     renderTonePair();
     rollExercise();
     renderKnownList();
+    if (els.searchInput && String(els.searchInput.value || "").trim()) runWordSearch();
+    else renderSearchHint();
   }
 }
 
@@ -2487,6 +2532,16 @@ function switchTab(tabName) {
   if (tabName === "stories") {
     switchStoryTab(state.storyTab || "curiosities");
   }
+  if (tabName === "search") {
+    if (!els.searchResults || !String(els.searchResults.innerHTML || "").trim()) {
+      renderSearchHint();
+    }
+    if (els.searchInput) {
+      setTimeout(() => {
+        els.searchInput.focus();
+      }, 0);
+    }
+  }
   if (tabName === "patterns" && state.currentSentence) {
     renderPatternSentence();
   }
@@ -2500,6 +2555,7 @@ function syncBottomTabState(tabName) {
   let activeGroup = "learn";
   if (tabName === "tones") activeGroup = "tones";
   if (tabName === "stories") activeGroup = "stories";
+  if (tabName === "search") activeGroup = "search";
   els.bottomTabs.forEach((tab) => {
     const group = String(tab.dataset.bottomGroup || tab.dataset.bottomTab || "").trim();
     if (!group) {
@@ -2703,7 +2759,7 @@ function showInfoModal(kind) {
 }
 
 function setControlsMode(tabName) {
-  const hideControls = tabName === "stories";
+  const hideControls = tabName === "stories" || tabName === "search";
   if (els.controlsCard) {
     els.controlsCard.classList.toggle("hidden", hideControls);
   }
@@ -2752,6 +2808,120 @@ function setControlsMode(tabName) {
   if (els.toneExerciseMode) els.toneExerciseMode.disabled = !isTones;
 
   // Controls apply immediately on change, so no status message is needed here.
+}
+
+function normalizeSearchText(value) {
+  const raw = String(value || "").toLowerCase().trim();
+  if (!raw) return "";
+  const normalized = raw.normalize ? raw.normalize("NFD").replace(/[\u0300-\u036f]/g, "") : raw;
+  return normalized.replace(/\s+/g, " ").trim();
+}
+
+function scoreSearchField(queryNorm, queryCompact, value, weight = 1) {
+  const fieldNorm = normalizeSearchText(value);
+  if (!fieldNorm) return 0;
+  const fieldCompact = fieldNorm.replace(/\s+/g, "");
+  let score = 0;
+  if (fieldNorm === queryNorm || fieldCompact === queryCompact) score += 140 * weight;
+  if (fieldNorm.startsWith(queryNorm) || fieldCompact.startsWith(queryCompact)) score += 90 * weight;
+  if (fieldNorm.includes(queryNorm) || fieldCompact.includes(queryCompact)) score += 45 * weight;
+  return score;
+}
+
+function getWordSearchMatches(query) {
+  const queryNorm = normalizeSearchText(query);
+  if (!queryNorm) return [];
+  const queryCompact = queryNorm.replace(/\s+/g, "");
+  const out = [];
+  const words = state.content?.words || [];
+
+  words.forEach((word) => {
+    const localized = localizeEntry(word);
+    const fields = [
+      { v: word.hanzi, w: 2.2 },
+      { v: word.jyutping, w: 2.2 },
+      { v: word.english, w: 2.4 },
+      { v: word.mandarin_hanzi, w: 2.0 },
+      { v: word.pinyin, w: 2.0 },
+      { v: word.mandarin_english, w: 2.0 },
+      { v: localized.cantonese?.hanzi, w: 2.2 },
+      { v: localized.cantonese?.roman, w: 2.2 },
+      { v: localized.cantonese?.english, w: 2.3 },
+      { v: localized.mandarin?.hanzi, w: 2.0 },
+      { v: localized.mandarin?.roman, w: 2.0 },
+      { v: localized.mandarin?.english, w: 2.0 },
+      { v: word.category, w: 0.8 }
+    ];
+
+    const score = fields.reduce((sum, field) => sum + scoreSearchField(queryNorm, queryCompact, field.v, field.w), 0);
+    if (score <= 0) return;
+    out.push({ word, score });
+  });
+
+  return out
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      const la = wordLevel(a.word);
+      const lb = wordLevel(b.word);
+      if (la !== lb) return la - lb;
+      return String(a.word.hanzi || "").localeCompare(String(b.word.hanzi || ""));
+    })
+    .slice(0, 30)
+    .map((entry) => entry.word);
+}
+
+function renderSearchHint() {
+  if (!els.searchResults) return;
+  const mode = normalizeLanguageMode(state.prefs.languageMode);
+  if (els.searchHint) {
+    els.searchHint.textContent = mode === "mandarin"
+      ? "Try: tomorrow, 明天, ming2 tian1, half."
+      : "Try: tomorrow, 聽日, ting1 jat6, half.";
+  }
+  els.searchResults.innerHTML = "<p class=\"example\">Type a word and press Search.</p>";
+}
+
+function runWordSearch() {
+  if (!els.searchInput || !els.searchResults) return;
+  const query = String(els.searchInput.value || "").trim();
+  if (!query) {
+    renderSearchHint();
+    return;
+  }
+
+  const matches = getWordSearchMatches(query);
+  if (!matches.length) {
+    els.searchResults.innerHTML = `<p class="example">No matches for “${escapeHtml(query)}”. Try English, Hanzi, Jyutping, or Pinyin.</p>`;
+    return;
+  }
+
+  const mode = normalizeLanguageMode(state.prefs.languageMode);
+  const html = matches.map((word) => {
+    const localized = localizeEntry(word);
+    let hanziText = localized.display.hanzi || "-";
+    let romanText = localized.display.roman || "-";
+    let englishText = localized.display.english || "-";
+    if (mode === "compare") {
+      hanziText = `粵: ${localized.cantonese.hanzi || "-"}\n普: ${localized.mandarin.hanzi || "-"}`;
+      romanText = `粵: ${localized.cantonese.roman || "-"}\n普: ${localized.mandarin.roman || "-"}`;
+      englishText = (localized.cantonese.english && localized.mandarin.english && localized.cantonese.english !== localized.mandarin.english)
+        ? `C: ${localized.cantonese.english}\nM: ${localized.mandarin.english}`
+        : (localized.cantonese.english || localized.mandarin.english || "-");
+    }
+    return `<article class="search-item">
+      <div class="search-main">
+        <p class="chip search-chip">${escapeHtml(word.category || "word")}</p>
+        <p class="hanzi ${mode === "compare" ? "compare-lines" : ""}">${escapeHtml(hanziText)}</p>
+        <p class="jyutping ${mode === "compare" ? "compare-lines" : ""}">${escapeHtml(romanText)}</p>
+        <p class="english ${mode === "compare" ? "compare-lines" : ""}">${escapeHtml(englishText)}</p>
+      </div>
+      <div class="actions search-actions">
+        <button class="search-play-btn play-icon-btn" type="button" data-word-id="${escapeAttr(word.id)}" aria-label="Play pronunciation">▶</button>
+      </div>
+    </article>`;
+  }).join("");
+
+  els.searchResults.innerHTML = html;
 }
 
 function rollWord() {
@@ -4116,6 +4286,8 @@ function importDataFile(event) {
       rollQuestion();
       rollExercise();
       renderKnownList();
+      if (els.searchInput && String(els.searchInput.value || "").trim()) runWordSearch();
+      else renderSearchHint();
     } catch (err) {
       els.contentMessage.textContent = "Import failed. Please use valid JSON format.";
     }
