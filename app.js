@@ -2528,6 +2528,7 @@ function switchTab(tabName) {
   syncBottomTabState(tabName);
   els.panels.forEach((panel) => panel.classList.toggle("is-active", panel.id === targetPanelId));
   document.body.classList.toggle("stories-mode", tabName === "stories");
+  document.body.classList.toggle("search-mode", tabName === "search");
   setControlsMode(tabName);
   if (tabName === "stories") {
     switchStoryTab(state.storyTab || "curiosities");

@@ -387,6 +387,10 @@ body.stories-mode .tabs {
   display: none;
 }
 
+body.search-mode .tabs {
+  display: none;
+}
+
 #panel-search .card {
   display: grid;
   gap: 10px;
