@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.33</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.34</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -93,7 +93,7 @@
             <path d="m14.5 15.5 1.5 1.5 3-3"></path>
           </svg>
         </span>
-        <span class="learn-tab-label">Exercises</span>
+        <span class="learn-tab-label">Translate</span>
       </button>
     </nav>
 
@@ -191,14 +191,18 @@
           </select>
         </div>
         <div id="questionThemeWrap" class="question-control hidden">
-          <label for="questionTheme">Theme</label>
+          <label for="questionTheme">Question Type</label>
           <select id="questionTheme">
             <option value="mixed">Mixed</option>
-            <option value="home">Home/Family</option>
-            <option value="friends">Friends</option>
-            <option value="travel">Travel/Going out</option>
-            <option value="daily">Daily routines</option>
-            <option value="holiday">Holiday plans</option>
+            <option value="who">Who</option>
+            <option value="where">Where</option>
+            <option value="when">When</option>
+            <option value="how">How</option>
+            <option value="how_much">How much / How many</option>
+            <option value="which">Which</option>
+            <option value="what">What</option>
+            <option value="why">Why</option>
+            <option value="yes_no">Yes / No</option>
           </select>
         </div>
         <div id="toneModeWrap" class="general-control hidden">
@@ -546,7 +550,7 @@
 
     <section class="panel" id="panel-exercises">
       <div class="card">
-        <h2>Exercises</h2>
+        <h2>Translate</h2>
         <p>Read the English line, then tap the Hanzi blocks to build the correct sentence.</p>
         <p class="formula" id="exercisePrompt"></p>
         <div class="result-box">

@@ -1912,6 +1912,7 @@ const modalCloseTimers = new WeakMap();
 let storyBankCache = null;
 
 function initializeApp() {
+  state.prefs.questionTheme = normalizeQuestionType(state.prefs.questionTheme);
   configureBottomMenu();
   bindUI();
   ensureDailyGameState();
@@ -2502,14 +2503,14 @@ function applyGlobalControls() {
   const prevToneMode = state.prefs.toneExerciseMode || "word";
   const prevQLevel = state.prefs.questionLevel || "basic";
   const prevQTense = state.prefs.questionTense || "mixed";
-  const prevQTheme = state.prefs.questionTheme || "mixed";
+  const prevQTheme = normalizeQuestionType(state.prefs.questionTheme);
   state.prefs.level = normalizePracticeLevel(els.globalLevel.value);
   state.prefs.tense = els.globalTense.value;
   state.prefs.wordFilter = els.wordFilter?.value || "mixed";
   state.prefs.theme = els.globalTheme.value;
   state.prefs.questionLevel = els.questionLevel?.value || "basic";
   state.prefs.questionTense = els.questionTense?.value || "mixed";
-  state.prefs.questionTheme = els.questionTheme?.value || "mixed";
+  state.prefs.questionTheme = normalizeQuestionType(els.questionTheme?.value || state.prefs.questionTheme);
   state.prefs.uiTheme = els.themeStyle?.value || "classic";
   state.prefs.languageMode = normalizeLanguageMode(els.languageMode?.value || state.prefs.languageMode);
   state.prefs.toneExerciseMode = els.toneExerciseMode?.value || "word";
@@ -2846,11 +2847,6 @@ function setControlsMode(tabName) {
   }
   if (els.toneModeWrap) {
     els.toneModeWrap.classList.toggle("hidden", !isTones);
-  }
-  if (isTones && state.prefs.controlsCollapsed) {
-    state.prefs.controlsCollapsed = false;
-    saveJson(STORAGE_KEYS.prefs, state.prefs);
-    setControlsCollapsed(false);
   }
   if (els.globalTenseWrap) {
     els.globalTenseWrap.classList.toggle("hidden", isWords || isQuestions || isTones);
@@ -4452,6 +4448,24 @@ function normalizeLanguageMode(value) {
   return "cantonese";
 }
 
+const QUESTION_TYPE_FILTERS = new Set([
+  "mixed",
+  "who",
+  "where",
+  "when",
+  "how",
+  "how_much",
+  "which",
+  "what",
+  "why",
+  "yes_no"
+]);
+
+function normalizeQuestionType(value) {
+  const raw = String(value || "").toLowerCase().trim();
+  return QUESTION_TYPE_FILTERS.has(raw) ? raw : "mixed";
+}
+
 const TRAD_TO_SIMP_CHAR_MAP = {
   "萬": "万",
   "與": "与",
@@ -5567,7 +5581,7 @@ function syncControlValues() {
   els.globalTheme.value = state.prefs.theme || "mixed";
   if (els.questionLevel) els.questionLevel.value = state.prefs.questionLevel || "basic";
   if (els.questionTense) els.questionTense.value = state.prefs.questionTense || "mixed";
-  if (els.questionTheme) els.questionTheme.value = state.prefs.questionTheme || "mixed";
+  if (els.questionTheme) els.questionTheme.value = normalizeQuestionType(state.prefs.questionTheme);
   if (els.toneExerciseMode) els.toneExerciseMode.value = state.prefs.toneExerciseMode || "word";
   if (els.themeStyle) els.themeStyle.value = state.prefs.uiTheme || "classic";
   if (els.languageMode) els.languageMode.value = normalizeLanguageMode(state.prefs.languageMode);
@@ -5933,12 +5947,15 @@ function getQuestionSentencePool(mode = "basic") {
 function getFilteredQuestionSentences() {
   const mode = state.prefs.questionLevel || "basic";
   const tense = state.prefs.questionTense || "mixed";
-  const theme = state.prefs.questionTheme || "mixed";
+  const qType = normalizeQuestionType(state.prefs.questionTheme);
   const base = getQuestionSentencePool(mode);
   let pool = base.filter((s) => (
     (tense === "mixed" || s.tense === tense)
-    && (theme === "mixed" || s.theme === theme)
+    && (qType === "mixed" || getQuestionType(s) === qType)
   ));
+  if (!pool.length && qType !== "mixed") {
+    pool = base.filter((s) => getQuestionType(s) === qType);
+  }
   if (!pool.length) {
     pool = base.filter((s) => tense === "mixed" || s.tense === tense);
   }
@@ -5946,6 +5963,25 @@ function getFilteredQuestionSentences() {
     pool = base;
   }
   return pool;
+}
+
+function getQuestionType(sentence) {
+  const h = String(sentence?.hanzi || "");
+  const j = String(sentence?.jyutping || "");
+  const e = String(sentence?.english || "").toLowerCase();
+  const text = `${h} ${j}`.replace(/\s+/g, "");
+
+  if (/點解|為咩|为何|为什么/.test(text) || /\bwhy\b/.test(e)) return "why";
+  if (/幾多|幾錢|幾耐|几多|多少钱|多少/.test(text) || /\bhow much\b|\bhow many\b/.test(e)) return "how_much";
+  if (/幾時|幾點|几时|几点|何時|什么时候/.test(text) || /\bwhen\b|\bwhat time\b/.test(e)) return "when";
+  if (/邊度|邊到|喺邊|係邊|哪里|哪裡|在哪/.test(text) || /\bwhere\b/.test(e)) return "where";
+  if (/同邊個|係邊個|系边个/.test(text) || /\bwho\b/.test(e)) return "who";
+  if (/邊個|边个|誰|谁/.test(text)) return "who";
+  if (/邊一|邊啲|哪一|哪些|哪個|哪个/.test(text) || /\bwhich\b/.test(e)) return "which";
+  if (/點樣|點做|如何|怎样|怎么/.test(text) || /\bhow\b/.test(e)) return "how";
+  if (/咩|乜|什麼|什么/.test(text) || /\bwhat\b/.test(e)) return "what";
+  if (/係咪|會唔會|有冇|有無|可唔可以|得唔得|吗|嗎|未/.test(text) || /[？?]/.test(h)) return "yes_no";
+  return "mixed";
 }
 
 function wordMatchesFilter(word, selectedFilter) {
