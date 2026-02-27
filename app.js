@@ -1797,6 +1797,7 @@ const state = {
   quizDisplay: { hanzi: false, jyutping: false, english: false, lens: false },
   game: normalizeGameState(loadJson(STORAGE_KEYS.game, defaultGameState()))
 };
+setRuntimeWordsForLookup(state.content?.words || []);
 
 const els = {
   appTitle: byId("appTitle"),
@@ -1989,11 +1990,20 @@ const softResizeHeights = new WeakMap();
 const modalCloseTimers = new WeakMap();
 let storyBankCache = null;
 const miniStoryPlayer = { token: 0, lineIndex: 0, chunkIndex: 0, active: false, paused: false };
-const AUTO_TOKEN_JYUTPING = Object.create(null);
+var AUTO_TOKEN_JYUTPING = Object.create(null);
 let tokenizerVocabularyCache = null;
+var runtimeWordsForLookup = [];
 
 function invalidateTokenizerVocabularyCache() {
   tokenizerVocabularyCache = null;
+}
+
+function setRuntimeWordsForLookup(words) {
+  runtimeWordsForLookup = Array.isArray(words) ? words : [];
+}
+
+function getRuntimeWordsForLookup() {
+  return Array.isArray(runtimeWordsForLookup) ? runtimeWordsForLookup : [];
 }
 
 function normalizeRomanSyllables(romanInput) {
@@ -2033,6 +2043,9 @@ function inferTokenRomanMapFromSentence(hanziInput, romanInput) {
 }
 
 function refreshAutoTokenJyutpingMap() {
+  if (!AUTO_TOKEN_JYUTPING || typeof AUTO_TOKEN_JYUTPING !== "object") {
+    AUTO_TOKEN_JYUTPING = Object.create(null);
+  }
   Object.keys(AUTO_TOKEN_JYUTPING).forEach((key) => delete AUTO_TOKEN_JYUTPING[key]);
 
   const sources = [];
@@ -2117,6 +2130,7 @@ function enrichWordCoverage() {
 }
 
 function refreshLexiconCoverage() {
+  setRuntimeWordsForLookup(state.content?.words || []);
   invalidateTokenizerVocabularyCache();
   refreshAutoTokenJyutpingMap();
   enrichWordCoverage();
@@ -2773,6 +2787,7 @@ function bindUI() {
   byId("resetData").addEventListener("click", () => {
     localStorage.removeItem(STORAGE_KEYS.content);
     state.content = normalizeContent(deepClone(DEFAULT_DATA));
+    setRuntimeWordsForLookup(state.content?.words || []);
     refreshLexiconCoverage();
     els.contentMessage.textContent = "Reset complete. Built-in words loaded.";
     resetRotations();
@@ -5107,6 +5122,7 @@ function importDataFile(event) {
       const imported = JSON.parse(String(reader.result));
       const checked = normalizeContent(imported);
       state.content = checked;
+      setRuntimeWordsForLookup(state.content?.words || []);
       saveJson(STORAGE_KEYS.content, checked);
       refreshLexiconCoverage();
       els.contentMessage.textContent = "Import successful. New learning set loaded.";
@@ -6303,7 +6319,7 @@ function isMissingMeaning(english) {
 
 function lookupMeaningExact(hanzi) {
   const key = normalizeHanzi(hanzi);
-  const byWord = (state.content?.words || []).find((w) => normalizeHanzi(w.hanzi) === key);
+  const byWord = getRuntimeWordsForLookup().find((w) => normalizeHanzi(w.hanzi) === key);
   if (byWord?.english) return String(byWord.english).split("/")[0].trim();
   if (EXTRA_TOKEN_MEANINGS[key]) return EXTRA_TOKEN_MEANINGS[key];
   if (CORE_WORD_MEANINGS[key]) return CORE_WORD_MEANINGS[key];
@@ -6312,10 +6328,10 @@ function lookupMeaningExact(hanzi) {
 
 function lookupJyutpingExact(hanzi) {
   const key = normalizeHanzi(hanzi);
-  const byWord = (state.content?.words || []).find((w) => normalizeHanzi(w.hanzi) === key);
+  const byWord = getRuntimeWordsForLookup().find((w) => normalizeHanzi(w.hanzi) === key);
   if (byWord?.jyutping && byWord.jyutping !== "to-confirm") return cleanLiteral(byWord.jyutping);
   if (EXTRA_TOKEN_JYUTPING[key]) return cleanLiteral(EXTRA_TOKEN_JYUTPING[key]);
-  if (AUTO_TOKEN_JYUTPING[key]) return cleanLiteral(AUTO_TOKEN_JYUTPING[key]);
+  if (AUTO_TOKEN_JYUTPING && AUTO_TOKEN_JYUTPING[key]) return cleanLiteral(AUTO_TOKEN_JYUTPING[key]);
   if (CORE_WORD_JYUTPING[key]) return cleanLiteral(CORE_WORD_JYUTPING[key]);
   return "";
 }
