@@ -1741,6 +1741,7 @@ const els = {
   closeUserPanelBackdrop: byId("closeUserPanelBackdrop"),
   userPanelVersion: byId("userPanelVersion"),
   changeEmailBtn: byId("changeEmailBtn"),
+  upgradeAccountBtn: byId("upgradeAccountBtn"),
   userLanguageMode: byId("userLanguageMode"),
   changePasswordBtn: byId("changePasswordBtn"),
   logOutBtn: byId("logOutBtn"),
@@ -1996,6 +1997,11 @@ function bindUI() {
   if (els.changeEmailBtn && els.userPanelMsg) {
     els.changeEmailBtn.addEventListener("click", () => {
       els.userPanelMsg.textContent = "Email change/update requires backend auth. We can enable it in next phase.";
+    });
+  }
+  if (els.upgradeAccountBtn && els.userPanelMsg) {
+    els.upgradeAccountBtn.addEventListener("click", () => {
+      els.userPanelMsg.textContent = "Upgrade flow requires store/backend billing setup. We can wire it next phase.";
     });
   }
   if (els.changePasswordBtn && els.userPanelMsg) {

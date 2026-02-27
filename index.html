@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.36</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.37</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -775,7 +775,7 @@
         <h2>Your Space</h2>
         <button id="closeUserPanel" class="ghost-btn" type="button">✕</button>
       </div>
-      <div class="side-avatar-wrap">
+      <div class="side-profile-head">
         <div class="side-avatar-circle" aria-hidden="true">
           <svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true">
             <circle cx="12" cy="12" r="9"></circle>
@@ -784,12 +784,12 @@
             <path d="M8.5 14.2c1 .9 2.2 1.3 3.5 1.3s2.5-.4 3.5-1.3"></path>
           </svg>
         </div>
-      </div>
-      <div class="side-simple-list">
-        <div class="side-kv">
+        <div class="side-name-block">
           <span class="side-k">User name</span>
           <strong class="side-v">Adria Salvado</strong>
         </div>
+      </div>
+      <div class="side-simple-list">
         <div class="side-kv">
           <span class="side-k">Email</span>
           <div class="side-inline">
@@ -806,7 +806,10 @@
         </div>
         <div class="side-kv">
           <span class="side-k">Account type</span>
-          <strong class="side-v">Premium</strong>
+          <div class="side-inline">
+            <strong class="side-v">Premium</strong>
+            <button id="upgradeAccountBtn" class="side-action-btn side-inline-btn" type="button">Upgrade</button>
+          </div>
         </div>
         <div class="side-kv">
           <span class="side-k">Language mode</span>
