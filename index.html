@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.35</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.36</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -775,16 +775,33 @@
         <h2>Your Space</h2>
         <button id="closeUserPanel" class="ghost-btn" type="button">✕</button>
       </div>
+      <div class="side-avatar-wrap">
+        <div class="side-avatar-circle" aria-hidden="true">
+          <svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"></circle>
+            <circle cx="9" cy="10" r="1.1"></circle>
+            <circle cx="15" cy="10" r="1.1"></circle>
+            <path d="M8.5 14.2c1 .9 2.2 1.3 3.5 1.3s2.5-.4 3.5-1.3"></path>
+          </svg>
+        </div>
+      </div>
       <div class="side-simple-list">
         <div class="side-kv">
           <span class="side-k">User name</span>
           <strong class="side-v">Adria Salvado</strong>
         </div>
         <div class="side-kv">
+          <span class="side-k">Email</span>
+          <div class="side-inline">
+            <strong id="userEmailValue" class="side-v">adria@coach.app</strong>
+            <button id="changeEmailBtn" class="side-action-btn side-action-soft side-inline-btn" type="button">Change/Update</button>
+          </div>
+        </div>
+        <div class="side-kv">
           <span class="side-k">Password</span>
           <div class="side-inline">
             <strong class="side-v">••••••••</strong>
-            <button id="changePasswordBtn" class="side-action-btn side-action-soft" type="button">Reset/Change</button>
+            <button id="changePasswordBtn" class="side-action-btn side-action-soft side-inline-btn" type="button">Reset/Change</button>
           </div>
         </div>
         <div class="side-kv">
@@ -799,17 +816,12 @@
             <option value="compare">Cantonese + Mandarin</option>
           </select>
         </div>
-        <div class="side-kv">
-          <span class="side-k">App</span>
-          <strong id="userPanelVersion" class="side-v">v?</strong>
-        </div>
       </div>
-      <div class="side-actions-grid">
+      <div class="side-actions-stack">
         <button id="openSettingsFromUser" class="side-action-btn" type="button">Settings</button>
-        <button id="openContentFromUser" class="side-action-btn" type="button">Content</button>
-        <button id="logOutBtn" class="side-action-btn side-action-soft" type="button">Log Off</button>
-        <button id="openTermsBtn" class="side-action-btn side-action-soft" type="button">Terms of Use</button>
         <button id="openAboutBtn" class="side-action-btn side-action-soft" type="button">About Us</button>
+        <button id="openTermsBtn" class="side-action-btn side-action-soft" type="button">Terms of Use</button>
+        <button id="logOutBtn" class="side-action-btn side-action-soft" type="button">Log Off</button>
       </div>
       <p id="userPanelMsg" class="example side-msg"></p>
     </aside>

@@ -705,6 +705,33 @@ body.book-mode .book-top-tabs {
   margin-top: 6px;
 }
 
+.side-avatar-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.side-avatar-circle {
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  border: 2px solid rgba(190, 114, 84, 0.45);
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 230, 209, 0.88) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 16px rgba(138, 74, 58, 0.2);
+}
+
+.side-avatar-circle svg {
+  width: 52px;
+  height: 52px;
+  fill: #ffddb9;
+  stroke: #a95a3a;
+  stroke-width: 1.2;
+}
+
 .side-kv {
   background: rgba(255, 255, 255, 0.55);
   border: 1px solid rgba(198, 121, 86, 0.24);
@@ -746,14 +773,15 @@ body.book-mode .book-top-tabs {
   gap: 8px;
 }
 
-.side-actions-grid {
+.side-actions-stack {
   margin-top: 10px;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 8px;
 }
 
 .side-action-btn {
+  width: 100%;
   border-radius: 12px;
   border: 1px solid rgba(199, 106, 82, 0.42);
   background: linear-gradient(160deg, #ff9b6e 0%, #ff7a76 50%, #ff6993 100%);
@@ -768,6 +796,14 @@ body.book-mode .book-top-tabs {
   background: rgba(255, 255, 255, 0.72);
   border-color: rgba(179, 111, 84, 0.3);
   color: #6a3f2f;
+}
+
+.side-inline-btn {
+  width: auto;
+  min-width: 116px;
+  padding: 7px 10px;
+  font-size: 0.85rem;
+  border-radius: 10px;
 }
 
 .example.side-msg {

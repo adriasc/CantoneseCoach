@@ -1740,6 +1740,7 @@ const els = {
   closeUserPanel: byId("closeUserPanel"),
   closeUserPanelBackdrop: byId("closeUserPanelBackdrop"),
   userPanelVersion: byId("userPanelVersion"),
+  changeEmailBtn: byId("changeEmailBtn"),
   userLanguageMode: byId("userLanguageMode"),
   changePasswordBtn: byId("changePasswordBtn"),
   logOutBtn: byId("logOutBtn"),
@@ -1992,6 +1993,11 @@ function bindUI() {
       else renderSearchHint();
     });
   }
+  if (els.changeEmailBtn && els.userPanelMsg) {
+    els.changeEmailBtn.addEventListener("click", () => {
+      els.userPanelMsg.textContent = "Email change/update requires backend auth. We can enable it in next phase.";
+    });
+  }
   if (els.changePasswordBtn && els.userPanelMsg) {
     els.changePasswordBtn.addEventListener("click", () => {
       els.userPanelMsg.textContent = "Password change/reset requires backend auth. We can enable it in next phase.";
@@ -2004,10 +2010,16 @@ function bindUI() {
     });
   }
   if (els.openTermsBtn) {
-    els.openTermsBtn.addEventListener("click", () => showInfoModal("terms"));
+    els.openTermsBtn.addEventListener("click", () => {
+      closeUserSidePanel();
+      window.setTimeout(() => showInfoModal("terms"), 170);
+    });
   }
   if (els.openAboutBtn) {
-    els.openAboutBtn.addEventListener("click", () => showInfoModal("about"));
+    els.openAboutBtn.addEventListener("click", () => {
+      closeUserSidePanel();
+      window.setTimeout(() => showInfoModal("about"), 170);
+    });
   }
   if (els.closeInfoModal && els.infoModal) {
     els.closeInfoModal.addEventListener("click", () => closeModalAnimated(els.infoModal));
