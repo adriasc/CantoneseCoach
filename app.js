@@ -3617,10 +3617,12 @@ function renderToneChoices() {
   if (!pair || !els.toneChoices) return;
   const toneA = toneItemForLabel("a");
   const toneB = toneItemForLabel("b");
-  const options = [toneChoiceLabel(toneA), toneChoiceLabel(toneB)];
+  const labelA = toneChoiceLabel(toneA);
+  const labelB = toneChoiceLabel(toneB);
+  const options = [labelA, labelB];
   const selected = normalizePracticeLevel(state.prefs.level);
   if (state.currentToneKind === "word" && selected !== 1) {
-    const extra = pickThirdToneOption(options);
+    const extra = makeThirdToneVariantLabel(labelA, labelB);
     if (extra) options.push(extra);
   }
   shuffle(options);
@@ -3634,14 +3636,38 @@ function renderToneChoices() {
   });
 }
 
-function pickThirdToneOption(existingOptions) {
-  const normalizedExisting = new Set(existingOptions.map((o) => String(o || "").trim()));
-  const candidates = getFilteredTonePairs()
-    .flatMap((pair) => [toneChoiceLabel(pair.a), toneChoiceLabel(pair.b)])
-    .filter((jp) => jp && !normalizedExisting.has(String(jp).trim()));
+function makeThirdToneVariantLabel(labelA, labelB) {
+  const leftPart = (label) => String(label || "").split("/")[0].trim();
+  const parseTone = (syllable) => {
+    const m = String(syllable || "").match(/^(.+?)([1-6])$/);
+    if (!m) return null;
+    return { base: m[1], tone: Number(m[2]) };
+  };
+
+  const a = String(labelA || "").trim();
+  const b = String(labelB || "").trim();
+  if (!a || !b) return "";
+
+  const parsedA = parseTone(leftPart(a));
+  const parsedB = parseTone(leftPart(b));
+  if (!parsedA) return "";
+
+  const tonesInUse = new Set([parsedA.tone]);
+  if (parsedB && parsedB.base === parsedA.base) tonesInUse.add(parsedB.tone);
+
+  const candidates = [1, 2, 3, 4, 5, 6].filter((tone) => !tonesInUse.has(tone));
   if (!candidates.length) return "";
-  const unique = Array.from(new Set(candidates));
-  return unique[randomInt(unique.length)];
+  const newTone = candidates[randomInt(candidates.length)];
+  const thirdLeft = `${parsedA.base}${newTone}`;
+
+  let out = thirdLeft;
+  if (a.includes("/")) {
+    const rightSide = a.split("/").slice(1).join("/").trim();
+    out = rightSide ? `${thirdLeft} / ${rightSide}` : thirdLeft;
+  }
+
+  if (out === a || out === b) return "";
+  return out;
 }
 
 function checkToneAnswer(selected, clickedBtn) {
@@ -5688,7 +5714,7 @@ function applyQuizVisibility() {
   setMiniToggle(els.toggleQuizGrammarLens, showLens, "◎", "Lens on", "Lens off");
   setMiniToggle(els.toggleQuizJyutping, showJp, romanToggleIcon(), romanToggleLabelState(true), romanToggleLabelState(false));
   setMiniToggle(els.toggleQuizEnglish, showEn, "EN", "English on", "English off");
-  setMiniToggle(byId("showQuizText"), showHanzi, "中", "Chinese on", "Chinese off");
+  setMiniToggle(byId("showQuizText"), showHanzi, "字", "Hanzi on", "Hanzi off");
 }
 
 function renderPatternActionButtons(showJp, showEn, showLens) {
