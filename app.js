@@ -1773,7 +1773,6 @@ const els = {
   miniStoryLines: byId("miniStoryLines"),
   miniStoryTapHint: byId("miniStoryTapHint"),
   playMiniStoryAudio: byId("playMiniStoryAudio"),
-  pauseMiniStoryAudio: byId("pauseMiniStoryAudio"),
   toggleMiniStoryJyutping: byId("toggleMiniStoryJyutping"),
   toggleMiniStoryEnglish: byId("toggleMiniStoryEnglish"),
   toggleMiniStoryLens: byId("toggleMiniStoryLens"),
@@ -1926,7 +1925,7 @@ let layoutResizeObserver = null;
 const softResizeHeights = new WeakMap();
 const modalCloseTimers = new WeakMap();
 let storyBankCache = null;
-const miniStoryPlayer = { token: 0, lineIndex: 0, active: false, paused: false };
+const miniStoryPlayer = { token: 0, lineIndex: 0, chunkIndex: 0, active: false, paused: false };
 
 function initializeApp() {
   state.prefs.questionTheme = normalizeQuestionType(state.prefs.questionTheme);
@@ -2117,12 +2116,7 @@ function bindUI() {
   }
   if (els.playMiniStoryAudio) {
     els.playMiniStoryAudio.addEventListener("click", () => {
-      startMiniStoryPlayback();
-    });
-  }
-  if (els.pauseMiniStoryAudio) {
-    els.pauseMiniStoryAudio.addEventListener("click", () => {
-      toggleMiniStoryPause();
+      toggleMiniStoryPlayback();
     });
   }
   if (els.toggleMiniStoryJyutping) {
@@ -2983,6 +2977,7 @@ function renderMiniStory() {
   if (!story || !Array.isArray(story.lines) || !story.lines.length) {
     els.miniStoryLines.innerHTML = "<p class=\"example\">No mini story available.</p>";
     if (els.miniStoryMeta) els.miniStoryMeta.textContent = "";
+    state.currentMiniStoryChunkTexts = [];
     return;
   }
 
@@ -2996,13 +2991,12 @@ function renderMiniStory() {
 
   const showJp = state.prefs.miniStoryShowJyutping !== false;
   const showLens = state.prefs.miniStoryLens !== false;
+  const chunkTextsByLine = [];
   const html = story.lines.map((line, lineIndex) => {
     const analysis = state.currentMiniStoryAnalyses[lineIndex];
-    const hanziBase = showLens
-      ? (showJp ? (analysis?.annotatedRubyHanzi || analysis?.annotatedHanzi) : analysis?.annotatedHanzi)
-      : (showJp ? (analysis?.rubyHanzi || buildRubyByCharacter(line.hanzi, line.jyutping)) : escapeHtml(line.hanzi || "-"));
-    const hanziHtml = String(hanziBase || escapeHtml(line.hanzi || "-"))
-      .replace(/data-idx="(\d+)"/g, `data-idx="$1" data-mini-story-line="${lineIndex}"`);
+    const lineRender = buildMiniStoryLineRender(line, analysis, lineIndex, showLens, showJp);
+    const hanziHtml = lineRender.html;
+    chunkTextsByLine[lineIndex] = lineRender.chunkTexts;
     const literalHtml = showLens
       ? (analysis?.literalHtml || escapeHtml(analysis?.literal || ""))
       : escapeHtml(analysis?.literal || "");
@@ -3015,11 +3009,80 @@ function renderMiniStory() {
     </article>`;
   }).join("");
 
+  state.currentMiniStoryChunkTexts = chunkTextsByLine;
   els.miniStoryLines.innerHTML = html;
   if (els.miniStoryTapHint) {
     els.miniStoryTapHint.textContent = "Tap any highlighted Hanzi to open quick explanation.";
   }
   applyMiniStoryVisibility();
+}
+
+function splitMiniStoryTokenChunks(tokens) {
+  const out = [];
+  let current = [];
+  tokens.forEach((token, idx) => {
+    current.push({ token, idx });
+    if (/^[，,。！？.!?；;、]$/.test(token)) {
+      out.push(current);
+      current = [];
+    }
+  });
+  if (current.length) out.push(current);
+  return out.filter((chunk) => chunk.some((item) => !isPunctuation(item.token)));
+}
+
+function miniStoryTokenClass(meta, mapIndex) {
+  const markerRole = meta?.marker?.role || "";
+  const isVerb = !!meta?.isVerb;
+  let cls = `tok tok-map-${mapIndex % 8}`;
+  if (markerRole === "past") cls += " tok-past";
+  if (markerRole === "prog") cls += " tok-prog";
+  if (markerRole === "future") cls += " tok-future";
+  if (isVerb) cls += " tok-verb";
+  cls += " tok-clickable";
+  return { cls, role: markerRole || (isVerb ? "verb" : "") };
+}
+
+function miniStoryTokenHtml(token, idx, analysis, showLens, showJp, mapState, lineIndex) {
+  if (isPunctuation(token)) return escapeHtml(token);
+  const meta = analysis?.tokenMeta?.[idx] || null;
+  if (showLens) {
+    const nextMap = mapState.value;
+    mapState.value += 1;
+    const classInfo = miniStoryTokenClass(meta, nextMap);
+    const dataAttrs = ` data-idx="${idx}" data-mini-story-line="${lineIndex}" data-token="${escapeAttr(token)}" data-role="${escapeAttr(classInfo.role)}"`;
+    if (showJp) {
+      const jp = jyutpingForToken(token);
+      const showRt = jp && jp !== "to-confirm" && jp !== token;
+      const ruby = `<ruby><rb>${escapeHtml(token)}</rb>${showRt ? `<rt>${escapeHtml(jp)}</rt>` : ""}</ruby>`;
+      return `<span class="${classInfo.cls}"${dataAttrs}>${ruby}</span>`;
+    }
+    return `<span class="${classInfo.cls}"${dataAttrs}>${escapeHtml(token)}</span>`;
+  }
+  if (showJp) {
+    const jp = jyutpingForToken(token);
+    const showRt = jp && jp !== "to-confirm" && jp !== token;
+    return `<ruby><rb>${escapeHtml(token)}</rb>${showRt ? `<rt>${escapeHtml(jp)}</rt>` : ""}</ruby>`;
+  }
+  return escapeHtml(token);
+}
+
+function buildMiniStoryLineRender(line, analysis, lineIndex, showLens, showJp) {
+  const tokens = Array.isArray(analysis?.tokens) && analysis.tokens.length
+    ? analysis.tokens
+    : tokenizeSentence(line?.hanzi || "");
+  const chunks = splitMiniStoryTokenChunks(tokens);
+  const mapState = { value: 0 };
+  const html = chunks.map((chunk, chunkIndex) => {
+    const chunkHtml = chunk
+      .map((item) => miniStoryTokenHtml(item.token, item.idx, analysis, showLens, showJp, mapState, lineIndex))
+      .join("");
+    return `<span class="mini-story-hanzi-chunk" data-mini-story-line="${lineIndex}" data-mini-story-chunk="${chunkIndex}">${chunkHtml}</span>`;
+  }).join("");
+  const chunkTexts = chunks
+    .map((chunk) => chunk.map((item) => item.token).join("").trim())
+    .filter(Boolean);
+  return { html: html || escapeHtml(line?.hanzi || "-"), chunkTexts };
 }
 
 function applyMiniStoryVisibility() {
@@ -3039,27 +3102,43 @@ function applyMiniStoryVisibility() {
   setMiniToggle(els.toggleMiniStoryJyutping, showJp, romanToggleIcon(), romanToggleLabelState(true), romanToggleLabelState(false));
   setMiniToggle(els.toggleMiniStoryEnglish, showEn, "EN", "English on", "English off");
   setMiniToggle(els.toggleMiniStoryLens, showLens, "◎", "Lens on", "Lens off");
-  updateMiniStoryPauseButton();
+  updateMiniStoryPlayButton();
 }
 
-function updateMiniStoryPauseButton() {
-  if (!els.pauseMiniStoryAudio) return;
+function updateMiniStoryPlayButton() {
+  if (!els.playMiniStoryAudio) return;
+  const isActive = !!miniStoryPlayer.active;
   const isPaused = !!miniStoryPlayer.paused;
-  setMiniToggle(els.pauseMiniStoryAudio, isPaused, isPaused ? "▶" : "⏸", "Resume", "Pause");
+  const isPlaying = isActive && !isPaused;
+  els.playMiniStoryAudio.textContent = isPlaying ? "⏸" : "▶";
+  els.playMiniStoryAudio.setAttribute(
+    "aria-label",
+    isPlaying ? "Pause mini story audio" : (isActive ? "Resume mini story audio" : "Play mini story audio")
+  );
+  els.playMiniStoryAudio.classList.toggle("is-paused", isPaused);
 }
 
-function setMiniStorySpeakingLine(lineIndex) {
+function setMiniStorySpeakingChunk(lineIndex, chunkIndex) {
   if (!els.miniStoryLines) return;
-  const blocks = [...els.miniStoryLines.querySelectorAll(".mini-story-line-block")];
-  blocks.forEach((block, idx) => {
+  els.miniStoryLines.querySelectorAll(".mini-story-hanzi-chunk.is-speaking").forEach((node) => {
+    node.classList.remove("is-speaking");
+  });
+  const chunkEl = els.miniStoryLines.querySelector(
+    `.mini-story-hanzi-chunk[data-mini-story-line="${lineIndex}"][data-mini-story-chunk="${chunkIndex}"]`
+  );
+  if (chunkEl) chunkEl.classList.add("is-speaking");
+  els.miniStoryLines.querySelectorAll(".mini-story-line-block").forEach((block, idx) => {
     block.classList.toggle("is-speaking", idx === lineIndex);
   });
 }
 
-function clearMiniStorySpeakingLine() {
+function clearMiniStorySpeakingChunk() {
   if (!els.miniStoryLines) return;
-  els.miniStoryLines.querySelectorAll(".mini-story-line-block.is-speaking").forEach((block) => {
-    block.classList.remove("is-speaking");
+  els.miniStoryLines.querySelectorAll(".mini-story-hanzi-chunk.is-speaking").forEach((node) => {
+    node.classList.remove("is-speaking");
+  });
+  els.miniStoryLines.querySelectorAll(".mini-story-line-block.is-speaking").forEach((node) => {
+    node.classList.remove("is-speaking");
   });
 }
 
@@ -3068,44 +3147,99 @@ function stopMiniStoryPlayback() {
   miniStoryPlayer.active = false;
   miniStoryPlayer.paused = false;
   miniStoryPlayer.lineIndex = 0;
+  miniStoryPlayer.chunkIndex = 0;
   try {
     if (window.speechSynthesis?.speaking || window.speechSynthesis?.paused) {
       window.speechSynthesis.cancel();
     }
   } catch {}
   stopSpeechNoise();
-  clearMiniStorySpeakingLine();
-  updateMiniStoryPauseButton();
+  clearMiniStorySpeakingChunk();
+  updateMiniStoryPlayButton();
 }
 
 function startMiniStoryPlayback() {
   if (!state.currentMiniStory || !Array.isArray(state.currentMiniStory.lines) || !state.currentMiniStory.lines.length) return;
-  stopMiniStoryPlayback();
+  miniStoryPlayer.token += 1;
+  try {
+    if (window.speechSynthesis?.speaking || window.speechSynthesis?.paused) {
+      window.speechSynthesis.cancel();
+    }
+  } catch {}
+  stopSpeechNoise();
+  clearMiniStorySpeakingChunk();
   miniStoryPlayer.active = true;
   miniStoryPlayer.paused = false;
   miniStoryPlayer.lineIndex = 0;
-  miniStoryPlayer.token += 1;
+  miniStoryPlayer.chunkIndex = 0;
   const playToken = miniStoryPlayer.token;
-  speakMiniStoryLine(playToken);
+  updateMiniStoryPlayButton();
+  speakMiniStoryChunk(playToken);
 }
 
-function speakMiniStoryLine(playToken) {
+function toggleMiniStoryPlayback() {
+  if (!miniStoryPlayer.active) {
+    startMiniStoryPlayback();
+    return;
+  }
+  const synth = window.speechSynthesis;
+  if (!synth) return;
+  if (synth.paused || miniStoryPlayer.paused) {
+    miniStoryPlayer.paused = false;
+    synth.resume();
+    startSpeechNoise();
+    updateMiniStoryPlayButton();
+    return;
+  }
+  if (synth.speaking) {
+    miniStoryPlayer.paused = true;
+    synth.pause();
+    stopSpeechNoise();
+    updateMiniStoryPlayButton();
+    return;
+  }
+  miniStoryPlayer.paused = false;
+  updateMiniStoryPlayButton();
+  speakMiniStoryChunk(miniStoryPlayer.token);
+}
+
+function currentMiniStoryChunk() {
+  const chunkMap = Array.isArray(state.currentMiniStoryChunkTexts) ? state.currentMiniStoryChunkTexts : [];
+  while (miniStoryPlayer.lineIndex < chunkMap.length) {
+    const chunks = Array.isArray(chunkMap[miniStoryPlayer.lineIndex]) ? chunkMap[miniStoryPlayer.lineIndex] : [];
+    while (miniStoryPlayer.chunkIndex < chunks.length) {
+      const text = String(chunks[miniStoryPlayer.chunkIndex] || "").trim();
+      if (text) {
+        return {
+          lineIndex: miniStoryPlayer.lineIndex,
+          chunkIndex: miniStoryPlayer.chunkIndex,
+          text
+        };
+      }
+      miniStoryPlayer.chunkIndex += 1;
+    }
+    miniStoryPlayer.lineIndex += 1;
+    miniStoryPlayer.chunkIndex = 0;
+  }
+  return null;
+}
+
+function speakMiniStoryChunk(playToken) {
   if (!miniStoryPlayer.active || playToken !== miniStoryPlayer.token) return;
-  const lines = state.currentMiniStory?.lines || [];
-  if (miniStoryPlayer.lineIndex >= lines.length) {
+  const nextChunk = currentMiniStoryChunk();
+  if (!nextChunk) {
     stopMiniStoryPlayback();
     return;
   }
 
-  const line = lines[miniStoryPlayer.lineIndex];
-  const text = localizedSpeechText(line) || String(line?.hanzi || "").trim();
+  const text = nextChunk.text;
   if (!text) {
-    miniStoryPlayer.lineIndex += 1;
-    speakMiniStoryLine(playToken);
+    miniStoryPlayer.chunkIndex += 1;
+    speakMiniStoryChunk(playToken);
     return;
   }
 
-  setMiniStorySpeakingLine(miniStoryPlayer.lineIndex);
+  setMiniStorySpeakingChunk(nextChunk.lineIndex, nextChunk.chunkIndex);
   const utterance = new SpeechSynthesisUtterance(text);
   const voices = (state.availableVoices && state.availableVoices.length)
     ? state.availableVoices
@@ -3125,37 +3259,18 @@ function speakMiniStoryLine(playToken) {
     if (playToken !== miniStoryPlayer.token) return;
     stopSpeechNoise();
     if (miniStoryPlayer.paused) return;
-    miniStoryPlayer.lineIndex += 1;
-    speakMiniStoryLine(playToken);
+    miniStoryPlayer.chunkIndex += 1;
+    speakMiniStoryChunk(playToken);
   };
   utterance.onerror = () => {
     if (playToken !== miniStoryPlayer.token) return;
     stopSpeechNoise();
     if (miniStoryPlayer.paused) return;
-    miniStoryPlayer.lineIndex += 1;
-    speakMiniStoryLine(playToken);
+    miniStoryPlayer.chunkIndex += 1;
+    speakMiniStoryChunk(playToken);
   };
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(utterance);
-}
-
-function toggleMiniStoryPause() {
-  const synth = window.speechSynthesis;
-  if (!synth) return;
-  if (!miniStoryPlayer.active) return;
-  if (synth.paused) {
-    miniStoryPlayer.paused = false;
-    synth.resume();
-    startSpeechNoise();
-    updateMiniStoryPauseButton();
-    return;
-  }
-  if (synth.speaking) {
-    miniStoryPlayer.paused = true;
-    synth.pause();
-    stopSpeechNoise();
-    updateMiniStoryPauseButton();
-  }
 }
 
 function openUserSidePanel() {
