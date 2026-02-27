@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.28</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.29</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -519,6 +519,11 @@
     <section class="panel" id="panel-search">
       <div class="card">
         <h2>Search Dictionary</h2>
+        <nav class="search-top-tabs" aria-label="Search types">
+          <button class="tab search-nav-btn is-active" type="button" data-search-tab="standard">Standard</button>
+          <button class="tab search-nav-btn" type="button" data-search-tab="slang">Slang</button>
+        </nav>
+        <p id="searchModeMeta" class="example">Standard Cantonese vocabulary search.</p>
         <p>Type English, Hanzi, Jyutping, or Pinyin.</p>
         <label for="searchInput">Search term</label>
         <div class="search-bar">

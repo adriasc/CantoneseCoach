@@ -1280,6 +1280,19 @@ const DEFAULT_DATA = {
   ]
 };
 
+const SLANG_SEARCH_ENTRIES = [
+  { id: "slang_1", hanzi: "食咗飯未", jyutping: "sik6 zo2 faan6 mei6", english: "Have you eaten yet? (common greeting)", mandarin_hanzi: "你吃饭了吗", pinyin: "ni3 chi1 fan4 le ma", mandarin_english: "Have you eaten?" , category: "slang" },
+  { id: "slang_2", hanzi: "冇問題", jyutping: "mou5 man6 tai4", english: "No problem", mandarin_hanzi: "没问题", pinyin: "mei2 wen4 ti2", mandarin_english: "No problem", category: "slang" },
+  { id: "slang_3", hanzi: "唔該晒", jyutping: "m4 goi1 saai3", english: "Thanks a lot", mandarin_hanzi: "非常感谢", pinyin: "fei1 chang2 gan3 xie4", mandarin_english: "Many thanks", category: "slang" },
+  { id: "slang_4", hanzi: "得閒", jyutping: "dak1 haan4", english: "free / available", mandarin_hanzi: "有空", pinyin: "you3 kong4", mandarin_english: "free (have time)", category: "slang" },
+  { id: "slang_5", hanzi: "唔使客氣", jyutping: "m4 sai2 haak3 hei3", english: "don't mention it / you're welcome", mandarin_hanzi: "不用客气", pinyin: "bu2 yong4 ke4 qi", mandarin_english: "you're welcome", category: "slang" },
+  { id: "slang_6", hanzi: "搞掂", jyutping: "gaau2 dim6", english: "done / fixed / handled", mandarin_hanzi: "搞定", pinyin: "gao3 ding4", mandarin_english: "sorted out", category: "slang" },
+  { id: "slang_7", hanzi: "好正", jyutping: "hou2 zing3", english: "awesome / excellent", mandarin_hanzi: "很棒", pinyin: "hen3 bang4", mandarin_english: "great", category: "slang" },
+  { id: "slang_8", hanzi: "唔知喎", jyutping: "m4 zi1 wo3", english: "I really don't know", mandarin_hanzi: "我不知道啊", pinyin: "wo3 bu4 zhi1 dao4 a", mandarin_english: "I don't know", category: "slang" },
+  { id: "slang_9", hanzi: "慢慢嚟", jyutping: "maan6 maan2 lai4", english: "take it easy / no rush", mandarin_hanzi: "慢慢来", pinyin: "man4 man4 lai2", mandarin_english: "take your time", category: "slang" },
+  { id: "slang_10", hanzi: "掂呀", jyutping: "dim6 aa3", english: "it's good / works", mandarin_hanzi: "行啊", pinyin: "xing2 a", mandarin_english: "it works", category: "slang" }
+];
+
 const SENTENCE_BANK = [
   { id: "s1", level: 1, tense: "present", theme: "daily", hanzi: "我食飯。", jyutping: "ngo5 sik6 faan6", english: "I eat a meal." },
   { id: "s2", level: 1, tense: "present", theme: "daily", hanzi: "你飲水。", jyutping: "nei5 jam2 seoi2", english: "You drink water." },
@@ -1710,6 +1723,7 @@ const state = {
   currentToneSide: null,
   storyTab: "curiosities",
   bookTab: "grammar",
+  searchTab: "standard",
   toneLabelMap: { a: "a", b: "b" },
   toneScore: { correct: 0, total: 0 },
   quizDisplay: { hanzi: false, jyutping: false, english: false, lens: false },
@@ -1875,6 +1889,8 @@ const els = {
   fxLayer: byId("fxLayer"),
   contentMessage: byId("contentMessage"),
   searchInput: byId("searchInput"),
+  searchTabs: [...document.querySelectorAll(".search-nav-btn")],
+  searchModeMeta: byId("searchModeMeta"),
   runSearch: byId("runSearch"),
   clearSearch: byId("clearSearch"),
   searchHint: byId("searchHint"),
@@ -1915,7 +1931,7 @@ function initializeApp() {
   renderStoryOfDay();
   refreshStats();
   renderKnownList();
-  renderSearchHint();
+  switchSearchTab(state.searchTab || "standard");
   refreshGameUI();
   registerServiceWorker();
   initSoftLayoutTransitions();
@@ -2012,6 +2028,13 @@ function bindUI() {
       const nextTab = String(tab.dataset.bookTab || "").trim();
       if (!nextTab) return;
       switchBookTab(nextTab);
+    });
+  });
+  els.searchTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const nextTab = String(tab.dataset.searchTab || "").trim();
+      if (!nextTab) return;
+      switchSearchTab(nextTab);
     });
   });
   if (els.playStoryAudio) {
@@ -2622,6 +2645,19 @@ function switchBookTab(tabName) {
   els.bookPanels.forEach((panel) => panel.classList.toggle("is-active", panel.id === panelId));
 }
 
+function switchSearchTab(tabName) {
+  const safeName = String(tabName || "").trim() === "slang" ? "slang" : "standard";
+  state.searchTab = safeName;
+  els.searchTabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.searchTab === safeName));
+  if (els.searchModeMeta) {
+    els.searchModeMeta.textContent = safeName === "slang"
+      ? "Cantonese slang and colloquial expressions."
+      : "Standard Cantonese vocabulary search.";
+  }
+  if (els.searchInput && String(els.searchInput.value || "").trim()) runWordSearch();
+  else renderSearchHint();
+}
+
 function storyThemeLabel(theme) {
   const map = {
     daily: "Daily Life",
@@ -2862,12 +2898,29 @@ function scoreSearchField(queryNorm, queryCompact, value, weight = 1) {
   return score;
 }
 
-function getWordSearchMatches(query) {
+function uniqueWordsByHanzi(words) {
+  const out = [];
+  const seen = new Set();
+  (words || []).forEach((word) => {
+    const key = normalizeHanzi(word?.hanzi);
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    out.push(word);
+  });
+  return out;
+}
+
+function getWordSearchMatches(query, mode = "standard") {
   const queryNorm = normalizeSearchText(query);
   if (!queryNorm) return [];
   const queryCompact = queryNorm.replace(/\s+/g, "");
   const out = [];
-  const words = state.content?.words || [];
+  const allWords = state.content?.words || [];
+  const useSlang = String(mode || "").trim() === "slang";
+  const customSlang = allWords.filter((w) => String(w.category || "").toLowerCase() === "slang");
+  const words = useSlang
+    ? uniqueWordsByHanzi(SLANG_SEARCH_ENTRIES.concat(customSlang))
+    : allWords.filter((w) => String(w.category || "").toLowerCase() !== "slang");
 
   words.forEach((word) => {
     const localized = localizeEntry(word);
@@ -2907,10 +2960,17 @@ function getWordSearchMatches(query) {
 function renderSearchHint() {
   if (!els.searchResults) return;
   const mode = normalizeLanguageMode(state.prefs.languageMode);
+  const searchMode = state.searchTab === "slang" ? "slang" : "standard";
   if (els.searchHint) {
-    els.searchHint.textContent = mode === "mandarin"
-      ? "Try: tomorrow, 明天, ming2 tian1, half."
-      : "Try: tomorrow, 聽日, ting1 jat6, half.";
+    if (searchMode === "slang") {
+      els.searchHint.textContent = mode === "mandarin"
+        ? "Try: 搞掂, 好正, 冇問題, 唔知喎."
+        : "Try: 搞掂, 好正, 冇問題, 唔知喎.";
+    } else {
+      els.searchHint.textContent = mode === "mandarin"
+        ? "Try: tomorrow, 明天, ming2 tian1, half."
+        : "Try: tomorrow, 聽日, ting1 jat6, half.";
+    }
   }
   els.searchResults.innerHTML = "<p class=\"example\">Type a word and press Search.</p>";
 }
@@ -2923,7 +2983,7 @@ function runWordSearch() {
     return;
   }
 
-  const matches = getWordSearchMatches(query);
+  const matches = getWordSearchMatches(query, state.searchTab);
   if (!matches.length) {
     els.searchResults.innerHTML = `<p class="example">No matches for “${escapeHtml(query)}”. Try English, Hanzi, Jyutping, or Pinyin.</p>`;
     return;
