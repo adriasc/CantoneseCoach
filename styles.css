@@ -285,7 +285,7 @@ h1 {
 .tabs {
   margin-top: 18px;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 8px;
 }
 
@@ -388,6 +388,10 @@ body.stories-mode .tabs {
 }
 
 body.search-mode .tabs {
+  display: none;
+}
+
+body.settings-mode .tabs {
   display: none;
 }
 

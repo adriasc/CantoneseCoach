@@ -1732,6 +1732,7 @@ const els = {
   openAboutBtn: byId("openAboutBtn"),
   userPanelMsg: byId("userPanelMsg"),
   openSettingsFromUser: byId("openSettingsFromUser"),
+  openContentFromUser: byId("openContentFromUser"),
   infoModal: byId("infoModal"),
   closeInfoModal: byId("closeInfoModal"),
   infoModalTitle: byId("infoModalTitle"),
@@ -1944,6 +1945,12 @@ function bindUI() {
       closeUserSidePanel();
       syncControlValues();
       openModalAnimated(els.settingsModal);
+    });
+  }
+  if (els.openContentFromUser) {
+    els.openContentFromUser.addEventListener("click", () => {
+      closeUserSidePanel();
+      switchTab("settings");
     });
   }
   if (els.userLanguageMode) {
@@ -2529,6 +2536,7 @@ function switchTab(tabName) {
   els.panels.forEach((panel) => panel.classList.toggle("is-active", panel.id === targetPanelId));
   document.body.classList.toggle("stories-mode", tabName === "stories");
   document.body.classList.toggle("search-mode", tabName === "search");
+  document.body.classList.toggle("settings-mode", tabName === "settings");
   setControlsMode(tabName);
   if (tabName === "stories") {
     switchStoryTab(state.storyTab || "curiosities");
@@ -2557,6 +2565,7 @@ function syncBottomTabState(tabName) {
   if (tabName === "tones") activeGroup = "tones";
   if (tabName === "stories") activeGroup = "stories";
   if (tabName === "search") activeGroup = "search";
+  if (tabName === "settings") activeGroup = "home";
   els.bottomTabs.forEach((tab) => {
     const group = String(tab.dataset.bottomGroup || tab.dataset.bottomTab || "").trim();
     if (!group) {
@@ -2760,7 +2769,7 @@ function showInfoModal(kind) {
 }
 
 function setControlsMode(tabName) {
-  const hideControls = tabName === "stories" || tabName === "search";
+  const hideControls = tabName === "stories" || tabName === "search" || tabName === "settings";
   if (els.controlsCard) {
     els.controlsCard.classList.toggle("hidden", hideControls);
   }

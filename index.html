@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.26</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.27</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -30,13 +30,11 @@
 
     <nav class="tabs">
       <button class="tab is-active" data-tab="words">Learn Words</button>
-      <button class="tab" data-tab="patterns">Build Sentences</button>
-      <button class="tab" data-tab="listening">Listen &amp; Choose</button>
-      <button class="tab" data-tab="questions">Ask &amp; Answer</button>
       <button class="tab" data-tab="tones">Tone Drill</button>
+      <button class="tab" data-tab="patterns">Build Sentences</button>
+      <button class="tab" data-tab="questions">Ask &amp; Answer</button>
+      <button class="tab" data-tab="listening">Listen &amp; Choose</button>
       <button class="tab" data-tab="exercises">Exercises</button>
-      <button class="tab" data-tab="settings">Content</button>
-      <button class="tab fun-tab" id="openFunLoop" type="button">Fun Loop</button>
     </nav>
 
     <nav class="stories-top-tabs" aria-label="Stories sections">
@@ -44,6 +42,7 @@
       <button class="tab stories-nav-btn" type="button" data-story-tab="facts">Fun Facts</button>
       <button class="tab stories-nav-btn" type="button" data-story-tab="dialogs">Mini Dialogs</button>
       <button class="tab stories-nav-btn" type="button" data-story-tab="culture">Street Culture</button>
+      <button class="tab stories-nav-btn" type="button" data-story-tab="fun">Fun Loop</button>
     </nav>
 
     <section class="card controls-card">
@@ -555,6 +554,13 @@
           <p>Transport, wet market, and cha chaan teng phrases should be grouped by real situations to improve recall.</p>
           <p class="example">Next upgrade: add HK location packs and one-tap drill playlists.</p>
         </section>
+        <section class="stories-subpanel" id="stories-fun">
+          <p class="formula">Fun Loop</p>
+          <p>Open your daily mission, combo, boss challenge, and mistake-fix mode from here.</p>
+          <div class="actions">
+            <button class="tab fun-tab" id="openFunLoop" type="button">Fun Loop</button>
+          </div>
+        </section>
       </div>
     </section>
 
@@ -687,6 +693,7 @@
       </div>
       <div class="side-actions-grid">
         <button id="openSettingsFromUser" class="side-action-btn" type="button">Settings</button>
+        <button id="openContentFromUser" class="side-action-btn" type="button">Content</button>
         <button id="logOutBtn" class="side-action-btn side-action-soft" type="button">Log Off</button>
         <button id="openTermsBtn" class="side-action-btn side-action-soft" type="button">Terms of Use</button>
         <button id="openAboutBtn" class="side-action-btn side-action-soft" type="button">About Us</button>
