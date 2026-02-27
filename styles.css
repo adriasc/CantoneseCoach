@@ -1788,6 +1788,18 @@ button:hover,
   gap: 10px;
 }
 
+#settingsModal .settings-noise-test-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 10px;
+}
+
+#settingsModal .settings-noise-level {
+  min-width: 0;
+}
+
 #settingsModal .slot-grid label {
   color: #8d563f;
 }
@@ -1807,6 +1819,17 @@ button:hover,
   min-width: 50px;
   height: 50px;
   min-height: 50px;
+}
+
+@media (max-width: 680px) {
+  #settingsModal .settings-noise-test-row {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  #settingsModal .settings-noise-test-row .play-icon-btn {
+    justify-self: end;
+  }
 }
 
 .grammar-modal-card {
