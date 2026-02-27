@@ -284,16 +284,9 @@ h1 {
 
 .tabs {
   margin-top: 18px;
-  display: flex;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
-  padding-bottom: 2px;
-}
-
-.tabs::-webkit-scrollbar {
-  display: none;
 }
 
 .tab {
@@ -310,15 +303,18 @@ h1 {
   transition: background 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
 }
 
+.tab.is-active {
+  background: linear-gradient(160deg, #ff8f63 0%, #ff646f 48%, #ff4f85 100%);
+  border-color: rgba(233, 108, 111, 0.62);
+  color: #fff;
+}
+
 .tabs .tab {
   display: inline-flex;
-  flex-direction: row;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-height: 42px;
-  flex: 0 0 auto;
-  white-space: nowrap;
+  min-height: 44px;
   text-align: left;
 }
 
@@ -330,26 +326,20 @@ h1 {
 }
 
 .tabs .learn-tab-icon svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   stroke: currentColor;
   stroke-width: 1.9;
   fill: none;
   stroke-linecap: round;
   stroke-linejoin: round;
+  flex: 0 0 auto;
 }
 
 .tabs .learn-tab-label {
-  font-size: 0.84rem;
-  line-height: 1;
+  font-size: 0.86rem;
+  line-height: 1.05;
   font-weight: 700;
-  letter-spacing: 0.005em;
-}
-
-.tab.is-active {
-  background: linear-gradient(160deg, #ff8f63 0%, #ff646f 48%, #ff4f85 100%);
-  border-color: rgba(233, 108, 111, 0.62);
-  color: #fff;
 }
 
 .bottom-nav {
@@ -2155,6 +2145,10 @@ input[type="file"] {
 }
 
 @media (max-width: 720px) {
+  .tabs {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .controls-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
