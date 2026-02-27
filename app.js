@@ -5644,18 +5644,32 @@ function initVoiceControls() {
   }
 }
 
+function isRelevantLearningVoice(voice) {
+  const lang = String(voice?.lang || "").toLowerCase();
+  const name = String(voice?.name || "").toLowerCase();
+  const sig = `${lang} ${name}`;
+  if (!sig.trim()) return false;
+
+  if (/^zh/.test(lang) || /^yue/.test(lang)) return true;
+  if (/cantonese|mandarin|putonghua|guoyu|chinese/.test(name)) return true;
+  if (/\byue\b|\bcmn\b|zh-hk|zh-mo|zh-yue|zh-cn|zh-sg|zh-tw|zh-hans|zh-hant/.test(sig)) return true;
+  return false;
+}
+
 function refreshVoiceOptions() {
   const voices = window.speechSynthesis?.getVoices?.() || [];
-  state.availableVoices = voices.slice();
+  const relevantVoices = voices.filter((v) => isRelevantLearningVoice(v));
+  const pickerVoices = relevantVoices.length ? relevantVoices : voices;
+  state.availableVoices = pickerVoices.slice();
   const current = state.prefs.voiceURI || "auto";
   els.audioVoice.innerHTML = "";
 
   const auto = document.createElement("option");
   auto.value = "auto";
-  auto.textContent = "Auto (best Cantonese)";
+  auto.textContent = "Auto (best Cantonese/Mandarin)";
   els.audioVoice.appendChild(auto);
 
-  voices
+  pickerVoices
     .sort((a, b) => `${a.lang} ${a.name}`.localeCompare(`${b.lang} ${b.name}`))
     .forEach((v) => {
       const option = document.createElement("option");
@@ -5664,7 +5678,7 @@ function refreshVoiceOptions() {
       els.audioVoice.appendChild(option);
     });
 
-  const hasCurrent = current === "auto" || voices.some((v) => v.voiceURI === current);
+  const hasCurrent = current === "auto" || pickerVoices.some((v) => v.voiceURI === current);
   els.audioVoice.value = hasCurrent ? current : "auto";
   if (!hasCurrent) {
     state.prefs.voiceURI = "auto";
