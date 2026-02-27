@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.43</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.44</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -100,7 +100,7 @@
     <nav class="stories-top-tabs" aria-label="Stories sections">
       <button class="tab stories-nav-btn is-active" type="button" data-story-tab="curiosities">Curiosities</button>
       <button class="tab stories-nav-btn" type="button" data-story-tab="facts">Fun Facts</button>
-      <button class="tab stories-nav-btn" type="button" data-story-tab="dialogs">Mini Dialogs</button>
+      <button class="tab stories-nav-btn" type="button" data-story-tab="dialogs">Mini Stories</button>
       <button class="tab stories-nav-btn" type="button" data-story-tab="culture">Street Culture</button>
       <button class="tab stories-nav-btn" type="button" data-story-tab="fun">Fun Loop</button>
     </nav>
@@ -856,9 +856,30 @@
           <p class="example">Use compare mode to spot Cantonese vs Mandarin pronunciation quickly.</p>
         </section>
         <section class="stories-subpanel" id="stories-dialogs">
-          <p class="formula">Mini Dialogs</p>
-          <p>Short 2-turn exchanges are ideal for street conversation speed: ask, answer, follow-up.</p>
-          <p class="example">Next upgrade: play line 1, pause, then line 2 with optional noise mode.</p>
+          <div class="story-day-head">
+            <p class="formula">Mini Stories</p>
+            <select id="miniStorySelect" class="side-select mini-story-select">
+              <option value="fox_rabbit_easy">Story 1 (Easy): Fox and Rabbit</option>
+              <option value="wet_market_advanced">Story 2 (Advanced): Wet Market</option>
+            </select>
+          </div>
+          <div class="actions pattern-actions panel-actions">
+            <div class="pattern-control-col">
+              <button id="playMiniStoryAudio" class="play-icon-btn pattern-play-main" aria-label="Play mini story audio">▶</button>
+              <p class="pattern-control-text">Play</p>
+            </div>
+            <div class="pattern-control-col">
+              <button id="toggleMiniStoryJyutping" class="pattern-mini-btn pattern-toggle-btn is-off" aria-pressed="false" aria-label="Toggle mini story Jyutping">粵</button>
+              <p class="pattern-control-text">Jyutping</p>
+            </div>
+            <div class="pattern-control-col">
+              <button id="toggleMiniStoryEnglish" class="pattern-mini-btn pattern-toggle-btn is-off" aria-pressed="false" aria-label="Toggle mini story English">EN</button>
+              <p class="pattern-control-text">English</p>
+            </div>
+          </div>
+          <p class="example" id="miniStoryMeta">Select a story and tap Play.</p>
+          <div id="miniStoryLines" class="story-lines"></div>
+          <p class="example" id="miniStoryTapHint">Tap any highlighted Hanzi to open quick explanation.</p>
         </section>
         <section class="stories-subpanel" id="stories-culture">
           <p class="formula">Street Culture</p>

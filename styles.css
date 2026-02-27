@@ -657,6 +657,12 @@ body.settings-mode .tabs {
   margin: 0;
 }
 
+.mini-story-select {
+  max-width: 320px;
+  width: min(320px, 62vw);
+  margin: 0;
+}
+
 #playStoryAudio {
   width: 42px;
   min-width: 42px;

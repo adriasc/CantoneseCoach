@@ -1,4 +1,4 @@
-const CACHE_NAME = "cantonese-coach-v19.4.43";
+const CACHE_NAME = "cantonese-coach-v19.4.44";
 const ASSETS = [
   "./",
   "./index.html",

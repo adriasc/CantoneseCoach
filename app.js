@@ -1695,6 +1695,8 @@ const state = {
     toneExerciseMode: "word",
     showJyutping: true,
     showEnglish: true,
+    miniStoryShowJyutping: true,
+    miniStoryShowEnglish: true,
     toneShowJyutping: false,
     toneShowEnglish: false,
     showGrammarLens: false,
@@ -1719,6 +1721,8 @@ const state = {
   currentExercise: null,
   currentStory: null,
   currentStoryAnalyses: [],
+  currentMiniStory: null,
+  currentMiniStoryAnalyses: [],
   currentToneKind: "word",
   currentToneSide: null,
   storyTab: "curiosities",
@@ -1763,6 +1767,13 @@ const els = {
   storyOfDayLines: byId("storyOfDayLines"),
   storyTapHint: byId("storyTapHint"),
   playStoryAudio: byId("playStoryAudio"),
+  miniStorySelect: byId("miniStorySelect"),
+  miniStoryMeta: byId("miniStoryMeta"),
+  miniStoryLines: byId("miniStoryLines"),
+  miniStoryTapHint: byId("miniStoryTapHint"),
+  playMiniStoryAudio: byId("playMiniStoryAudio"),
+  toggleMiniStoryJyutping: byId("toggleMiniStoryJyutping"),
+  toggleMiniStoryEnglish: byId("toggleMiniStoryEnglish"),
   panels: [...document.querySelectorAll(".panel")],
   wordCategory: byId("wordCategory"),
   wordHanzi: byId("wordHanzi"),
@@ -1915,6 +1926,16 @@ let storyBankCache = null;
 
 function initializeApp() {
   state.prefs.questionTheme = normalizeQuestionType(state.prefs.questionTheme);
+  let miniStoryPrefsChanged = false;
+  if (typeof state.prefs.miniStoryShowJyutping !== "boolean") {
+    state.prefs.miniStoryShowJyutping = true;
+    miniStoryPrefsChanged = true;
+  }
+  if (typeof state.prefs.miniStoryShowEnglish !== "boolean") {
+    state.prefs.miniStoryShowEnglish = true;
+    miniStoryPrefsChanged = true;
+  }
+  if (miniStoryPrefsChanged) saveJson(STORAGE_KEYS.prefs, state.prefs);
   configureBottomMenu();
   bindUI();
   ensureDailyGameState();
@@ -1932,6 +1953,7 @@ function initializeApp() {
   rollTonePair();
   rollExercise();
   renderStoryOfDay();
+  renderMiniStory();
   refreshStats();
   renderKnownList();
   switchSearchTab(state.searchTab || "standard");
@@ -2075,6 +2097,48 @@ function bindUI() {
       const tokenIndex = Number(tokenEl.dataset.idx);
       if (!Number.isFinite(lineIndex) || !Number.isFinite(tokenIndex)) return;
       const analysis = state.currentStoryAnalyses?.[lineIndex];
+      if (!analysis) return;
+      openGrammarInfoFromAnalysis(analysis, tokenIndex);
+    });
+  }
+  if (els.miniStorySelect) {
+    els.miniStorySelect.addEventListener("change", () => {
+      renderMiniStory();
+    });
+  }
+  if (els.playMiniStoryAudio) {
+    els.playMiniStoryAudio.addEventListener("click", () => {
+      if (!state.currentMiniStory || !Array.isArray(state.currentMiniStory.lines)) return;
+      const speechText = state.currentMiniStory.lines.map((line) => line.hanzi).filter(Boolean).join("。");
+      if (speechText) {
+        incrementMission("listens", 1);
+        speak(speechText);
+      }
+    });
+  }
+  if (els.toggleMiniStoryJyutping) {
+    els.toggleMiniStoryJyutping.addEventListener("click", () => {
+      state.prefs.miniStoryShowJyutping = !state.prefs.miniStoryShowJyutping;
+      saveJson(STORAGE_KEYS.prefs, state.prefs);
+      applyMiniStoryVisibility();
+    });
+  }
+  if (els.toggleMiniStoryEnglish) {
+    els.toggleMiniStoryEnglish.addEventListener("click", () => {
+      state.prefs.miniStoryShowEnglish = !state.prefs.miniStoryShowEnglish;
+      saveJson(STORAGE_KEYS.prefs, state.prefs);
+      applyMiniStoryVisibility();
+    });
+  }
+  if (els.miniStoryLines) {
+    els.miniStoryLines.addEventListener("click", (event) => {
+      const tokenEl = event.target?.closest?.(".tok-clickable");
+      if (!tokenEl) return;
+      const lineWrap = tokenEl.closest("[data-mini-story-line]");
+      const lineIndex = Number(lineWrap?.dataset.miniStoryLine);
+      const tokenIndex = Number(tokenEl.dataset.idx);
+      if (!Number.isFinite(lineIndex) || !Number.isFinite(tokenIndex)) return;
+      const analysis = state.currentMiniStoryAnalyses?.[lineIndex];
       if (!analysis) return;
       openGrammarInfoFromAnalysis(analysis, tokenIndex);
     });
@@ -2651,6 +2715,8 @@ function switchStoryTab(tabName) {
   els.storyPanels.forEach((panel) => panel.classList.toggle("is-active", panel.id === panelId));
   if (safeName === "curiosities") {
     renderStoryOfDay();
+  } else if (safeName === "dialogs") {
+    renderMiniStory();
   }
 }
 
@@ -2675,6 +2741,109 @@ function switchSearchTab(tabName) {
   }
   if (els.searchInput && String(els.searchInput.value || "").trim()) runWordSearch();
   else renderSearchHint();
+}
+
+const MINI_STORY_LIBRARY = [
+  {
+    id: "fox_rabbit_easy",
+    level: "easy",
+    title: "Fox and Rabbit",
+    lines: [
+      {
+        hanzi: "從前，有一隻狐狸住喺森林入面。佢好聰明，成日搵食物。有一隻兔仔住喺附近。兔仔好懶惰，唔鍾意工作，只想瞓覺同食野。",
+        jyutping: "cong4 cin4, jau5 jat1 zek3 wu4 lei4 zyu6 hai2 sam1 lam4 jap6 min6. keoi5 hou2 cung1 ming4, sing4 jat6 wan2 sik6 mat6. jau5 jat1 zek3 tou3 zai2 zyu6 hai2 fu6 gan6. tou3 zai2 hou2 laan5 do6, m4 zung1 ji3 gung1 zok3, zi2 soeng2 fan3 gaau3 tung4 sik6 je5.",
+        english: "Once upon a time, a fox lived in the forest. He was smart and always searched for food. A rabbit lived nearby. The rabbit was lazy and only wanted to sleep and eat."
+      },
+      {
+        hanzi: "有一日，狐狸見到兔仔喺樹下瞓緊覺。狐狸諗：「呢隻兔仔好肥，好好食！」狐狸走過去，話：「兔仔，醒啦！森林有大party，大家一齊玩！」",
+        jyutping: "jau5 jat1 jat6, wu4 lei4 gin3 dou2 tou3 zai2 hai2 syu6 haa5 fan3 gan2 gaau3. wu4 lei4 nam2: \"ni1 zek3 tou3 zai2 hou2 fei4, hou2 hou2 sik6!\" wu4 lei4 zau2 gwo3 heoi3, waa6: \"tou3 zai2, seng2 laa1! sam1 lam4 jau5 daai6 party, daai6 gaa1 jat1 cai4 waan2!\"",
+        english: "One day, the fox saw the rabbit sleeping under a tree. He thought, \"This rabbit is fat and delicious!\" Then he said, \"Rabbit, wake up! There is a big party in the forest!\""
+      },
+      {
+        hanzi: "兔仔醒咗，問：「party喺邊度？」狐狸話：「跟住我嚟啦！」兔仔跟狐狸走，但狐狸帶佢去一個洞。洞入面係狐狸嘅屋企。",
+        jyutping: "tou3 zai2 seng2 zo2, man6: \"party hai2 bin1 dou6?\" wu4 lei4 waa6: \"gan1 zyu6 ngo5 lai4 laa1!\" tou3 zai2 gan1 wu4 lei4 zau2, daan6 wu4 lei4 daai3 keoi5 heoi3 jat1 go3 dung6. dung6 jap6 min6 hai6 wu4 lei4 ge3 uk1 kei5.",
+        english: "The rabbit woke up and asked where the party was. The fox said, \"Follow me.\" The rabbit followed him into a cave, which was actually the fox's home."
+      },
+      {
+        hanzi: "兔仔驚咗，話：「你想食我呀？」狐狸笑笑，話：「係呀，但如果你幫我做野，我唔食你。」兔仔諗諗，話：「好，我幫你。」",
+        jyutping: "tou3 zai2 geng1 zo2, waa6: \"nei5 soeng2 sik6 ngo5 aa3?\" wu4 lei4 siu3 siu3, waa6: \"hai6 aa3, daan6 jyu4 gwo2 nei5 bong1 ngo5 zou6 je5, ngo5 m4 sik6 nei5.\" tou3 zai2 nam2 nam2, waa6: \"hou2, ngo5 bong1 nei5.\"",
+        english: "The rabbit was scared and asked, \"Do you want to eat me?\" The fox said, \"Yes, but if you help me, I won't eat you.\" The rabbit agreed."
+      },
+      {
+        hanzi: "從嗰日起，兔仔開始工作。佢幫狐狸搵蘋果、菜，同埋清潔屋企。狐狸教兔仔點樣快手搵食物。兔仔學到好多，唔再懶惰。",
+        jyutping: "cong4 go2 jat6 hei2, tou3 zai2 hoi1 ci2 gung1 zok3. keoi5 bong1 wu4 lei4 wan2 ping4 gwo2, coi3, tung4 maai4 cing1 git3 uk1 kei5. wu4 lei4 gaau3 tou3 zai2 dim2 joeng2 faai3 sau2 wan2 sik6 mat6. tou3 zai2 hok6 dou3 hou2 do1, m4 zoi3 laan5 do6.",
+        english: "From that day, the rabbit started working. He helped find apples and vegetables and cleaned the house. The fox taught him to find food quickly. The rabbit learned a lot and stopped being lazy."
+      },
+      {
+        hanzi: "一日，森林有大風雨。兔仔嘅屋壞咗。狐狸話：「嚟我屋企住啦。」兔仔好開心，因為佢哋變咗朋友。",
+        jyutping: "jat1 jat6, sam1 lam4 jau5 daai6 fung1 jyu5. tou3 zai2 ge3 uk1 waai6 zo2. wu4 lei4 waa6: \"lai4 ngo5 uk1 kei5 zyu6 laa1.\" tou3 zai2 hou2 hoi1 sam1, jan1 wai6 keoi5 dei6 bin3 zo2 pang4 jau5.",
+        english: "One day, a big storm hit the forest and the rabbit's home broke. The fox said, \"Come live at my home.\" The rabbit was happy because they became friends."
+      },
+      {
+        hanzi: "最後，狐狸同兔仔一齊生活。兔仔變得勤力，狐狸變得善良。大家快樂咁過日子。故事完。",
+        jyutping: "zeoi3 hau6, wu4 lei4 tung4 tou3 zai2 jat1 cai4 sang1 wut6. tou3 zai2 bin3 dak1 kan4 lik6, wu4 lei4 bin3 dak1 sin6 loeng4. daai6 gaa1 faai3 lok6 gam2 gwo3 jat6 zi2. gu3 si6 jyun4.",
+        english: "Finally, the fox and rabbit lived together. The rabbit became hardworking and the fox became kind. They lived happily ever after. The end."
+      }
+    ]
+  },
+  {
+    id: "wet_market_advanced",
+    level: "advanced",
+    title: "Getting Lost in Old Hong Kong Wet Market",
+    lines: [
+      {
+        hanzi: "阿明係一個年輕人，住喺九龍。有一日，佢去舊香港嘅街市買野。街市好熱鬧，人多車多，賣魚賣菜賣肉，好多味道。",
+        jyutping: "aa3 ming4 hai6 jat1 go3 nin4 hing1 jan4, zyu6 hai2 gau2 lung4. jau5 jat1 jat6, keoi5 heoi3 gau6 hoeng1 gong2 ge3 gaai1 si5 maai5 je5. gaai1 si5 hou2 jit6 naau6, jan4 do1 ce1 do1, maai6 jyu4 maai6 coi3 maai6 juk6, hou2 do1 mei6 dou6.",
+        english: "Ah Ming was a young man living in Kowloon. One day he went to an old Hong Kong wet market to buy things. The market was busy, noisy, and full of smells."
+      },
+      {
+        hanzi: "阿明想買新鮮魚同埋菜。佢行入街市，見到好多檔口。有人叫賣：「新鮮魚嚟啦！」阿明買咗條魚，之後想買菜。但街市好大，佢轉左轉右，就迷路咗。",
+        jyutping: "aa3 ming4 soeng2 maai5 san1 sin1 jyu4 tung4 maai4 coi3. keoi5 haang4 jap6 gaai1 si5, gin3 dou3 hou2 do1 dong3 hau2. jau5 jan4 giu3 maai6: \"san1 sin1 jyu4 lai4 laa1!\" aa3 ming4 maai5 zo2 tiu4 jyu4, zi1 hau6 soeng2 maai5 coi3. daan6 gaai1 si5 hou2 daai6, keoi5 zyun2 zo2 zyun2 jau6, zau6 mai4 lou6 zo2.",
+        english: "Ah Ming wanted fresh fish and vegetables. He entered and saw many stalls. People shouted, \"Fresh fish!\" He bought a fish, then got lost while turning around the big market."
+      },
+      {
+        hanzi: "佢四圍望，見到好多阿姨賣水果，同埋叔叔賣雞。佢問一個阿姨：「街市出口喺邊？」阿姨話：「直行轉右啦。」但阿明跟住行，仲係迷路。",
+        jyutping: "keoi5 sei3 wai4 mong6, gin3 dou3 hou2 do1 aa3 ji4 maai6 seoi2 gwo2, tung4 maai4 suk1 suk1 maai6 gai1. keoi5 man6 jat1 go3 aa3 ji4: \"gaai1 si5 ceot1 hau2 hai2 bin1?\" aa3 ji4 waa6: \"zik6 haang4 zyun2 jau6 laa1.\" daan6 aa3 ming4 gan1 zyu6 haang4, zung6 hai6 mai4 lou6.",
+        english: "He looked around and saw aunties selling fruit and uncles selling chicken. He asked where the exit was. She said, \"Go straight and turn right,\" but he still got lost."
+      },
+      {
+        hanzi: "天開始黑，阿明好擔心。佢電話冇電，冇辦法call朋友。街市人開始少，檔口收檔。阿明行出街市，見到舊香港嘅街燈，好舊式。",
+        jyutping: "tin1 hoi1 ci2 hak1, aa3 ming4 hou2 daam1 sam1. keoi5 din6 waa2 mou5 din6, mou5 baan6 faat3 call pang4 jau5. gaai1 si5 jan4 hoi1 ci2 siu2, dong3 hau2 sau1 dong3. aa3 ming4 haang4 ceot1 gaai1 si5, gin3 dou3 gau6 hoeng1 gong2 ge3 gaai1 dang1, hou2 gau6 sik1.",
+        english: "It started getting dark and Ah Ming became worried. His phone battery was dead, so he could not call friends. Stalls started closing, and he saw old-style street lights outside."
+      },
+      {
+        hanzi: "佢行咗陣，見到一架的士。的士司機係個阿叔，戴眼鏡。阿明上車，話：「我想返九龍屋企，但唔知路。」司機問：「你住邊度？」阿明話：「油麻地。」",
+        jyutping: "keoi5 haang4 zo2 zan6, gin3 dou3 jat1 gaa3 dik1 si6. dik1 si6 si1 gei1 hai6 go3 aa3 suk1, daai3 ngaan5 geng2. aa3 ming4 soeng5 ce1, waa6: \"ngo5 soeng2 faan1 gau2 lung4 uk1 kei5, daan6 m4 zi1 lou6.\" si1 gei1 man6: \"nei5 zyu6 bin1 dou6?\" aa3 ming4 waa6: \"jau4 maa4 dei6.\"",
+        english: "After walking for a while, he found a taxi. The driver was an older man with glasses. Ah Ming said he wanted to go home but did not know the way. He said he lived in Yau Ma Tei."
+      },
+      {
+        hanzi: "司機笑笑，話：「好，我知路。但舊香港路好亂，有好多小巷。」車開咗，經過維多利亞港，見到舊船同埋大樓。阿明問：「點解舊香港咁多街市？」司機話：「因為以前人鍾意新鮮野，街市係生活一部份。」",
+        jyutping: "si1 gei1 siu3 siu3, waa6: \"hou2, ngo5 zi1 lou6. daan6 gau6 hoeng1 gong2 lou6 hou2 lyun6, jau5 hou2 do1 siu2 hong6.\" ce1 hoi1 zo2, ging1 gwo3 wai4 do1 lei6 aa3 gong2, gin3 dou3 gau6 syun4 tung4 maai4 daai6 lau4. aa3 ming4 man6: \"dim2 gaai2 gau6 hoeng1 gong2 gam3 do1 gaai1 si5?\" si1 gei1 waa6: \"jan1 wai6 ji5 cin4 jan4 zung1 ji3 san1 sin1 je5, gaai1 si5 hai6 sang1 wut6 jat1 bou6 fan6.\"",
+        english: "The driver smiled and said he knew the way, but old Hong Kong roads were confusing with many small alleys. They passed Victoria Harbour. Ah Ming asked why there were so many markets. The driver said markets were a key part of life."
+      },
+      {
+        hanzi: "途中，車塞咗陣。司機話：「舊香港交通亂，但有味道。」阿明點頭，開始放鬆。最後，車到咗油麻地。阿明多謝司機，畀錢下車。",
+        jyutping: "tou4 zung1, ce1 sak1 zo2 zan6. si1 gei1 waa6: \"gau6 hoeng1 gong2 gaau1 tung1 lyun6, daan6 jau5 mei6 dou6.\" aa3 ming4 dim2 tau4, hoi1 ci2 fong3 sung1. zeoi3 hau6, ce1 dou3 zo2 jau4 maa4 dei6. aa3 ming4 do1 ze6 si1 gei1, bei2 cin4 haa6 ce1.",
+        english: "They got stuck in traffic for a bit. The driver said old Hong Kong traffic was chaotic but full of character. Ah Ming relaxed. Finally they arrived in Yau Ma Tei."
+      },
+      {
+        hanzi: "返到屋企，阿明諗起呢件事，好開心。佢學到舊香港嘅生活，唔再怕迷路。故事完。",
+        jyutping: "faan1 dou3 uk1 kei5, aa3 ming4 nam2 hei2 ni1 gin6 si6, hou2 hoi1 sam1. keoi5 hok6 dou3 gau6 hoeng1 gong2 ge3 sang1 wut6, m4 zoi3 paa3 mai4 lou6. gu3 si6 jyun4.",
+        english: "Back home, Ah Ming thought about the experience and felt happy. He learned about old Hong Kong life and was no longer afraid of getting lost. The end."
+      }
+    ]
+  }
+];
+
+function normalizeMiniStoryId(inputId) {
+  const id = String(inputId || "").trim();
+  if (MINI_STORY_LIBRARY.some((story) => story.id === id)) return id;
+  return MINI_STORY_LIBRARY[0]?.id || "";
+}
+
+function getMiniStoryById(inputId) {
+  const id = normalizeMiniStoryId(inputId);
+  return MINI_STORY_LIBRARY.find((story) => story.id === id) || MINI_STORY_LIBRARY[0] || null;
 }
 
 function storyThemeLabel(theme) {
@@ -2782,6 +2951,61 @@ function renderStoryOfDay() {
   if (els.storyTapHint) {
     els.storyTapHint.textContent = "Tap any highlighted Hanzi to open quick explanation.";
   }
+}
+
+function renderMiniStory() {
+  if (!els.miniStoryLines) return;
+  const nextId = normalizeMiniStoryId(els.miniStorySelect?.value || state.currentMiniStory?.id);
+  const story = getMiniStoryById(nextId);
+  if (!story || !Array.isArray(story.lines) || !story.lines.length) {
+    els.miniStoryLines.innerHTML = "<p class=\"example\">No mini story available.</p>";
+    if (els.miniStoryMeta) els.miniStoryMeta.textContent = "";
+    return;
+  }
+
+  state.currentMiniStory = story;
+  state.currentMiniStoryAnalyses = story.lines.map((line) => analyzeSentence({ hanzi: line.hanzi, jyutping: line.jyutping }));
+  if (els.miniStorySelect) els.miniStorySelect.value = story.id;
+  if (els.miniStoryMeta) {
+    const levelLabel = story.level === "advanced" ? "Advanced" : "Easy";
+    els.miniStoryMeta.textContent = `${story.title} · ${levelLabel}`;
+  }
+
+  const html = story.lines.map((line, lineIndex) => {
+    const analysis = state.currentMiniStoryAnalyses[lineIndex];
+    const annotatedHanzi = String(analysis?.annotatedHanzi || escapeHtml(line.hanzi || "-"))
+      .replace(/data-idx="(\d+)"/g, `data-idx="$1" data-mini-story-line="${lineIndex}"`);
+    const annotatedJyutping = analysis?.annotatedJyutping || escapeHtml(line.jyutping || "-");
+    const literalHtml = analysis?.literalHtml || escapeHtml(analysis?.literal || "");
+    const english = normalizeEnglishSentence(line.english || "-");
+    return `<article class="story-line-block mini-story-line-block">
+      <p class="hanzi story-hanzi-line" data-mini-story-line="${lineIndex}">${annotatedHanzi}</p>
+      <p class="jyutping story-jyutping-line">${annotatedJyutping}</p>
+      <p class="english story-english-line">${escapeHtml(english)}</p>
+      <p class="literal story-literal-line">Literal: ${literalHtml}</p>
+    </article>`;
+  }).join("");
+
+  els.miniStoryLines.innerHTML = html;
+  if (els.miniStoryTapHint) {
+    els.miniStoryTapHint.textContent = "Tap any highlighted Hanzi to open quick explanation.";
+  }
+  applyMiniStoryVisibility();
+}
+
+function applyMiniStoryVisibility() {
+  const showJp = state.prefs.miniStoryShowJyutping !== false;
+  const showEn = state.prefs.miniStoryShowEnglish !== false;
+  if (els.miniStoryLines) {
+    els.miniStoryLines.querySelectorAll(".story-jyutping-line").forEach((node) => {
+      node.classList.toggle("hidden", !showJp);
+    });
+    els.miniStoryLines.querySelectorAll(".story-english-line, .story-literal-line").forEach((node) => {
+      node.classList.toggle("hidden", !showEn);
+    });
+  }
+  setMiniToggle(els.toggleMiniStoryJyutping, showJp, romanToggleIcon(), romanToggleLabelState(true), romanToggleLabelState(false));
+  setMiniToggle(els.toggleMiniStoryEnglish, showEn, "EN", "English on", "English off");
 }
 
 function openUserSidePanel() {
@@ -5726,6 +5950,7 @@ function applyVisibilityPrefs() {
   renderPatternActionButtons(showJp, showEn, showLens);
   setMiniToggle(els.toggleQuestionGrammarLens, showLens, "◎", "Lens on", "Lens off");
   applyToneVisibility();
+  applyMiniStoryVisibility();
 }
 
 function applyQuizVisibility() {
