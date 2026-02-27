@@ -1697,6 +1697,7 @@ const state = {
     showEnglish: true,
     miniStoryShowJyutping: true,
     miniStoryShowEnglish: true,
+    miniStoryLens: true,
     toneShowJyutping: false,
     toneShowEnglish: false,
     showGrammarLens: false,
@@ -1725,7 +1726,7 @@ const state = {
   currentMiniStoryAnalyses: [],
   currentToneKind: "word",
   currentToneSide: null,
-  storyTab: "curiosities",
+  storyTab: "dialogs",
   bookTab: "grammar",
   searchTab: "standard",
   toneLabelMap: { a: "a", b: "b" },
@@ -1772,8 +1773,10 @@ const els = {
   miniStoryLines: byId("miniStoryLines"),
   miniStoryTapHint: byId("miniStoryTapHint"),
   playMiniStoryAudio: byId("playMiniStoryAudio"),
+  pauseMiniStoryAudio: byId("pauseMiniStoryAudio"),
   toggleMiniStoryJyutping: byId("toggleMiniStoryJyutping"),
   toggleMiniStoryEnglish: byId("toggleMiniStoryEnglish"),
+  toggleMiniStoryLens: byId("toggleMiniStoryLens"),
   panels: [...document.querySelectorAll(".panel")],
   wordCategory: byId("wordCategory"),
   wordHanzi: byId("wordHanzi"),
@@ -1923,6 +1926,7 @@ let layoutResizeObserver = null;
 const softResizeHeights = new WeakMap();
 const modalCloseTimers = new WeakMap();
 let storyBankCache = null;
+const miniStoryPlayer = { token: 0, lineIndex: 0, active: false, paused: false };
 
 function initializeApp() {
   state.prefs.questionTheme = normalizeQuestionType(state.prefs.questionTheme);
@@ -1933,6 +1937,10 @@ function initializeApp() {
   }
   if (typeof state.prefs.miniStoryShowEnglish !== "boolean") {
     state.prefs.miniStoryShowEnglish = true;
+    miniStoryPrefsChanged = true;
+  }
+  if (typeof state.prefs.miniStoryLens !== "boolean") {
+    state.prefs.miniStoryLens = true;
     miniStoryPrefsChanged = true;
   }
   if (miniStoryPrefsChanged) saveJson(STORAGE_KEYS.prefs, state.prefs);
@@ -2103,24 +2111,25 @@ function bindUI() {
   }
   if (els.miniStorySelect) {
     els.miniStorySelect.addEventListener("change", () => {
+      stopMiniStoryPlayback();
       renderMiniStory();
     });
   }
   if (els.playMiniStoryAudio) {
     els.playMiniStoryAudio.addEventListener("click", () => {
-      if (!state.currentMiniStory || !Array.isArray(state.currentMiniStory.lines)) return;
-      const speechText = state.currentMiniStory.lines.map((line) => line.hanzi).filter(Boolean).join("。");
-      if (speechText) {
-        incrementMission("listens", 1);
-        speak(speechText);
-      }
+      startMiniStoryPlayback();
+    });
+  }
+  if (els.pauseMiniStoryAudio) {
+    els.pauseMiniStoryAudio.addEventListener("click", () => {
+      toggleMiniStoryPause();
     });
   }
   if (els.toggleMiniStoryJyutping) {
     els.toggleMiniStoryJyutping.addEventListener("click", () => {
       state.prefs.miniStoryShowJyutping = !state.prefs.miniStoryShowJyutping;
       saveJson(STORAGE_KEYS.prefs, state.prefs);
-      applyMiniStoryVisibility();
+      renderMiniStory();
     });
   }
   if (els.toggleMiniStoryEnglish) {
@@ -2128,6 +2137,13 @@ function bindUI() {
       state.prefs.miniStoryShowEnglish = !state.prefs.miniStoryShowEnglish;
       saveJson(STORAGE_KEYS.prefs, state.prefs);
       applyMiniStoryVisibility();
+    });
+  }
+  if (els.toggleMiniStoryLens) {
+    els.toggleMiniStoryLens.addEventListener("click", () => {
+      state.prefs.miniStoryLens = !state.prefs.miniStoryLens;
+      saveJson(STORAGE_KEYS.prefs, state.prefs);
+      renderMiniStory();
     });
   }
   if (els.miniStoryLines) {
@@ -2655,8 +2671,11 @@ function switchTab(tabName) {
   document.body.classList.toggle("search-mode", tabName === "search");
   document.body.classList.toggle("settings-mode", tabName === "settings");
   setControlsMode(tabName);
+  if (tabName !== "stories") {
+    stopMiniStoryPlayback();
+  }
   if (tabName === "stories") {
-    switchStoryTab(state.storyTab || "curiosities");
+    switchStoryTab(state.storyTab || "dialogs");
   }
   if (tabName === "book") {
     switchBookTab(state.bookTab || "grammar");
@@ -2706,13 +2725,16 @@ function configureBottomMenu() {
 }
 
 function switchStoryTab(tabName) {
-  const safeName = String(tabName || "").trim() || "curiosities";
+  const safeName = String(tabName || "").trim() || "dialogs";
   const panelId = `stories-${safeName}`;
   const hasPanel = els.storyPanels.some((panel) => panel.id === panelId);
   if (!hasPanel) return;
   state.storyTab = safeName;
   els.storyTabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.storyTab === safeName));
   els.storyPanels.forEach((panel) => panel.classList.toggle("is-active", panel.id === panelId));
+  if (safeName !== "dialogs") {
+    stopMiniStoryPlayback();
+  }
   if (safeName === "curiosities") {
     renderStoryOfDay();
   } else if (safeName === "dialogs") {
@@ -2955,6 +2977,7 @@ function renderStoryOfDay() {
 
 function renderMiniStory() {
   if (!els.miniStoryLines) return;
+  stopMiniStoryPlayback();
   const nextId = normalizeMiniStoryId(els.miniStorySelect?.value || state.currentMiniStory?.id);
   const story = getMiniStoryById(nextId);
   if (!story || !Array.isArray(story.lines) || !story.lines.length) {
@@ -2971,16 +2994,22 @@ function renderMiniStory() {
     els.miniStoryMeta.textContent = `${story.title} · ${levelLabel}`;
   }
 
+  const showJp = state.prefs.miniStoryShowJyutping !== false;
+  const showLens = state.prefs.miniStoryLens !== false;
   const html = story.lines.map((line, lineIndex) => {
     const analysis = state.currentMiniStoryAnalyses[lineIndex];
-    const annotatedHanzi = String(analysis?.annotatedHanzi || escapeHtml(line.hanzi || "-"))
+    const hanziBase = showLens
+      ? (showJp ? (analysis?.annotatedRubyHanzi || analysis?.annotatedHanzi) : analysis?.annotatedHanzi)
+      : (showJp ? (analysis?.rubyHanzi || buildRubyByCharacter(line.hanzi, line.jyutping)) : escapeHtml(line.hanzi || "-"));
+    const hanziHtml = String(hanziBase || escapeHtml(line.hanzi || "-"))
       .replace(/data-idx="(\d+)"/g, `data-idx="$1" data-mini-story-line="${lineIndex}"`);
-    const annotatedJyutping = analysis?.annotatedJyutping || escapeHtml(line.jyutping || "-");
-    const literalHtml = analysis?.literalHtml || escapeHtml(analysis?.literal || "");
+    const literalHtml = showLens
+      ? (analysis?.literalHtml || escapeHtml(analysis?.literal || ""))
+      : escapeHtml(analysis?.literal || "");
     const english = normalizeEnglishSentence(line.english || "-");
+    const hanziClass = `hanzi story-hanzi-line ${showJp ? "pattern-ruby" : ""}`.trim();
     return `<article class="story-line-block mini-story-line-block">
-      <p class="hanzi story-hanzi-line" data-mini-story-line="${lineIndex}">${annotatedHanzi}</p>
-      <p class="jyutping story-jyutping-line">${annotatedJyutping}</p>
+      <p class="${hanziClass}" data-mini-story-line="${lineIndex}">${hanziHtml}</p>
       <p class="english story-english-line">${escapeHtml(english)}</p>
       <p class="literal story-literal-line">Literal: ${literalHtml}</p>
     </article>`;
@@ -2994,18 +3023,139 @@ function renderMiniStory() {
 }
 
 function applyMiniStoryVisibility() {
-  const showJp = state.prefs.miniStoryShowJyutping !== false;
   const showEn = state.prefs.miniStoryShowEnglish !== false;
+  const showJp = state.prefs.miniStoryShowJyutping !== false;
+  const showLens = state.prefs.miniStoryLens !== false;
   if (els.miniStoryLines) {
-    els.miniStoryLines.querySelectorAll(".story-jyutping-line").forEach((node) => {
-      node.classList.toggle("hidden", !showJp);
-    });
     els.miniStoryLines.querySelectorAll(".story-english-line, .story-literal-line").forEach((node) => {
       node.classList.toggle("hidden", !showEn);
     });
   }
+  if (els.miniStoryTapHint) {
+    els.miniStoryTapHint.textContent = showLens
+      ? "Tap any highlighted Hanzi to open quick explanation."
+      : "Lens is off. Turn it on to see token-level grammar framing.";
+  }
   setMiniToggle(els.toggleMiniStoryJyutping, showJp, romanToggleIcon(), romanToggleLabelState(true), romanToggleLabelState(false));
   setMiniToggle(els.toggleMiniStoryEnglish, showEn, "EN", "English on", "English off");
+  setMiniToggle(els.toggleMiniStoryLens, showLens, "◎", "Lens on", "Lens off");
+  updateMiniStoryPauseButton();
+}
+
+function updateMiniStoryPauseButton() {
+  if (!els.pauseMiniStoryAudio) return;
+  const isPaused = !!miniStoryPlayer.paused;
+  setMiniToggle(els.pauseMiniStoryAudio, isPaused, isPaused ? "▶" : "⏸", "Resume", "Pause");
+}
+
+function setMiniStorySpeakingLine(lineIndex) {
+  if (!els.miniStoryLines) return;
+  const blocks = [...els.miniStoryLines.querySelectorAll(".mini-story-line-block")];
+  blocks.forEach((block, idx) => {
+    block.classList.toggle("is-speaking", idx === lineIndex);
+  });
+}
+
+function clearMiniStorySpeakingLine() {
+  if (!els.miniStoryLines) return;
+  els.miniStoryLines.querySelectorAll(".mini-story-line-block.is-speaking").forEach((block) => {
+    block.classList.remove("is-speaking");
+  });
+}
+
+function stopMiniStoryPlayback() {
+  miniStoryPlayer.token += 1;
+  miniStoryPlayer.active = false;
+  miniStoryPlayer.paused = false;
+  miniStoryPlayer.lineIndex = 0;
+  try {
+    if (window.speechSynthesis?.speaking || window.speechSynthesis?.paused) {
+      window.speechSynthesis.cancel();
+    }
+  } catch {}
+  stopSpeechNoise();
+  clearMiniStorySpeakingLine();
+  updateMiniStoryPauseButton();
+}
+
+function startMiniStoryPlayback() {
+  if (!state.currentMiniStory || !Array.isArray(state.currentMiniStory.lines) || !state.currentMiniStory.lines.length) return;
+  stopMiniStoryPlayback();
+  miniStoryPlayer.active = true;
+  miniStoryPlayer.paused = false;
+  miniStoryPlayer.lineIndex = 0;
+  miniStoryPlayer.token += 1;
+  const playToken = miniStoryPlayer.token;
+  speakMiniStoryLine(playToken);
+}
+
+function speakMiniStoryLine(playToken) {
+  if (!miniStoryPlayer.active || playToken !== miniStoryPlayer.token) return;
+  const lines = state.currentMiniStory?.lines || [];
+  if (miniStoryPlayer.lineIndex >= lines.length) {
+    stopMiniStoryPlayback();
+    return;
+  }
+
+  const line = lines[miniStoryPlayer.lineIndex];
+  const text = localizedSpeechText(line) || String(line?.hanzi || "").trim();
+  if (!text) {
+    miniStoryPlayer.lineIndex += 1;
+    speakMiniStoryLine(playToken);
+    return;
+  }
+
+  setMiniStorySpeakingLine(miniStoryPlayer.lineIndex);
+  const utterance = new SpeechSynthesisUtterance(text);
+  const voices = (state.availableVoices && state.availableVoices.length)
+    ? state.availableVoices
+    : (window.speechSynthesis?.getVoices?.() || []);
+  const selected = selectVoiceForSpeech(voices);
+  const mode = normalizeLanguageMode(state.prefs.languageMode);
+  utterance.lang = selected?.lang || (mode === "mandarin" ? "zh-CN" : "zh-HK");
+  if (selected) utterance.voice = selected;
+  utterance.rate = Math.min(1.2, Math.max(0.6, Number(state.prefs.voiceRate) || 0.9));
+  utterance.pitch = 1;
+  utterance.onstart = () => {
+    if (playToken !== miniStoryPlayer.token) return;
+    incrementMission("listens", 1);
+    startSpeechNoise();
+  };
+  utterance.onend = () => {
+    if (playToken !== miniStoryPlayer.token) return;
+    stopSpeechNoise();
+    if (miniStoryPlayer.paused) return;
+    miniStoryPlayer.lineIndex += 1;
+    speakMiniStoryLine(playToken);
+  };
+  utterance.onerror = () => {
+    if (playToken !== miniStoryPlayer.token) return;
+    stopSpeechNoise();
+    if (miniStoryPlayer.paused) return;
+    miniStoryPlayer.lineIndex += 1;
+    speakMiniStoryLine(playToken);
+  };
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utterance);
+}
+
+function toggleMiniStoryPause() {
+  const synth = window.speechSynthesis;
+  if (!synth) return;
+  if (!miniStoryPlayer.active) return;
+  if (synth.paused) {
+    miniStoryPlayer.paused = false;
+    synth.resume();
+    startSpeechNoise();
+    updateMiniStoryPauseButton();
+    return;
+  }
+  if (synth.speaking) {
+    miniStoryPlayer.paused = true;
+    synth.pause();
+    stopSpeechNoise();
+    updateMiniStoryPauseButton();
+  }
 }
 
 function openUserSidePanel() {
