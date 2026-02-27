@@ -304,6 +304,67 @@ const USER_CORE_WORDS = [
   { hanzi: "嘞", category: "particle" }
 ];
 
+const STORY_EXTRA_WORDS = [
+  { hanzi: "從前", category: "time", jyutping: "cong4 cin4", english: "once upon a time" },
+  { hanzi: "狐狸", category: "noun", jyutping: "wu4 lei4", english: "fox" },
+  { hanzi: "兔仔", category: "noun", jyutping: "tou3 zai2", english: "rabbit" },
+  { hanzi: "森林", category: "place", jyutping: "sam1 lam4", english: "forest" },
+  { hanzi: "聰明", category: "adjective", jyutping: "cung1 ming4", english: "smart" },
+  { hanzi: "食物", category: "noun", jyutping: "sik6 mat6", english: "food" },
+  { hanzi: "附近", category: "place", jyutping: "fu6 gan6", english: "nearby" },
+  { hanzi: "懶惰", category: "adjective", jyutping: "laan5 do6", english: "lazy" },
+  { hanzi: "瞓覺", category: "verb", jyutping: "fan3 gaau3", english: "sleep" },
+  { hanzi: "樹", category: "noun", jyutping: "syu6", english: "tree" },
+  { hanzi: "醒", category: "verb", jyutping: "seng2", english: "wake up" },
+  { hanzi: "肥", category: "adjective", jyutping: "fei4", english: "fat" },
+  { hanzi: "洞", category: "noun", jyutping: "dung6", english: "cave" },
+  { hanzi: "驚", category: "adjective", jyutping: "geng1", english: "scared" },
+  { hanzi: "蘋果", category: "noun", jyutping: "ping4 gwo2", english: "apple" },
+  { hanzi: "清潔", category: "verb", jyutping: "cing1 git3", english: "clean / tidy" },
+  { hanzi: "風雨", category: "noun", jyutping: "fung1 jyu5", english: "storm" },
+  { hanzi: "壞", category: "adjective", jyutping: "waai6", english: "broken / bad" },
+  { hanzi: "勤力", category: "adjective", jyutping: "kan4 lik6", english: "hardworking" },
+  { hanzi: "善良", category: "adjective", jyutping: "sin6 loeng4", english: "kind" },
+  { hanzi: "故事", category: "noun", jyutping: "gu3 si6", english: "story" },
+  { hanzi: "阿明", category: "noun", jyutping: "aa3 ming4", english: "Ah Ming (name)" },
+  { hanzi: "年輕", category: "adjective", jyutping: "nin4 hing1", english: "young" },
+  { hanzi: "九龍", category: "place", jyutping: "gau2 lung4", english: "Kowloon" },
+  { hanzi: "香港", category: "place", jyutping: "hoeng1 gong2", english: "Hong Kong" },
+  { hanzi: "舊", category: "adjective", jyutping: "gau6", english: "old" },
+  { hanzi: "街市", category: "place", jyutping: "gaai1 si5", english: "wet market" },
+  { hanzi: "熱鬧", category: "adjective", jyutping: "jit6 naau6", english: "busy / lively" },
+  { hanzi: "魚", category: "noun", jyutping: "jyu4", english: "fish" },
+  { hanzi: "肉", category: "noun", jyutping: "juk6", english: "meat" },
+  { hanzi: "味道", category: "noun", jyutping: "mei6 dou6", english: "smell / flavor" },
+  { hanzi: "新鮮", category: "adjective", jyutping: "san1 sin1", english: "fresh" },
+  { hanzi: "檔口", category: "noun", jyutping: "dong3 hau2", english: "stall" },
+  { hanzi: "叫賣", category: "verb", jyutping: "giu3 maai6", english: "hawk / shout to sell" },
+  { hanzi: "迷路", category: "verb", jyutping: "mai4 lou6", english: "get lost" },
+  { hanzi: "四圍", category: "adverb", jyutping: "sei3 wai4", english: "all around" },
+  { hanzi: "阿姨", category: "noun", jyutping: "aa3 ji4", english: "auntie" },
+  { hanzi: "水果", category: "noun", jyutping: "seoi2 gwo2", english: "fruit" },
+  { hanzi: "叔叔", category: "noun", jyutping: "suk1 suk1", english: "uncle" },
+  { hanzi: "雞", category: "noun", jyutping: "gai1", english: "chicken" },
+  { hanzi: "出口", category: "noun", jyutping: "ceot1 hau2", english: "exit" },
+  { hanzi: "直行", category: "verb", jyutping: "zik6 haang4", english: "go straight" },
+  { hanzi: "擔心", category: "adjective", jyutping: "daam1 sam1", english: "worried" },
+  { hanzi: "辦法", category: "noun", jyutping: "baan6 faat3", english: "way / solution" },
+  { hanzi: "收檔", category: "verb", jyutping: "sau1 dong3", english: "close stall" },
+  { hanzi: "街燈", category: "noun", jyutping: "gaai1 dang1", english: "street light" },
+  { hanzi: "舊式", category: "adjective", jyutping: "gau6 sik1", english: "old-style" },
+  { hanzi: "的士", category: "noun", jyutping: "dik1 si6", english: "taxi" },
+  { hanzi: "司機", category: "noun", jyutping: "si1 gei1", english: "driver" },
+  { hanzi: "眼鏡", category: "noun", jyutping: "ngaan5 geng2", english: "glasses" },
+  { hanzi: "油麻地", category: "place", jyutping: "jau4 maa4 dei6", english: "Yau Ma Tei" },
+  { hanzi: "小巷", category: "noun", jyutping: "siu2 hong6", english: "small alley" },
+  { hanzi: "經過", category: "verb", jyutping: "ging1 gwo3", english: "pass by" },
+  { hanzi: "維多利亞港", category: "place", jyutping: "wai4 do1 lei6 aa3 gong2", english: "Victoria Harbour" },
+  { hanzi: "放鬆", category: "verb", jyutping: "fong3 sung1", english: "relax" },
+  { hanzi: "多謝", category: "verb", jyutping: "do1 ze6", english: "thank you" },
+  { hanzi: "畀錢", category: "verb", jyutping: "bei2 cin4", english: "pay money" },
+  { hanzi: "怕", category: "verb", jyutping: "paa3", english: "fear / be afraid" }
+];
+
 const CORE_WORD_SET = new Set(USER_CORE_WORDS.map((w) => normalizeHanzi(w.hanzi)));
 const CORE_WORD_MEANINGS = {
   "尋日": "yesterday",
@@ -1724,6 +1785,8 @@ const state = {
   currentStoryAnalyses: [],
   currentMiniStory: null,
   currentMiniStoryAnalyses: [],
+  currentMiniStoryChunkTexts: [],
+  supplementalSearchWords: [],
   currentToneKind: "word",
   currentToneSide: null,
   storyTab: "dialogs",
@@ -1926,8 +1989,137 @@ const softResizeHeights = new WeakMap();
 const modalCloseTimers = new WeakMap();
 let storyBankCache = null;
 const miniStoryPlayer = { token: 0, lineIndex: 0, chunkIndex: 0, active: false, paused: false };
+const AUTO_TOKEN_JYUTPING = Object.create(null);
+
+function normalizeRomanSyllables(romanInput) {
+  const cleaned = String(romanInput || "")
+    .replace(/[，。！？、,.!?/:"'“”‘’]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return cleaned ? cleaned.split(" ") : [];
+}
+
+function isAsciiWordToken(token) {
+  return /^[A-Za-z0-9]+$/.test(String(token || ""));
+}
+
+function tokenCharCountForRoman(token) {
+  if (isAsciiWordToken(token)) return 1;
+  return Array.from(String(token || "")).length;
+}
+
+function inferTokenRomanMapFromSentence(hanziInput, romanInput) {
+  const map = Object.create(null);
+  const tokens = tokenizeSentence(hanziInput).filter((token) => !isPunctuation(token));
+  const syllables = normalizeRomanSyllables(romanInput);
+  if (!tokens.length || !syllables.length) return map;
+
+  let cursor = 0;
+  tokens.forEach((token) => {
+    if (cursor >= syllables.length) return;
+    const take = tokenCharCountForRoman(token);
+    const slice = syllables.slice(cursor, cursor + take);
+    if (!slice.length) return;
+    const roman = cleanLiteral(slice.join(" "));
+    if (roman) map[normalizeHanzi(token)] = roman;
+    cursor += take;
+  });
+  return map;
+}
+
+function refreshAutoTokenJyutpingMap() {
+  Object.keys(AUTO_TOKEN_JYUTPING).forEach((key) => delete AUTO_TOKEN_JYUTPING[key]);
+
+  const sources = [];
+  const words = state.content?.words || [];
+  words.forEach((word) => {
+    if (!word?.hanzi || !word?.jyutping || word.jyutping === "to-confirm") return;
+    AUTO_TOKEN_JYUTPING[normalizeHanzi(word.hanzi)] = cleanLiteral(word.jyutping);
+  });
+
+  sources.push(...(state.content?.patterns || []));
+  sources.push(...(state.content?.quiz || []));
+  sources.push(...(ALL_SENTENCES || []));
+  MINI_STORY_LIBRARY.forEach((story) => {
+    (story?.lines || []).forEach((line) => sources.push(line));
+  });
+
+  sources.forEach((entry) => {
+    const hanzi = String(entry?.hanzi || "").trim();
+    const roman = String(entry?.jyutping || "").trim();
+    if (!hanzi || !roman) return;
+    const inferred = inferTokenRomanMapFromSentence(hanzi, roman);
+    Object.keys(inferred).forEach((token) => {
+      if (!AUTO_TOKEN_JYUTPING[token]) AUTO_TOKEN_JYUTPING[token] = inferred[token];
+    });
+  });
+}
+
+function rebuildSupplementalSearchWords() {
+  const baseWords = state.content?.words || [];
+  const known = new Set(baseWords.map((w) => normalizeHanzi(w.hanzi)).filter(Boolean));
+  const seen = new Set();
+  const out = [];
+  const sources = []
+    .concat(state.content?.patterns || [])
+    .concat(state.content?.quiz || [])
+    .concat(ALL_SENTENCES || []);
+  MINI_STORY_LIBRARY.forEach((story) => {
+    (story?.lines || []).forEach((line) => sources.push(line));
+  });
+
+  sources.forEach((sentence) => {
+    const tokens = tokenizeSentence(sentence?.hanzi || "");
+    tokens.forEach((token) => {
+      const key = normalizeHanzi(token);
+      if (!key || isPunctuation(token) || isAsciiWordToken(token) || known.has(key) || seen.has(key)) return;
+      const roman = jyutpingForToken(token);
+      const meaning = literalForToken(token);
+      if ((!roman || roman === token || roman === "to-confirm") && (!meaning || meaning === token)) return;
+      out.push({
+        id: `sup_${out.length + 1}`,
+        hanzi: token,
+        jyutping: roman && roman !== token ? roman : "",
+        english: meaning && meaning !== token ? meaning : "word",
+        category: "extra"
+      });
+      seen.add(key);
+    });
+  });
+  state.supplementalSearchWords = out;
+}
+
+function enrichWordCoverage() {
+  let changed = false;
+  (state.content?.words || []).forEach((word) => {
+    const key = normalizeHanzi(word.hanzi);
+    if (!key) return;
+    if (isMissingJyutping(word.jyutping) || word.jyutping === "to-confirm") {
+      const roman = jyutpingForToken(key);
+      if (roman && roman !== key && roman !== "to-confirm") {
+        word.jyutping = roman;
+        changed = true;
+      }
+    }
+    if (isMissingMeaning(word.english)) {
+      const meaning = literalForToken(key);
+      if (meaning && meaning !== key) {
+        word.english = meaning;
+        changed = true;
+      }
+    }
+  });
+  if (changed) saveJson(STORAGE_KEYS.content, state.content);
+}
+
+function refreshLexiconCoverage() {
+  refreshAutoTokenJyutpingMap();
+  enrichWordCoverage();
+  rebuildSupplementalSearchWords();
+}
 
 function initializeApp() {
+  refreshLexiconCoverage();
   state.prefs.questionTheme = normalizeQuestionType(state.prefs.questionTheme);
   let miniStoryPrefsChanged = false;
   if (typeof state.prefs.miniStoryShowJyutping !== "boolean") {
@@ -2567,6 +2759,7 @@ function bindUI() {
   byId("resetData").addEventListener("click", () => {
     localStorage.removeItem(STORAGE_KEYS.content);
     state.content = normalizeContent(deepClone(DEFAULT_DATA));
+    refreshLexiconCoverage();
     els.contentMessage.textContent = "Reset complete. Built-in words loaded.";
     resetRotations();
     rollWord();
@@ -3043,39 +3236,39 @@ function miniStoryTokenClass(meta, mapIndex) {
   return { cls, role: markerRole || (isVerb ? "verb" : "") };
 }
 
-function miniStoryTokenHtml(token, idx, analysis, showLens, showJp, mapState, lineIndex) {
+function miniStoryTokenRoman(token, lineTokenRomanMap) {
+  const key = normalizeHanzi(token);
+  const base = jyutpingForToken(token);
+  if (base && base !== token && base !== "to-confirm") return base;
+  if (lineTokenRomanMap && lineTokenRomanMap[key]) return lineTokenRomanMap[key];
+  return "";
+}
+
+function miniStoryTokenHtml(token, idx, analysis, showLens, showJp, mapState, lineIndex, lineTokenRomanMap) {
   if (isPunctuation(token)) return escapeHtml(token);
   const meta = analysis?.tokenMeta?.[idx] || null;
+  const tokenRoman = miniStoryTokenRoman(token, lineTokenRomanMap);
+  const tokenHtml = showJp ? buildRubyByCharacter(token, tokenRoman) : escapeHtml(token);
   if (showLens) {
     const nextMap = mapState.value;
     mapState.value += 1;
     const classInfo = miniStoryTokenClass(meta, nextMap);
     const dataAttrs = ` data-idx="${idx}" data-mini-story-line="${lineIndex}" data-token="${escapeAttr(token)}" data-role="${escapeAttr(classInfo.role)}"`;
-    if (showJp) {
-      const jp = jyutpingForToken(token);
-      const showRt = jp && jp !== "to-confirm" && jp !== token;
-      const ruby = `<ruby><rb>${escapeHtml(token)}</rb>${showRt ? `<rt>${escapeHtml(jp)}</rt>` : ""}</ruby>`;
-      return `<span class="${classInfo.cls}"${dataAttrs}>${ruby}</span>`;
-    }
-    return `<span class="${classInfo.cls}"${dataAttrs}>${escapeHtml(token)}</span>`;
+    return `<span class="${classInfo.cls}"${dataAttrs}>${tokenHtml}</span>`;
   }
-  if (showJp) {
-    const jp = jyutpingForToken(token);
-    const showRt = jp && jp !== "to-confirm" && jp !== token;
-    return `<ruby><rb>${escapeHtml(token)}</rb>${showRt ? `<rt>${escapeHtml(jp)}</rt>` : ""}</ruby>`;
-  }
-  return escapeHtml(token);
+  return tokenHtml;
 }
 
 function buildMiniStoryLineRender(line, analysis, lineIndex, showLens, showJp) {
   const tokens = Array.isArray(analysis?.tokens) && analysis.tokens.length
     ? analysis.tokens
     : tokenizeSentence(line?.hanzi || "");
+  const lineTokenRomanMap = inferTokenRomanMapFromSentence(line?.hanzi || "", line?.jyutping || "");
   const chunks = splitMiniStoryTokenChunks(tokens);
   const mapState = { value: 0 };
   const html = chunks.map((chunk, chunkIndex) => {
     const chunkHtml = chunk
-      .map((item) => miniStoryTokenHtml(item.token, item.idx, analysis, showLens, showJp, mapState, lineIndex))
+      .map((item) => miniStoryTokenHtml(item.token, item.idx, analysis, showLens, showJp, mapState, lineIndex, lineTokenRomanMap))
       .join("");
     return `<span class="mini-story-hanzi-chunk" data-mini-story-line="${lineIndex}" data-mini-story-chunk="${chunkIndex}">${chunkHtml}</span>`;
   }).join("");
@@ -3110,7 +3303,7 @@ function updateMiniStoryPlayButton() {
   const isActive = !!miniStoryPlayer.active;
   const isPaused = !!miniStoryPlayer.paused;
   const isPlaying = isActive && !isPaused;
-  els.playMiniStoryAudio.textContent = isPlaying ? "⏸" : "▶";
+  els.playMiniStoryAudio.textContent = isPlaying ? "❚❚" : "▶";
   els.playMiniStoryAudio.setAttribute(
     "aria-label",
     isPlaying ? "Pause mini story audio" : (isActive ? "Resume mini story audio" : "Play mini story audio")
@@ -3418,7 +3611,7 @@ function getWordSearchMatches(query, mode = "standard") {
   if (!queryNorm) return [];
   const queryCompact = queryNorm.replace(/\s+/g, "");
   const out = [];
-  const allWords = state.content?.words || [];
+  const allWords = (state.content?.words || []).concat(state.supplementalSearchWords || []);
   const useSlang = String(mode || "").trim() === "slang";
   const customSlang = allWords.filter((w) => String(w.category || "").toLowerCase() === "slang");
   const words = useSlang
@@ -4901,6 +5094,7 @@ function importDataFile(event) {
       const checked = normalizeContent(imported);
       state.content = checked;
       saveJson(STORAGE_KEYS.content, checked);
+      refreshLexiconCoverage();
       els.contentMessage.textContent = "Import successful. New learning set loaded.";
       resetRotations();
       rollWord();
@@ -4954,14 +5148,15 @@ function ensureCoreWords(words) {
     seen.add(normalizeHanzi(word.hanzi));
   });
 
-  USER_CORE_WORDS.forEach((entry) => {
+  const requiredWords = USER_CORE_WORDS.concat(STORY_EXTRA_WORDS);
+  requiredWords.forEach((entry) => {
     const key = normalizeHanzi(entry.hanzi);
     if (!key || seen.has(key)) return;
     safeWords.push({
       id: `core_${nextId++}`,
       hanzi: entry.hanzi,
-      jyutping: jyutpingForWord(entry.hanzi),
-      english: meaningForWord(entry.hanzi, entry.category),
+      jyutping: String(entry.jyutping || jyutpingForWord(entry.hanzi)).trim(),
+      english: String(entry.english || meaningForWord(entry.hanzi, entry.category)).trim(),
       category: entry.category,
       example: ""
     });
@@ -6092,9 +6287,55 @@ function isMissingMeaning(english) {
   return !value || /^\[.*\]$/.test(value);
 }
 
+function lookupMeaningExact(hanzi) {
+  const key = normalizeHanzi(hanzi);
+  const byWord = (state.content?.words || []).find((w) => normalizeHanzi(w.hanzi) === key);
+  if (byWord?.english) return String(byWord.english).split("/")[0].trim();
+  if (EXTRA_TOKEN_MEANINGS[key]) return EXTRA_TOKEN_MEANINGS[key];
+  if (CORE_WORD_MEANINGS[key]) return CORE_WORD_MEANINGS[key];
+  return "";
+}
+
+function lookupJyutpingExact(hanzi) {
+  const key = normalizeHanzi(hanzi);
+  const byWord = (state.content?.words || []).find((w) => normalizeHanzi(w.hanzi) === key);
+  if (byWord?.jyutping && byWord.jyutping !== "to-confirm") return cleanLiteral(byWord.jyutping);
+  if (EXTRA_TOKEN_JYUTPING[key]) return cleanLiteral(EXTRA_TOKEN_JYUTPING[key]);
+  if (AUTO_TOKEN_JYUTPING[key]) return cleanLiteral(AUTO_TOKEN_JYUTPING[key]);
+  if (CORE_WORD_JYUTPING[key]) return cleanLiteral(CORE_WORD_JYUTPING[key]);
+  return "";
+}
+
+function composeMeaningFromChars(hanzi) {
+  const chars = Array.from(String(hanzi || "").trim()).filter((ch) => !isPunctuation(ch));
+  if (!chars.length || chars.length < 2) return "";
+  const parts = [];
+  for (let i = 0; i < chars.length; i += 1) {
+    const meaning = lookupMeaningExact(chars[i]);
+    if (!meaning) return "";
+    parts.push(String(meaning).split("/")[0].trim());
+  }
+  return cleanLiteral(parts.join(" "));
+}
+
+function composeJyutpingFromChars(hanzi) {
+  const chars = Array.from(String(hanzi || "").trim()).filter((ch) => !isPunctuation(ch));
+  if (!chars.length || chars.length < 2) return "";
+  const parts = [];
+  for (let i = 0; i < chars.length; i += 1) {
+    const roman = lookupJyutpingExact(chars[i]);
+    if (!roman || roman === chars[i] || roman === "to-confirm") return "";
+    parts.push(roman);
+  }
+  return cleanLiteral(parts.join(" "));
+}
+
 function meaningForWord(hanzi, category) {
   const key = normalizeHanzi(hanzi);
-  if (CORE_WORD_MEANINGS[key]) return CORE_WORD_MEANINGS[key];
+  const exact = lookupMeaningExact(key);
+  if (exact) return exact;
+  const derived = composeMeaningFromChars(key);
+  if (derived) return derived;
   return category ? `${category} term` : "word";
 }
 
@@ -6104,7 +6345,11 @@ function isMissingJyutping(jyutping) {
 
 function jyutpingForWord(hanzi) {
   const key = normalizeHanzi(hanzi);
-  return CORE_WORD_JYUTPING[key] || "to-confirm";
+  const exact = lookupJyutpingExact(key);
+  if (exact) return exact;
+  const derived = composeJyutpingFromChars(key);
+  if (derived) return derived;
+  return "to-confirm";
 }
 
 function syncControlValues() {
@@ -7265,6 +7510,13 @@ function tokenizeSentence(hanzi) {
       i += 1;
       continue;
     }
+    if (/[A-Za-z0-9]/.test(char)) {
+      let j = i + 1;
+      while (j < input.length && /[A-Za-z0-9]/.test(input[j])) j += 1;
+      tokens.push(input.slice(i, j));
+      i = j;
+      continue;
+    }
     if (isPunctuation(char)) {
       tokens.push(char);
       i += 1;
@@ -7322,22 +7574,20 @@ function findPreviousVerbIndex(tokens, markerIndex) {
 function literalForToken(token) {
   const normalized = normalizeHanzi(token);
   if (ASPECT_MARKERS[normalized]) return `[${ASPECT_MARKERS[normalized].label}]`;
-  const byWord = (state.content?.words || []).find((w) => normalizeHanzi(w.hanzi) === normalized);
-  if (byWord?.english) {
-    return String(byWord.english).split("/")[0].trim();
-  }
-  if (EXTRA_TOKEN_MEANINGS[normalized]) return EXTRA_TOKEN_MEANINGS[normalized];
-  if (CORE_WORD_MEANINGS[normalized]) return CORE_WORD_MEANINGS[normalized];
+  const exact = lookupMeaningExact(normalized);
+  if (exact) return exact;
+  const derived = composeMeaningFromChars(normalized);
+  if (derived) return derived;
   return normalized;
 }
 
 function jyutpingForToken(token) {
   const normalized = normalizeHanzi(token);
   if (isPunctuation(normalized)) return normalized;
-  const byWord = (state.content?.words || []).find((w) => normalizeHanzi(w.hanzi) === normalized);
-  if (byWord?.jyutping && byWord.jyutping !== "to-confirm") return byWord.jyutping;
-  if (EXTRA_TOKEN_JYUTPING[normalized]) return EXTRA_TOKEN_JYUTPING[normalized];
-  if (CORE_WORD_JYUTPING[normalized]) return CORE_WORD_JYUTPING[normalized];
+  const exact = lookupJyutpingExact(normalized);
+  if (exact) return exact;
+  const derived = composeJyutpingFromChars(normalized);
+  if (derived) return derived;
   return normalized;
 }
 
