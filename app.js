@@ -1990,6 +1990,11 @@ const modalCloseTimers = new WeakMap();
 let storyBankCache = null;
 const miniStoryPlayer = { token: 0, lineIndex: 0, chunkIndex: 0, active: false, paused: false };
 const AUTO_TOKEN_JYUTPING = Object.create(null);
+let tokenizerVocabularyCache = null;
+
+function invalidateTokenizerVocabularyCache() {
+  tokenizerVocabularyCache = null;
+}
 
 function normalizeRomanSyllables(romanInput) {
   const cleaned = String(romanInput || "")
@@ -2039,7 +2044,6 @@ function refreshAutoTokenJyutpingMap() {
 
   sources.push(...(state.content?.patterns || []));
   sources.push(...(state.content?.quiz || []));
-  sources.push(...(ALL_SENTENCES || []));
   MINI_STORY_LIBRARY.forEach((story) => {
     (story?.lines || []).forEach((line) => sources.push(line));
   });
@@ -2062,8 +2066,7 @@ function rebuildSupplementalSearchWords() {
   const out = [];
   const sources = []
     .concat(state.content?.patterns || [])
-    .concat(state.content?.quiz || [])
-    .concat(ALL_SENTENCES || []);
+    .concat(state.content?.quiz || []);
   MINI_STORY_LIBRARY.forEach((story) => {
     (story?.lines || []).forEach((line) => sources.push(line));
   });
@@ -2084,6 +2087,7 @@ function rebuildSupplementalSearchWords() {
         category: "extra"
       });
       seen.add(key);
+      if (out.length >= 300) return;
     });
   });
   state.supplementalSearchWords = out;
@@ -2113,13 +2117,13 @@ function enrichWordCoverage() {
 }
 
 function refreshLexiconCoverage() {
+  invalidateTokenizerVocabularyCache();
   refreshAutoTokenJyutpingMap();
   enrichWordCoverage();
   rebuildSupplementalSearchWords();
 }
 
 function initializeApp() {
-  refreshLexiconCoverage();
   state.prefs.questionTheme = normalizeQuestionType(state.prefs.questionTheme);
   let miniStoryPrefsChanged = false;
   if (typeof state.prefs.miniStoryShowJyutping !== "boolean") {
@@ -2159,6 +2163,16 @@ function initializeApp() {
   refreshGameUI();
   registerServiceWorker();
   initSoftLayoutTransitions();
+  setTimeout(() => {
+    try {
+      refreshLexiconCoverage();
+      if (state.currentWord) renderWordCard();
+      renderMiniStory();
+      if (els.searchInput && String(els.searchInput.value || "").trim()) runWordSearch();
+    } catch (err) {
+      console.warn("Lexicon refresh skipped:", err);
+    }
+  }, 0);
 }
 
 function bindUI() {
@@ -7542,6 +7556,9 @@ function tokenizeSentence(hanzi) {
 }
 
 function getTokenizerVocabulary() {
+  if (Array.isArray(tokenizerVocabularyCache) && tokenizerVocabularyCache.length) {
+    return tokenizerVocabularyCache;
+  }
   const words = (state.content?.words || []).map((w) => normalizeHanzi(w.hanzi)).filter(Boolean);
   const extras = Object.keys(ASPECT_MARKERS)
     .concat(Object.keys(EXTRA_TOKEN_JYUTPING))
@@ -7549,8 +7566,8 @@ function getTokenizerVocabulary() {
     .concat([
     "已經", "將會", "唔係", "一齊", "啱啱", "之前", "之後", "不過", "因為", "所以"
   ]);
-  const vocab = Array.from(new Set(words.concat(extras))).sort((a, b) => b.length - a.length);
-  return vocab;
+  tokenizerVocabularyCache = Array.from(new Set(words.concat(extras))).sort((a, b) => b.length - a.length);
+  return tokenizerVocabularyCache;
 }
 
 function isPunctuation(token) {
