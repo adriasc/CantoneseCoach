@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.29</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.30</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -29,12 +29,72 @@
     </header>
 
     <nav class="tabs">
-      <button class="tab is-active" data-tab="words">Learn Words</button>
-      <button class="tab" data-tab="tones">Tone Drill</button>
-      <button class="tab" data-tab="patterns">Build Sentences</button>
-      <button class="tab" data-tab="questions">Ask &amp; Answer</button>
-      <button class="tab" data-tab="listening">Listen &amp; Choose</button>
-      <button class="tab" data-tab="exercises">Exercises</button>
+      <button class="tab is-active" data-tab="words">
+        <span class="learn-tab-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true">
+            <path d="M5 6.5h6.5v11H5z"></path>
+            <path d="M12.5 6.5H19v11h-6.5"></path>
+            <path d="M11.5 8H7.2"></path>
+            <path d="M16.8 8h-3.6"></path>
+          </svg>
+        </span>
+        <span class="learn-tab-label">Learn Words</span>
+      </button>
+      <button class="tab" data-tab="tones">
+        <span class="learn-tab-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true">
+            <path d="M4.5 15.5a4.5 4.5 0 0 1 0-7"></path>
+            <path d="M8 18.5a8.5 8.5 0 0 1 0-13"></path>
+            <path d="M11.5 21a12 12 0 0 1 0-18"></path>
+            <path d="M17 7.5a2.3 2.3 0 1 1-2.3 2.3V7.5z"></path>
+          </svg>
+        </span>
+        <span class="learn-tab-label">Tone Drill</span>
+      </button>
+      <button class="tab" data-tab="patterns">
+        <span class="learn-tab-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true">
+            <rect x="3.5" y="4.5" width="7" height="5" rx="1"></rect>
+            <rect x="13.5" y="4.5" width="7" height="5" rx="1"></rect>
+            <rect x="8.5" y="14.5" width="7" height="5" rx="1"></rect>
+            <path d="M10.5 7h3"></path>
+            <path d="M12 9.5v5"></path>
+          </svg>
+        </span>
+        <span class="learn-tab-label">Build Sentences</span>
+      </button>
+      <button class="tab" data-tab="questions">
+        <span class="learn-tab-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true">
+            <path d="M4.5 6.5h9a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H9l-3.5 3v-3H4.5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2z"></path>
+            <path d="M13.5 9.5h6a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H16l-2.5 2v-2h0"></path>
+          </svg>
+        </span>
+        <span class="learn-tab-label">Ask &amp; Answer</span>
+      </button>
+      <button class="tab" data-tab="listening">
+        <span class="learn-tab-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true">
+            <path d="M6.5 12a5.5 5.5 0 0 1 11 0"></path>
+            <rect x="4" y="11" width="3.5" height="6.5" rx="1.2"></rect>
+            <rect x="16.5" y="11" width="3.5" height="6.5" rx="1.2"></rect>
+            <path d="M12 18.5v2"></path>
+            <path d="M9.5 21h5"></path>
+          </svg>
+        </span>
+        <span class="learn-tab-label">Listen &amp; Choose</span>
+      </button>
+      <button class="tab" data-tab="exercises">
+        <span class="learn-tab-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true">
+            <rect x="4.5" y="5" width="15" height="15" rx="2"></rect>
+            <path d="M8 9h8"></path>
+            <path d="M8 13h5"></path>
+            <path d="m14.5 15.5 1.5 1.5 3-3"></path>
+          </svg>
+        </span>
+        <span class="learn-tab-label">Exercises</span>
+      </button>
     </nav>
 
     <nav class="stories-top-tabs" aria-label="Stories sections">

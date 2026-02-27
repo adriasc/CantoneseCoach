@@ -303,6 +303,40 @@ h1 {
   transition: background 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
 }
 
+.tabs .tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 62px;
+  text-align: center;
+}
+
+.tabs .learn-tab-icon {
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tabs .learn-tab-icon svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tabs .learn-tab-label {
+  font-size: 0.83rem;
+  line-height: 1.12;
+  font-weight: 700;
+  letter-spacing: 0.005em;
+}
+
 .tab.is-active {
   background: linear-gradient(160deg, #ff8f63 0%, #ff646f 48%, #ff4f85 100%);
   border-color: rgba(233, 108, 111, 0.62);
