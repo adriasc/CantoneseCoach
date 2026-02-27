@@ -377,6 +377,10 @@ h1 {
   stroke-linejoin: round;
 }
 
+.bottom-nav-icon svg.legacy-icon {
+  display: none;
+}
+
 .bottom-nav-label {
   font-size: 0.72rem;
   line-height: 1;
@@ -384,6 +388,10 @@ h1 {
 }
 
 body.stories-mode .tabs {
+  display: none;
+}
+
+body.book-mode .tabs {
   display: none;
 }
 
@@ -505,7 +513,19 @@ body.settings-mode .tabs {
   display: none;
 }
 
+.book-top-tabs {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  display: none;
+}
+
 .stories-nav-btn {
+  font-size: 0.95rem;
+}
+
+.book-nav-btn {
   font-size: 0.95rem;
 }
 
@@ -518,7 +538,20 @@ body.settings-mode .tabs {
   animation: fade 200ms ease-out;
 }
 
+.book-subpanel {
+  display: none;
+  background: color-mix(in srgb, #fff 82%, var(--soft));
+  border: 1px solid rgba(114, 144, 178, 0.16);
+  border-radius: 12px;
+  padding: 12px;
+  animation: fade 200ms ease-out;
+}
+
 .stories-subpanel.is-active {
+  display: block;
+}
+
+.book-subpanel.is-active {
   display: block;
 }
 
@@ -570,6 +603,10 @@ body.settings-mode .tabs {
 }
 
 body.stories-mode .stories-top-tabs {
+  display: grid;
+}
+
+body.book-mode .book-top-tabs {
   display: grid;
 }
 
@@ -2113,6 +2150,10 @@ input[type="file"] {
   }
 
   .stories-top-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .book-top-tabs {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

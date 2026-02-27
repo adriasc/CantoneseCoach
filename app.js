@@ -1709,6 +1709,7 @@ const state = {
   currentToneKind: "word",
   currentToneSide: null,
   storyTab: "curiosities",
+  bookTab: "grammar",
   toneLabelMap: { a: "a", b: "b" },
   toneScore: { correct: 0, total: 0 },
   quizDisplay: { hanzi: false, jyutping: false, english: false, lens: false },
@@ -1739,6 +1740,8 @@ const els = {
   infoModalBody: byId("infoModalBody"),
   storyTabs: [...document.querySelectorAll(".stories-nav-btn")],
   storyPanels: [...document.querySelectorAll(".stories-subpanel")],
+  bookTabs: [...document.querySelectorAll(".book-nav-btn")],
+  bookPanels: [...document.querySelectorAll(".book-subpanel")],
   storyOfDayLabel: byId("storyOfDayLabel"),
   storyOfDayMeta: byId("storyOfDayMeta"),
   storyOfDayLines: byId("storyOfDayLines"),
@@ -2002,6 +2005,13 @@ function bindUI() {
       const nextTab = String(tab.dataset.storyTab || "").trim();
       if (!nextTab) return;
       switchStoryTab(nextTab);
+    });
+  });
+  els.bookTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const nextTab = String(tab.dataset.bookTab || "").trim();
+      if (!nextTab) return;
+      switchBookTab(nextTab);
     });
   });
   if (els.playStoryAudio) {
@@ -2535,11 +2545,15 @@ function switchTab(tabName) {
   syncBottomTabState(tabName);
   els.panels.forEach((panel) => panel.classList.toggle("is-active", panel.id === targetPanelId));
   document.body.classList.toggle("stories-mode", tabName === "stories");
+  document.body.classList.toggle("book-mode", tabName === "book");
   document.body.classList.toggle("search-mode", tabName === "search");
   document.body.classList.toggle("settings-mode", tabName === "settings");
   setControlsMode(tabName);
   if (tabName === "stories") {
     switchStoryTab(state.storyTab || "curiosities");
+  }
+  if (tabName === "book") {
+    switchBookTab(state.bookTab || "grammar");
   }
   if (tabName === "search") {
     if (!els.searchResults || !String(els.searchResults.innerHTML || "").trim()) {
@@ -2562,7 +2576,7 @@ function switchTab(tabName) {
 
 function syncBottomTabState(tabName) {
   let activeGroup = "learn";
-  if (tabName === "tones") activeGroup = "tones";
+  if (tabName === "book") activeGroup = "book";
   if (tabName === "stories") activeGroup = "stories";
   if (tabName === "search") activeGroup = "search";
   if (tabName === "settings") activeGroup = "home";
@@ -2596,6 +2610,16 @@ function switchStoryTab(tabName) {
   if (safeName === "curiosities") {
     renderStoryOfDay();
   }
+}
+
+function switchBookTab(tabName) {
+  const safeName = String(tabName || "").trim() || "grammar";
+  const panelId = `book-${safeName}`;
+  const hasPanel = els.bookPanels.some((panel) => panel.id === panelId);
+  if (!hasPanel) return;
+  state.bookTab = safeName;
+  els.bookTabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.bookTab === safeName));
+  els.bookPanels.forEach((panel) => panel.classList.toggle("is-active", panel.id === panelId));
 }
 
 function storyThemeLabel(theme) {
@@ -2769,7 +2793,7 @@ function showInfoModal(kind) {
 }
 
 function setControlsMode(tabName) {
-  const hideControls = tabName === "stories" || tabName === "search" || tabName === "settings";
+  const hideControls = tabName === "stories" || tabName === "book" || tabName === "search" || tabName === "settings";
   if (els.controlsCard) {
     els.controlsCard.classList.toggle("hidden", hideControls);
   }
