@@ -620,11 +620,11 @@ body.settings-mode .tabs {
   color: #fff;
 }
 
-.book-tone-panel {
+.book-lesson.book-tone-panel {
   display: none;
 }
 
-.book-tone-panel.is-active {
+.book-lesson.book-tone-panel.is-active {
   display: grid;
 }
 
