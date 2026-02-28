@@ -1830,7 +1830,9 @@ const els = {
   authPasswordInput: byId("authPasswordInput"),
   authSignInBtn: byId("authSignInBtn"),
   authSignUpBtn: byId("authSignUpBtn"),
+  authGoogleBtn: byId("authGoogleBtn"),
   authForgotBtn: byId("authForgotBtn"),
+  authResendBtn: byId("authResendBtn"),
   authSignOutBtn: byId("authSignOutBtn"),
   authUserInfo: byId("authUserInfo"),
   userEmailValue: byId("userEmailValue"),
@@ -1978,7 +1980,9 @@ const els = {
   authGatePasswordInput: byId("authGatePasswordInput"),
   authGateSignInBtn: byId("authGateSignInBtn"),
   authGateSignUpBtn: byId("authGateSignUpBtn"),
+  authGateGoogleBtn: byId("authGateGoogleBtn"),
   authGateForgotBtn: byId("authGateForgotBtn"),
+  authGateResendBtn: byId("authGateResendBtn"),
   authGateUserInfo: byId("authGateUserInfo"),
   authGateContinueBtn: byId("authGateContinueBtn"),
   closeAuthGate: byId("closeAuthGate"),
@@ -2351,9 +2355,19 @@ function bindUI() {
       handleAuthSignUp("panel");
     });
   }
+  if (els.authGoogleBtn) {
+    els.authGoogleBtn.addEventListener("click", () => {
+      handleAuthGoogleSignIn();
+    });
+  }
   if (els.authForgotBtn) {
     els.authForgotBtn.addEventListener("click", () => {
       handleAuthForgotPassword("panel");
+    });
+  }
+  if (els.authResendBtn) {
+    els.authResendBtn.addEventListener("click", () => {
+      handleAuthResendConfirmation("panel");
     });
   }
   if (els.authSignOutBtn) {
@@ -2371,9 +2385,19 @@ function bindUI() {
       handleAuthSignUp("gate");
     });
   }
+  if (els.authGateGoogleBtn) {
+    els.authGateGoogleBtn.addEventListener("click", () => {
+      handleAuthGoogleSignIn();
+    });
+  }
   if (els.authGateForgotBtn) {
     els.authGateForgotBtn.addEventListener("click", () => {
       handleAuthForgotPassword("gate");
+    });
+  }
+  if (els.authGateResendBtn) {
+    els.authGateResendBtn.addEventListener("click", () => {
+      handleAuthResendConfirmation("gate");
     });
   }
   if (els.authGateContinueBtn) {
@@ -3779,11 +3803,15 @@ function setAuthBusy(isBusy) {
   [
     els.authSignInBtn,
     els.authSignUpBtn,
+    els.authGoogleBtn,
     els.authForgotBtn,
+    els.authResendBtn,
     els.authSignOutBtn,
     els.authGateSignInBtn,
     els.authGateSignUpBtn,
+    els.authGateGoogleBtn,
     els.authGateForgotBtn,
+    els.authGateResendBtn,
     els.authGateContinueBtn
   ].forEach((btn) => {
     if (btn) btn.disabled = !!isBusy;
@@ -4000,6 +4028,51 @@ async function handleAuthForgotPassword(source = "panel") {
   } catch (err) {
     setAuthFeedback(`Reset email failed: ${err.message || "Unknown error"}`);
   } finally {
+    setAuthBusy(false);
+  }
+}
+
+async function handleAuthResendConfirmation(source = "panel") {
+  if (!state.auth.client) {
+    setAuthFeedback("Supabase not configured yet.");
+    return;
+  }
+  const email = getAuthEmailOnly(source);
+  if (!email) return;
+  setAuthFeedback("Resending confirmation email...");
+  setAuthBusy(true);
+  try {
+    const redirectTo = buildPasswordResetRedirect();
+    const { error } = await state.auth.client.auth.resend({
+      type: "signup",
+      email,
+      options: { emailRedirectTo: redirectTo }
+    });
+    if (error) throw error;
+    setAuthFeedback("Confirmation email sent again. Check inbox/spam.");
+  } catch (err) {
+    setAuthFeedback(`Resend failed: ${err.message || "Unknown error"}`);
+  } finally {
+    setAuthBusy(false);
+  }
+}
+
+async function handleAuthGoogleSignIn() {
+  if (!state.auth.client) {
+    setAuthFeedback("Supabase not configured yet.");
+    return;
+  }
+  setAuthFeedback("Redirecting to Google...");
+  setAuthBusy(true);
+  try {
+    const redirectTo = buildPasswordResetRedirect();
+    const { error } = await state.auth.client.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo }
+    });
+    if (error) throw error;
+  } catch (err) {
+    setAuthFeedback(`Google login failed: ${err.message || "Unknown error"}`);
     setAuthBusy(false);
   }
 }

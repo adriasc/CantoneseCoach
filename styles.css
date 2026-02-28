@@ -1074,6 +1074,10 @@ body.book-mode .book-top-tabs {
   border-radius: 10px;
 }
 
+.auth-alt-btn.side-inline-btn {
+  width: 100%;
+}
+
 #upgradeAccountBtn.side-inline-btn {
   min-width: 92px;
 }
