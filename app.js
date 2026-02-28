@@ -1823,6 +1823,7 @@ const els = {
   openAboutBtn: byId("openAboutBtn"),
   userPanelMsg: byId("userPanelMsg"),
   authStatus: byId("authStatus"),
+  authMessage: byId("authMessage"),
   authSignedOut: byId("authSignedOut"),
   authSignedIn: byId("authSignedIn"),
   authEmailInput: byId("authEmailInput"),
@@ -1968,7 +1969,9 @@ const els = {
   settingsModal: byId("settingsModal"),
   analyticsConsentModal: byId("analyticsConsentModal"),
   authGateModal: byId("authGateModal"),
+  authGateLogo: byId("authGateLogo"),
   authGateStatus: byId("authGateStatus"),
+  authGateMessage: byId("authGateMessage"),
   authGateSignedOut: byId("authGateSignedOut"),
   authGateSignedIn: byId("authGateSignedIn"),
   authGateEmailInput: byId("authGateEmailInput"),
@@ -3780,10 +3783,10 @@ function setAuthBusy(isBusy) {
 }
 
 function setAuthFeedback(message) {
-  if (els.userPanelMsg) els.userPanelMsg.textContent = String(message || "");
-  if (els.authGateStatus && shouldRequireAuthGate()) {
-    els.authGateStatus.textContent = String(message || "");
-  }
+  const text = String(message || "");
+  if (els.userPanelMsg) els.userPanelMsg.textContent = text;
+  if (els.authMessage) els.authMessage.textContent = text;
+  if (els.authGateMessage) els.authGateMessage.textContent = text;
 }
 
 function validateAuthPassword(password) {
@@ -3859,16 +3862,19 @@ function renderAuthUI() {
 
   let statusMessage = "";
   if (!hasClient) {
-    statusMessage = "Supabase not configured. Add URL + anon key in supabase-config.js";
+    statusMessage = "Connection: not configured";
   } else if (!state.auth.ready) {
-    statusMessage = "Checking session...";
+    statusMessage = "Connection: checking session...";
   } else if (user) {
-    statusMessage = "Connected and signed in.";
+    statusMessage = "Connection: signed in";
   } else {
-    statusMessage = "Connected. Log in or create account.";
+    statusMessage = "Connection: ready (awaiting login)";
   }
   if (els.authStatus) els.authStatus.textContent = statusMessage;
   if (els.authGateStatus) els.authGateStatus.textContent = statusMessage;
+  if (!hasClient) {
+    setAuthFeedback("Supabase not configured. Add URL + anon key in supabase-config.js");
+  }
   if (shouldRequireAuthGate()) showAuthGate();
   else hideAuthGate();
 }
@@ -3893,9 +3899,20 @@ function getAuthEmailOnly(source = "panel") {
 
 function buildPasswordResetRedirect() {
   const cfg = window.CANCOACH_SUPABASE || {};
-  const custom = String(cfg.passwordResetRedirect || "").trim();
+  const custom = String(cfg.authRedirect || cfg.passwordResetRedirect || "").trim();
   if (custom) return custom;
   return `${window.location.origin}${window.location.pathname}`;
+}
+
+function readAuthUrlHint() {
+  const raw = `${window.location.search || ""}&${window.location.hash || ""}`.toLowerCase();
+  if (raw.includes("error=") || raw.includes("error_description")) {
+    return "Auth redirect failed. Check Supabase Site URL and Redirect URLs.";
+  }
+  if (raw.includes("type=signup")) {
+    return "Email confirmed. You can log in now.";
+  }
+  return "";
 }
 
 async function handleAuthSignIn(source = "panel") {
@@ -3905,6 +3922,7 @@ async function handleAuthSignIn(source = "panel") {
   }
   const creds = getAuthCredentials(source);
   if (!creds) return;
+  setAuthFeedback("Logging in...");
   setAuthBusy(true);
   try {
     const { error } = await state.auth.client.auth.signInWithPassword(creds);
@@ -3929,6 +3947,7 @@ async function handleAuthSignUp(source = "panel") {
     setAuthFeedback(passwordIssue);
     return;
   }
+  setAuthFeedback("Creating account...");
   setAuthBusy(true);
   try {
     const { data, error } = await state.auth.client.auth.signUp({
@@ -3940,7 +3959,7 @@ async function handleAuthSignUp(source = "panel") {
     if (data?.session) {
       setAuthFeedback("Account created and logged in.");
     } else {
-      setAuthFeedback("Account created. Check your email for confirmation.");
+      setAuthFeedback(`Account created. Check your email for confirmation. Redirect URL: ${buildPasswordResetRedirect()}`);
     }
   } catch (err) {
     setAuthFeedback(`Create account failed: ${err.message || "Unknown error"}`);
@@ -3956,6 +3975,7 @@ async function handleAuthForgotPassword(source = "panel") {
   }
   const email = getAuthEmailOnly(source);
   if (!email) return;
+  setAuthFeedback("Sending reset email...");
   setAuthBusy(true);
   try {
     const redirectTo = buildPasswordResetRedirect();
@@ -3974,6 +3994,7 @@ async function handleAuthSignOut(closePanel = false) {
     if (closePanel) closeUserSidePanel();
     return;
   }
+  setAuthFeedback("Logging out...");
   setAuthBusy(true);
   try {
     const { error } = await state.auth.client.auth.signOut();
@@ -4012,6 +4033,8 @@ async function initSupabaseAuth() {
     state.auth.user = data?.session?.user || null;
     state.auth.ready = true;
     renderAuthUI();
+    const authHint = readAuthUrlHint();
+    if (authHint) setAuthFeedback(authHint);
 
     state.auth.client.auth.onAuthStateChange((_event, session) => {
       state.auth.user = session?.user || null;

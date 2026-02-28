@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.66</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.67</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -312,11 +312,15 @@
 
     <div class="modal hidden" id="authGateModal">
       <div class="modal-card auth-gate-card" role="dialog" aria-label="Authentication required">
+        <div class="auth-gate-brand">
+          <img id="authGateLogo" src="icons/icon-192.png" alt="App logo">
+        </div>
         <div class="card-head">
-          <h2>Welcome</h2>
+          <h2>Welcome Back</h2>
         </div>
         <p class="example auth-gate-lead">Log in or create an account to continue.</p>
         <p id="authGateStatus" class="example side-auth-status">Checking connection...</p>
+        <p id="authGateMessage" class="example side-auth-message"></p>
         <div id="authGateSignedOut" class="side-auth-form auth-gate-form">
           <input id="authGateEmailInput" class="side-auth-input" type="email" placeholder="Email" autocomplete="email">
           <input id="authGatePasswordInput" class="side-auth-input" type="password" placeholder="Password" autocomplete="current-password">
@@ -1340,6 +1344,7 @@
         <div class="side-kv">
           <span class="side-k">Supabase Login</span>
           <p id="authStatus" class="example side-auth-status">Checking connection...</p>
+          <p id="authMessage" class="example side-auth-message"></p>
           <div id="authSignedOut" class="side-auth-form">
             <input id="authEmailInput" class="side-auth-input" type="email" placeholder="Email" autocomplete="email">
             <input id="authPasswordInput" class="side-auth-input" type="password" placeholder="Password" autocomplete="current-password">

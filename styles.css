@@ -1004,6 +1004,16 @@ body.book-mode .book-top-tabs {
 
 .side-auth-status {
   margin: 0;
+  color: #6a3f2f;
+  font-size: 0.86rem;
+}
+
+.side-auth-message {
+  margin: 2px 0 0;
+  min-height: 1.2em;
+  color: #9a2f2f;
+  font-size: 0.88rem;
+  font-weight: 600;
 }
 
 .side-auth-form {
@@ -2057,21 +2067,71 @@ button:hover,
 }
 
 #authGateModal .modal-card {
-  width: min(520px, 95vw);
-  background: linear-gradient(170deg, #ffe7d4 0%, #ffdccc 48%, #ffe8c9 100%);
-  border: 1px solid rgba(200, 133, 102, 0.36);
+  width: min(430px, 94vw);
+  background: linear-gradient(180deg, #fff4ec 0%, #fff8f2 100%);
+  border: 1px solid rgba(188, 121, 92, 0.28);
+  border-radius: 18px;
+  box-shadow: 0 22px 48px rgba(41, 48, 64, 0.3);
+  padding: 18px;
+}
+
+.auth-gate-brand {
+  display: grid;
+  place-items: center;
+  margin-bottom: 4px;
+}
+
+#authGateLogo {
+  width: 66px;
+  height: 66px;
+  object-fit: cover;
+  border-radius: 16px;
+  border: 1px solid rgba(199, 142, 110, 0.28);
+  background: #fff;
+  box-shadow: 0 10px 22px rgba(90, 79, 70, 0.18);
 }
 
 .auth-gate-card .card-head {
-  margin-bottom: 2px;
+  margin-bottom: 0;
+  justify-content: center;
+}
+
+.auth-gate-card .card-head h2 {
+  font-size: 1.34rem;
+  color: #4b2f2a;
 }
 
 .auth-gate-lead {
-  margin: 0 0 8px;
+  margin: 0 0 10px;
+  text-align: center;
+  color: #684740;
 }
 
 .auth-gate-form {
-  margin-top: 8px;
+  margin-top: 10px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(188, 121, 92, 0.2);
+  border-radius: 14px;
+  padding: 10px;
+}
+
+#authGateModal .side-auth-actions {
+  grid-template-columns: 1fr 1fr;
+}
+
+#authGateModal .side-auth-input {
+  border-color: rgba(160, 111, 83, 0.3);
+  background: #fff;
+}
+
+#authGateModal .side-auth-hint {
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+#authGateStatus,
+#authGateMessage {
+  text-align: center;
 }
 
 #authGateSignedIn {
