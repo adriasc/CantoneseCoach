@@ -1799,7 +1799,7 @@ const state = {
   toneScore: { correct: 0, total: 0 },
   quizDisplay: { hanzi: false, jyutping: false, english: false, lens: false },
   game: normalizeGameState(loadJson(STORAGE_KEYS.game, defaultGameState())),
-  auth: { client: null, user: null, configured: false, ready: false, busy: false, gateOpen: false, gateDismissed: false }
+  auth: { client: null, user: null, configured: false, ready: false, busy: false, gateOpen: false, gateDismissed: false, mode: "login" }
 };
 setRuntimeWordsForLookup(state.content?.words || []);
 
@@ -1828,6 +1828,10 @@ const els = {
   authSignedIn: byId("authSignedIn"),
   authEmailInput: byId("authEmailInput"),
   authPasswordInput: byId("authPasswordInput"),
+  authPanelLoginView: byId("authPanelLoginView"),
+  authPanelSignupView: byId("authPanelSignupView"),
+  authPanelShowSignupBtn: byId("authPanelShowSignupBtn"),
+  authPanelShowLoginBtn: byId("authPanelShowLoginBtn"),
   authSignInBtn: byId("authSignInBtn"),
   authSignUpBtn: byId("authSignUpBtn"),
   authGoogleBtn: byId("authGoogleBtn"),
@@ -1979,6 +1983,10 @@ const els = {
   authGateSignedIn: byId("authGateSignedIn"),
   authGateEmailInput: byId("authGateEmailInput"),
   authGatePasswordInput: byId("authGatePasswordInput"),
+  authGateLoginView: byId("authGateLoginView"),
+  authGateSignupView: byId("authGateSignupView"),
+  authGateShowSignupBtn: byId("authGateShowSignupBtn"),
+  authGateShowLoginBtn: byId("authGateShowLoginBtn"),
   authGateSignInBtn: byId("authGateSignInBtn"),
   authGateSignUpBtn: byId("authGateSignUpBtn"),
   authGateGoogleBtn: byId("authGateGoogleBtn"),
@@ -2404,6 +2412,30 @@ function bindUI() {
   if (els.authGateContinueBtn) {
     els.authGateContinueBtn.addEventListener("click", () => {
       if (state.auth.user) hideAuthGate();
+    });
+  }
+  if (els.authPanelShowSignupBtn) {
+    els.authPanelShowSignupBtn.addEventListener("click", () => {
+      setAuthFormMode("signup");
+      setAuthFeedback("");
+    });
+  }
+  if (els.authPanelShowLoginBtn) {
+    els.authPanelShowLoginBtn.addEventListener("click", () => {
+      setAuthFormMode("login");
+      setAuthFeedback("");
+    });
+  }
+  if (els.authGateShowSignupBtn) {
+    els.authGateShowSignupBtn.addEventListener("click", () => {
+      setAuthFormMode("signup");
+      setAuthFeedback("");
+    });
+  }
+  if (els.authGateShowLoginBtn) {
+    els.authGateShowLoginBtn.addEventListener("click", () => {
+      setAuthFormMode("login");
+      setAuthFeedback("");
     });
   }
   if (els.closeAuthGate) {
@@ -3826,6 +3858,16 @@ function setAuthFeedback(message) {
   if (els.authGateMessage) els.authGateMessage.textContent = text;
 }
 
+function setAuthFormMode(mode = "login") {
+  const normalized = String(mode || "").trim().toLowerCase() === "signup" ? "signup" : "login";
+  state.auth.mode = normalized;
+  const signup = normalized === "signup";
+  if (els.authPanelLoginView) els.authPanelLoginView.classList.toggle("hidden", signup);
+  if (els.authPanelSignupView) els.authPanelSignupView.classList.toggle("hidden", !signup);
+  if (els.authGateLoginView) els.authGateLoginView.classList.toggle("hidden", signup);
+  if (els.authGateSignupView) els.authGateSignupView.classList.toggle("hidden", !signup);
+}
+
 function validateAuthPassword(password) {
   const value = String(password || "");
   if (value.length < 6) return "Password must be at least 6 characters.";
@@ -3841,6 +3883,7 @@ function shouldRequireAuthGate() {
 function showAuthGate() {
   if (!els.authGateModal) return;
   state.auth.gateOpen = true;
+  setAuthFormMode("login");
   document.body.classList.add("auth-gate-open");
   if (els.bottomNav) els.bottomNav.classList.add("hidden");
   openModalAnimated(els.authGateModal);
@@ -3935,6 +3978,7 @@ function renderAuthUI() {
   if (!hasClient) {
     setAuthFeedback("Supabase not configured. Add URL + anon key in supabase-config.js");
   }
+  setAuthFormMode(state.auth.mode || "login");
   if (shouldRequireAuthGate()) showAuthGate();
   else hideAuthGate();
 }

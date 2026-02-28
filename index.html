@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.71</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.72</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -329,15 +329,21 @@
         <div id="authGateSignedOut" class="side-auth-form auth-gate-form">
           <input id="authGateEmailInput" class="side-auth-input" type="email" placeholder="Email" autocomplete="email">
           <input id="authGatePasswordInput" class="side-auth-input" type="password" placeholder="Password" autocomplete="current-password">
-          <div class="side-auth-actions">
-            <button id="authGateSignInBtn" class="side-action-btn side-inline-btn" type="button">Log In</button>
-            <button id="authGateSignUpBtn" class="side-action-btn side-action-soft side-inline-btn" type="button">Create Account</button>
+          <div id="authGateLoginView" class="auth-mode-view">
+            <button id="authGateSignInBtn" class="side-action-btn side-inline-btn auth-alt-btn" type="button">Log In</button>
+            <button id="authGateGoogleBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Continue with Google</button>
+            <button id="authGateForgotBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Reset Password</button>
+            <p class="auth-flow-cta">If you don't have an account yet:</p>
+            <button id="authGateShowSignupBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-switch-btn" type="button">Create Account</button>
           </div>
-          <button id="authGateGoogleBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Continue with Google</button>
-          <button id="authGateForgotBtn" class="side-action-btn side-action-soft side-inline-btn" type="button">Reset Password</button>
-          <button id="authGateResendBtn" class="side-action-btn side-action-soft side-inline-btn" type="button">Resend Confirmation Email</button>
-          <p class="example side-auth-hint">Create Account rule: 6+ chars, 1 uppercase, 1 number.</p>
-          <p class="example side-auth-hint">If email confirmation is enabled in Supabase, check inbox/spam after Create Account.</p>
+          <div id="authGateSignupView" class="auth-mode-view hidden">
+            <button id="authGateSignUpBtn" class="side-action-btn side-inline-btn auth-alt-btn" type="button">Create Account</button>
+            <button id="authGateResendBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Resend Confirmation Email</button>
+            <p class="example side-auth-hint">Create Account rule: 6+ chars, 1 uppercase, 1 number.</p>
+            <p class="example side-auth-hint">If email confirmation is enabled in Supabase, check inbox/spam after Create Account.</p>
+            <p class="auth-flow-cta">Already have an account?</p>
+            <button id="authGateShowLoginBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-switch-btn" type="button">Back to Log In</button>
+          </div>
         </div>
         <div id="authGateSignedIn" class="hidden">
           <p id="authGateUserInfo" class="side-v">Signed in.</p>
@@ -1355,13 +1361,20 @@
           <div id="authSignedOut" class="side-auth-form">
             <input id="authEmailInput" class="side-auth-input" type="email" placeholder="Email" autocomplete="email">
             <input id="authPasswordInput" class="side-auth-input" type="password" placeholder="Password" autocomplete="current-password">
-            <div class="side-auth-actions">
-              <button id="authSignInBtn" class="side-action-btn side-inline-btn" type="button">Log In</button>
-              <button id="authSignUpBtn" class="side-action-btn side-action-soft side-inline-btn" type="button">Create Account</button>
+            <div id="authPanelLoginView" class="auth-mode-view">
+              <button id="authSignInBtn" class="side-action-btn side-inline-btn auth-alt-btn" type="button">Log In</button>
+              <button id="authGoogleBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Continue with Google</button>
+              <button id="authForgotBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Reset Password</button>
+              <p class="auth-flow-cta">If you don't have an account yet:</p>
+              <button id="authPanelShowSignupBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-switch-btn" type="button">Create Account</button>
             </div>
-            <button id="authGoogleBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Continue with Google</button>
-            <button id="authForgotBtn" class="side-action-btn side-action-soft side-inline-btn" type="button">Reset Password</button>
-            <button id="authResendBtn" class="side-action-btn side-action-soft side-inline-btn" type="button">Resend Confirmation Email</button>
+            <div id="authPanelSignupView" class="auth-mode-view hidden">
+              <button id="authSignUpBtn" class="side-action-btn side-inline-btn auth-alt-btn" type="button">Create Account</button>
+              <button id="authResendBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Resend Confirmation Email</button>
+              <p class="example side-auth-hint">Create Account rule: 6+ chars, 1 uppercase, 1 number.</p>
+              <p class="auth-flow-cta">Already have an account?</p>
+              <button id="authPanelShowLoginBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-switch-btn" type="button">Back to Log In</button>
+            </div>
           </div>
           <div id="authSignedIn" class="hidden">
             <p id="authUserInfo" class="side-v">Signed in.</p>
