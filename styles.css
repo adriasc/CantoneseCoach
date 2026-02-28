@@ -1053,19 +1053,48 @@ body.book-mode .book-top-tabs {
   gap: 4px;
 }
 
-.auth-sep {
-  height: 1px;
-  width: 100%;
-  background: rgba(142, 95, 76, 0.25);
-  margin: 2px 0;
-}
-
 .auth-flow-cta {
   margin: 2px 0 0;
   text-align: center;
   color: #7a4c39;
   font-size: 0.84rem;
   font-weight: 600;
+}
+
+.auth-flow-cta-strong {
+  margin-top: 6px;
+  color: #a93f2f;
+  font-size: 0.93rem;
+  font-weight: 800;
+}
+
+.auth-or-sep {
+  margin: 2px 0;
+  width: 100%;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #89554a;
+  position: relative;
+}
+
+.auth-or-sep::before,
+.auth-or-sep::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 34%;
+  height: 1px;
+  background: rgba(142, 95, 76, 0.28);
+}
+
+.auth-or-sep::before {
+  left: 0;
+}
+
+.auth-or-sep::after {
+  right: 0;
 }
 
 .side-auth-input {
@@ -1134,6 +1163,20 @@ body.book-mode .book-top-tabs {
   background: linear-gradient(160deg, #4f8cff 0%, #387ef7 50%, #2a6ce3 100%) !important;
   border-color: rgba(38, 104, 224, 0.7) !important;
   color: #fff !important;
+}
+
+.google-g {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: #fff;
+  color: #2f6fe6;
+  font-size: 0.8rem;
+  font-weight: 800;
+  margin-right: 6px;
 }
 
 #upgradeAccountBtn.side-inline-btn {
@@ -2234,11 +2277,20 @@ body.auth-gate-open .bottom-nav {
 }
 
 .auth-gate-version {
-  margin: -2px 0 2px;
+  margin: 6px 0 0;
   text-align: center;
   font-size: 0.78rem;
   color: #8a5c50;
   font-weight: 700;
+}
+
+#authForgotBtn,
+#authGateForgotBtn {
+  width: auto;
+  justify-self: start;
+  min-width: 0;
+  padding: 6px 10px;
+  font-size: 0.8rem;
 }
 
 #authGateStatus,

@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.74</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.75</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -320,7 +320,6 @@
           <button id="closeAuthGate" class="ghost-btn" type="button" aria-label="Close login screen">✕</button>
         </div>
         <p class="example auth-gate-lead">Log in or create an account to continue.</p>
-        <p id="authGateVersion" class="auth-gate-version">v19.4.74</p>
         <p id="authGateStatus" class="example side-auth-status">Checking connection...</p>
         <p id="authGateMessage" class="example side-auth-message"></p>
         <p id="authGateTitleLogin" class="auth-mode-title">Log In</p>
@@ -335,10 +334,9 @@
           </div>
           <div id="authGateLoginView" class="auth-mode-view">
             <button id="authGateSignInBtn" class="side-action-btn side-inline-btn auth-alt-btn" type="button">Log In</button>
-            <div class="auth-sep" aria-hidden="true"></div>
-            <button id="authGateGoogleBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-google-btn" type="button">Log In with Google</button>
-            <div class="auth-sep" aria-hidden="true"></div>
-            <p class="auth-flow-cta">If you don't have an account yet:</p>
+            <p class="auth-or-sep" aria-label="or">OR</p>
+            <button id="authGateGoogleBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-google-btn" type="button"><span class="google-g">G</span> Log In with Google</button>
+            <p class="auth-flow-cta auth-flow-cta-strong">If you don't have an account yet:</p>
             <button id="authGateShowSignupBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-switch-btn" type="button">Create Account</button>
           </div>
           <div id="authGateSignupView" class="auth-mode-view hidden">
@@ -353,6 +351,7 @@
         <div id="authGateSignedIn" class="hidden">
           <p id="authGateUserInfo" class="side-v">Signed in.</p>
         </div>
+        <p id="authGateVersion" class="auth-gate-version">v19.4.75</p>
       </div>
     </div>
 
@@ -1374,10 +1373,9 @@
             </div>
             <div id="authPanelLoginView" class="auth-mode-view">
               <button id="authSignInBtn" class="side-action-btn side-inline-btn auth-alt-btn" type="button">Log In</button>
-              <div class="auth-sep" aria-hidden="true"></div>
-              <button id="authGoogleBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-google-btn" type="button">Log In with Google</button>
-              <div class="auth-sep" aria-hidden="true"></div>
-              <p class="auth-flow-cta">If you don't have an account yet:</p>
+              <p class="auth-or-sep" aria-label="or">OR</p>
+              <button id="authGoogleBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-google-btn" type="button"><span class="google-g">G</span> Log In with Google</button>
+              <p class="auth-flow-cta auth-flow-cta-strong">If you don't have an account yet:</p>
               <button id="authPanelShowSignupBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-switch-btn" type="button">Create Account</button>
             </div>
             <div id="authPanelSignupView" class="auth-mode-view hidden">
