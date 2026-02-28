@@ -2064,31 +2064,39 @@ button:hover,
 
 #authGateModal {
   z-index: 88;
+  background: #fff3ea;
+  padding: 0;
+  align-items: stretch;
+  justify-content: stretch;
 }
 
 #authGateModal .modal-card {
-  width: min(430px, 94vw);
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: 100dvh;
   background: linear-gradient(180deg, #fff4ec 0%, #fff8f2 100%);
-  border: 1px solid rgba(188, 121, 92, 0.28);
-  border-radius: 18px;
-  box-shadow: 0 22px 48px rgba(41, 48, 64, 0.3);
-  padding: 18px;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 24px 16px 28px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
 }
 
 .auth-gate-brand {
   display: grid;
   place-items: center;
-  margin-bottom: 4px;
+  margin-bottom: 0;
 }
 
 #authGateLogo {
-  width: 66px;
-  height: 66px;
-  object-fit: cover;
-  border-radius: 16px;
-  border: 1px solid rgba(199, 142, 110, 0.28);
-  background: #fff;
-  box-shadow: 0 10px 22px rgba(90, 79, 70, 0.18);
+  width: 88px;
+  height: 88px;
+  filter: drop-shadow(0 10px 20px rgba(90, 79, 70, 0.18));
 }
 
 .auth-gate-card .card-head {
@@ -2097,7 +2105,7 @@ button:hover,
 }
 
 .auth-gate-card .card-head h2 {
-  font-size: 1.34rem;
+  font-size: 1.42rem;
   color: #4b2f2a;
 }
 
@@ -2113,6 +2121,18 @@ button:hover,
   border: 1px solid rgba(188, 121, 92, 0.2);
   border-radius: 14px;
   padding: 10px;
+}
+
+#authGateModal .auth-gate-brand,
+#authGateModal .card-head,
+#authGateModal .auth-gate-lead,
+#authGateModal #authGateStatus,
+#authGateModal #authGateMessage,
+#authGateModal .auth-gate-form,
+#authGateModal #authGateSignedIn {
+  width: min(420px, 100%);
+  margin-left: auto;
+  margin-right: auto;
 }
 
 #authGateModal .side-auth-actions {
