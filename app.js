@@ -1799,7 +1799,7 @@ const state = {
   toneScore: { correct: 0, total: 0 },
   quizDisplay: { hanzi: false, jyutping: false, english: false, lens: false },
   game: normalizeGameState(loadJson(STORAGE_KEYS.game, defaultGameState())),
-  auth: { client: null, user: null, configured: false, ready: false, busy: false }
+  auth: { client: null, user: null, configured: false, ready: false, busy: false, gateOpen: false }
 };
 setRuntimeWordsForLookup(state.content?.words || []);
 
@@ -1967,6 +1967,17 @@ const els = {
   closeSettings: byId("closeSettings"),
   settingsModal: byId("settingsModal"),
   analyticsConsentModal: byId("analyticsConsentModal"),
+  authGateModal: byId("authGateModal"),
+  authGateStatus: byId("authGateStatus"),
+  authGateSignedOut: byId("authGateSignedOut"),
+  authGateSignedIn: byId("authGateSignedIn"),
+  authGateEmailInput: byId("authGateEmailInput"),
+  authGatePasswordInput: byId("authGatePasswordInput"),
+  authGateSignInBtn: byId("authGateSignInBtn"),
+  authGateSignUpBtn: byId("authGateSignUpBtn"),
+  authGateForgotBtn: byId("authGateForgotBtn"),
+  authGateUserInfo: byId("authGateUserInfo"),
+  authGateContinueBtn: byId("authGateContinueBtn"),
   acceptAnalyticsBtn: byId("acceptAnalyticsBtn"),
   declineAnalyticsBtn: byId("declineAnalyticsBtn"),
   analyticsConsentSelect: byId("analyticsConsentSelect"),
@@ -2280,7 +2291,7 @@ function bindUI() {
   if (els.changeEmailBtn && els.userPanelMsg) {
     els.changeEmailBtn.addEventListener("click", () => {
       if (!state.auth.client || !state.auth.user) {
-        els.userPanelMsg.textContent = "Sign in first to change email.";
+        els.userPanelMsg.textContent = "Log in first to change email.";
         return;
       }
       els.userPanelMsg.textContent = "Email change flow can be added next (re-auth required by Supabase).";
@@ -2294,13 +2305,14 @@ function bindUI() {
   if (els.changePasswordBtn && els.userPanelMsg) {
     els.changePasswordBtn.addEventListener("click", async () => {
       if (!state.auth.client || !state.auth.user) {
-        els.userPanelMsg.textContent = "Sign in first, or use Forgot Password.";
+        els.userPanelMsg.textContent = "Log in first, or use Reset Password.";
         return;
       }
-      const nextPassword = window.prompt("Enter new password (minimum 6 characters):", "");
+      const nextPassword = window.prompt("Enter new password (6+ chars, 1 uppercase, 1 number):", "");
       if (!nextPassword) return;
-      if (nextPassword.length < 6) {
-        els.userPanelMsg.textContent = "Password too short. Use at least 6 characters.";
+      const passwordIssue = validateAuthPassword(nextPassword);
+      if (passwordIssue) {
+        els.userPanelMsg.textContent = passwordIssue;
         return;
       }
       setAuthBusy(true);
@@ -2327,17 +2339,17 @@ function bindUI() {
   }
   if (els.authSignInBtn) {
     els.authSignInBtn.addEventListener("click", () => {
-      handleAuthSignIn();
+      handleAuthSignIn("panel");
     });
   }
   if (els.authSignUpBtn) {
     els.authSignUpBtn.addEventListener("click", () => {
-      handleAuthSignUp();
+      handleAuthSignUp("panel");
     });
   }
   if (els.authForgotBtn) {
     els.authForgotBtn.addEventListener("click", () => {
-      handleAuthForgotPassword();
+      handleAuthForgotPassword("panel");
     });
   }
   if (els.authSignOutBtn) {
@@ -2345,6 +2357,38 @@ function bindUI() {
       handleAuthSignOut(false);
     });
   }
+  if (els.authGateSignInBtn) {
+    els.authGateSignInBtn.addEventListener("click", () => {
+      handleAuthSignIn("gate");
+    });
+  }
+  if (els.authGateSignUpBtn) {
+    els.authGateSignUpBtn.addEventListener("click", () => {
+      handleAuthSignUp("gate");
+    });
+  }
+  if (els.authGateForgotBtn) {
+    els.authGateForgotBtn.addEventListener("click", () => {
+      handleAuthForgotPassword("gate");
+    });
+  }
+  if (els.authGateContinueBtn) {
+    els.authGateContinueBtn.addEventListener("click", () => {
+      if (state.auth.user) hideAuthGate();
+    });
+  }
+  [els.authEmailInput, els.authPasswordInput].forEach((input) => {
+    if (!input) return;
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") handleAuthSignIn("panel");
+    });
+  });
+  [els.authGateEmailInput, els.authGatePasswordInput].forEach((input) => {
+    if (!input) return;
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") handleAuthSignIn("gate");
+    });
+  });
   if (els.clearCacheBtn && els.userPanelMsg) {
     els.clearCacheBtn.addEventListener("click", async () => {
       try {
@@ -3721,9 +3765,70 @@ function getSupabaseConfig() {
 
 function setAuthBusy(isBusy) {
   state.auth.busy = !!isBusy;
-  [els.authSignInBtn, els.authSignUpBtn, els.authForgotBtn, els.authSignOutBtn].forEach((btn) => {
+  [
+    els.authSignInBtn,
+    els.authSignUpBtn,
+    els.authForgotBtn,
+    els.authSignOutBtn,
+    els.authGateSignInBtn,
+    els.authGateSignUpBtn,
+    els.authGateForgotBtn,
+    els.authGateContinueBtn
+  ].forEach((btn) => {
     if (btn) btn.disabled = !!isBusy;
   });
+}
+
+function setAuthFeedback(message) {
+  if (els.userPanelMsg) els.userPanelMsg.textContent = String(message || "");
+  if (els.authGateStatus && shouldRequireAuthGate()) {
+    els.authGateStatus.textContent = String(message || "");
+  }
+}
+
+function validateAuthPassword(password) {
+  const value = String(password || "");
+  if (value.length < 6) return "Password must be at least 6 characters.";
+  if (!/[A-Z]/.test(value)) return "Password must include at least 1 uppercase letter.";
+  if (!/[0-9]/.test(value)) return "Password must include at least 1 number.";
+  return "";
+}
+
+function shouldRequireAuthGate() {
+  return !!(state.auth.configured && state.auth.ready && !state.auth.user);
+}
+
+function showAuthGate() {
+  if (!els.authGateModal) return;
+  state.auth.gateOpen = true;
+  openModalAnimated(els.authGateModal);
+}
+
+function hideAuthGate() {
+  if (!els.authGateModal) return;
+  state.auth.gateOpen = false;
+  if (!els.authGateModal.classList.contains("hidden")) {
+    closeModalAnimated(els.authGateModal);
+  }
+}
+
+function collectAuthFormValues(source = "panel") {
+  const useGate = source === "gate";
+  const primaryEmailInput = useGate ? els.authGateEmailInput : els.authEmailInput;
+  const primaryPasswordInput = useGate ? els.authGatePasswordInput : els.authPasswordInput;
+  const fallbackEmailInput = useGate ? els.authEmailInput : els.authGateEmailInput;
+  const fallbackPasswordInput = useGate ? els.authPasswordInput : els.authGatePasswordInput;
+  const emailPrimary = String(primaryEmailInput?.value || "").trim().toLowerCase();
+  const emailFallback = String(fallbackEmailInput?.value || "").trim().toLowerCase();
+  const passPrimary = String(primaryPasswordInput?.value || "");
+  const passFallback = String(fallbackPasswordInput?.value || "");
+  const email = emailPrimary || emailFallback;
+  const password = passPrimary || passFallback;
+  if (email && primaryEmailInput && primaryEmailInput.value !== email) primaryEmailInput.value = email;
+  if (email && fallbackEmailInput && fallbackEmailInput.value !== email) fallbackEmailInput.value = email;
+  if (password && primaryPasswordInput && primaryPasswordInput.value !== password) primaryPasswordInput.value = password;
+  if (password && fallbackPasswordInput && fallbackPasswordInput.value !== password) fallbackPasswordInput.value = password;
+  return { email, password };
 }
 
 function renderAuthUI() {
@@ -3731,6 +3836,8 @@ function renderAuthUI() {
   const user = state.auth.user;
   if (els.authSignedOut) els.authSignedOut.classList.toggle("hidden", !!user || !hasClient);
   if (els.authSignedIn) els.authSignedIn.classList.toggle("hidden", !user || !hasClient);
+  if (els.authGateSignedOut) els.authGateSignedOut.classList.toggle("hidden", !!user || !hasClient);
+  if (els.authGateSignedIn) els.authGateSignedIn.classList.toggle("hidden", !user || !hasClient);
 
   if (els.userEmailValue) {
     els.userEmailValue.textContent = user?.email || (hasClient ? "Not signed in" : "Not connected");
@@ -3740,33 +3847,45 @@ function renderAuthUI() {
       ? `Signed in as ${user.email}`
       : "No active session.";
   }
-  if (els.authStatus) {
-    if (!hasClient) {
-      els.authStatus.textContent = "Supabase not configured. Add URL + anon key in supabase-config.js";
-    } else if (!state.auth.ready) {
-      els.authStatus.textContent = "Checking session...";
-    } else if (user) {
-      els.authStatus.textContent = "Connected and signed in.";
-    } else {
-      els.authStatus.textContent = "Connected. Sign in or create account.";
-    }
+  if (els.authGateUserInfo) {
+    els.authGateUserInfo.textContent = user?.email
+      ? `Signed in as ${user.email}`
+      : "No active session.";
   }
+  if (user?.email) {
+    if (els.authEmailInput) els.authEmailInput.value = user.email;
+    if (els.authGateEmailInput) els.authGateEmailInput.value = user.email;
+  }
+
+  let statusMessage = "";
+  if (!hasClient) {
+    statusMessage = "Supabase not configured. Add URL + anon key in supabase-config.js";
+  } else if (!state.auth.ready) {
+    statusMessage = "Checking session...";
+  } else if (user) {
+    statusMessage = "Connected and signed in.";
+  } else {
+    statusMessage = "Connected. Log in or create account.";
+  }
+  if (els.authStatus) els.authStatus.textContent = statusMessage;
+  if (els.authGateStatus) els.authGateStatus.textContent = statusMessage;
+  if (shouldRequireAuthGate()) showAuthGate();
+  else hideAuthGate();
 }
 
-function getAuthCredentials() {
-  const email = String(els.authEmailInput?.value || "").trim().toLowerCase();
-  const password = String(els.authPasswordInput?.value || "");
+function getAuthCredentials(source = "panel") {
+  const { email, password } = collectAuthFormValues(source);
   if (!email || !password) {
-    if (els.userPanelMsg) els.userPanelMsg.textContent = "Enter email and password.";
+    setAuthFeedback("Enter email and password.");
     return null;
   }
   return { email, password };
 }
 
-function getAuthEmailOnly() {
-  const email = String(els.authEmailInput?.value || "").trim().toLowerCase();
+function getAuthEmailOnly(source = "panel") {
+  const { email } = collectAuthFormValues(source);
   if (!email) {
-    if (els.userPanelMsg) els.userPanelMsg.textContent = "Enter your email first.";
+    setAuthFeedback("Enter your email first.");
     return "";
   }
   return email;
@@ -3779,65 +3898,72 @@ function buildPasswordResetRedirect() {
   return `${window.location.origin}${window.location.pathname}`;
 }
 
-async function handleAuthSignIn() {
+async function handleAuthSignIn(source = "panel") {
   if (!state.auth.client) {
-    if (els.userPanelMsg) els.userPanelMsg.textContent = "Supabase not configured yet.";
+    setAuthFeedback("Supabase not configured yet.");
     return;
   }
-  const creds = getAuthCredentials();
+  const creds = getAuthCredentials(source);
   if (!creds) return;
   setAuthBusy(true);
   try {
     const { error } = await state.auth.client.auth.signInWithPassword(creds);
     if (error) throw error;
-    if (els.userPanelMsg) els.userPanelMsg.textContent = "Signed in successfully.";
+    setAuthFeedback("Logged in successfully.");
   } catch (err) {
-    if (els.userPanelMsg) els.userPanelMsg.textContent = `Sign in failed: ${err.message || "Unknown error"}`;
+    setAuthFeedback(`Log in failed: ${err.message || "Unknown error"}`);
   } finally {
     setAuthBusy(false);
   }
 }
 
-async function handleAuthSignUp() {
+async function handleAuthSignUp(source = "panel") {
   if (!state.auth.client) {
-    if (els.userPanelMsg) els.userPanelMsg.textContent = "Supabase not configured yet.";
+    setAuthFeedback("Supabase not configured yet.");
     return;
   }
-  const creds = getAuthCredentials();
+  const creds = getAuthCredentials(source);
   if (!creds) return;
+  const passwordIssue = validateAuthPassword(creds.password);
+  if (passwordIssue) {
+    setAuthFeedback(passwordIssue);
+    return;
+  }
   setAuthBusy(true);
   try {
-    const { data, error } = await state.auth.client.auth.signUp(creds);
+    const { data, error } = await state.auth.client.auth.signUp({
+      email: creds.email,
+      password: creds.password,
+      options: { emailRedirectTo: buildPasswordResetRedirect() }
+    });
     if (error) throw error;
     if (data?.session) {
-      if (els.userPanelMsg) els.userPanelMsg.textContent = "Account created and signed in.";
+      setAuthFeedback("Account created and logged in.");
     } else {
-      if (els.userPanelMsg) els.userPanelMsg.textContent = "Account created. Check your email for confirmation.";
+      setAuthFeedback("Account created. Check your email for confirmation.");
     }
   } catch (err) {
-    if (els.userPanelMsg) els.userPanelMsg.textContent = `Sign up failed: ${err.message || "Unknown error"}`;
+    setAuthFeedback(`Create account failed: ${err.message || "Unknown error"}`);
   } finally {
     setAuthBusy(false);
   }
 }
 
-async function handleAuthForgotPassword() {
+async function handleAuthForgotPassword(source = "panel") {
   if (!state.auth.client) {
-    if (els.userPanelMsg) els.userPanelMsg.textContent = "Supabase not configured yet.";
+    setAuthFeedback("Supabase not configured yet.");
     return;
   }
-  const email = getAuthEmailOnly();
+  const email = getAuthEmailOnly(source);
   if (!email) return;
   setAuthBusy(true);
   try {
     const redirectTo = buildPasswordResetRedirect();
     const { error } = await state.auth.client.auth.resetPasswordForEmail(email, { redirectTo });
     if (error) throw error;
-    if (els.userPanelMsg) {
-      els.userPanelMsg.textContent = "Password reset email sent. Check inbox/spam.";
-    }
+    setAuthFeedback("Password reset email sent. Check inbox/spam.");
   } catch (err) {
-    if (els.userPanelMsg) els.userPanelMsg.textContent = `Reset email failed: ${err.message || "Unknown error"}`;
+    setAuthFeedback(`Reset email failed: ${err.message || "Unknown error"}`);
   } finally {
     setAuthBusy(false);
   }
@@ -3852,10 +3978,10 @@ async function handleAuthSignOut(closePanel = false) {
   try {
     const { error } = await state.auth.client.auth.signOut();
     if (error) throw error;
-    if (els.userPanelMsg) els.userPanelMsg.textContent = "Signed out.";
+    setAuthFeedback("Logged out.");
     if (closePanel) closeUserSidePanel();
   } catch (err) {
-    if (els.userPanelMsg) els.userPanelMsg.textContent = `Sign out failed: ${err.message || "Unknown error"}`;
+    setAuthFeedback(`Sign out failed: ${err.message || "Unknown error"}`);
   } finally {
     setAuthBusy(false);
   }
@@ -3890,8 +4016,8 @@ async function initSupabaseAuth() {
     state.auth.client.auth.onAuthStateChange((_event, session) => {
       state.auth.user = session?.user || null;
       state.auth.ready = true;
-      if (_event === "PASSWORD_RECOVERY" && els.userPanelMsg) {
-        els.userPanelMsg.textContent = "Recovery link opened. Set a new password with Reset/Change.";
+      if (_event === "PASSWORD_RECOVERY") {
+        setAuthFeedback("Recovery link opened. Set a new password with Reset/Change.");
       }
       renderAuthUI();
     });
@@ -3900,7 +4026,7 @@ async function initSupabaseAuth() {
     state.auth.user = null;
     state.auth.configured = false;
     state.auth.ready = true;
-    if (els.userPanelMsg) els.userPanelMsg.textContent = `Supabase init failed: ${err.message || "Unknown error"}`;
+    setAuthFeedback(`Supabase init failed: ${err.message || "Unknown error"}`);
     renderAuthUI();
   }
 }

@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.65</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.66</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -306,6 +306,31 @@
         <div class="actions">
           <button id="acceptAnalyticsBtn" type="button">Allow Anonymous Analytics</button>
           <button id="declineAnalyticsBtn" class="side-action-btn side-action-soft" type="button">Keep Analytics Off</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal hidden" id="authGateModal">
+      <div class="modal-card auth-gate-card" role="dialog" aria-label="Authentication required">
+        <div class="card-head">
+          <h2>Welcome</h2>
+        </div>
+        <p class="example auth-gate-lead">Log in or create an account to continue.</p>
+        <p id="authGateStatus" class="example side-auth-status">Checking connection...</p>
+        <div id="authGateSignedOut" class="side-auth-form auth-gate-form">
+          <input id="authGateEmailInput" class="side-auth-input" type="email" placeholder="Email" autocomplete="email">
+          <input id="authGatePasswordInput" class="side-auth-input" type="password" placeholder="Password" autocomplete="current-password">
+          <div class="side-auth-actions">
+            <button id="authGateSignInBtn" class="side-action-btn side-inline-btn" type="button">Log In</button>
+            <button id="authGateSignUpBtn" class="side-action-btn side-action-soft side-inline-btn" type="button">Create Account</button>
+          </div>
+          <button id="authGateForgotBtn" class="side-action-btn side-action-soft side-inline-btn" type="button">Reset Password</button>
+          <p class="example side-auth-hint">Create Account rule: 6+ chars, 1 uppercase, 1 number.</p>
+          <p class="example side-auth-hint">If email confirmation is enabled in Supabase, check inbox/spam after Create Account.</p>
+        </div>
+        <div id="authGateSignedIn" class="hidden">
+          <p id="authGateUserInfo" class="side-v">Signed in.</p>
+          <button id="authGateContinueBtn" class="side-action-btn" type="button">Continue</button>
         </div>
       </div>
     </div>
@@ -1319,15 +1344,16 @@
             <input id="authEmailInput" class="side-auth-input" type="email" placeholder="Email" autocomplete="email">
             <input id="authPasswordInput" class="side-auth-input" type="password" placeholder="Password" autocomplete="current-password">
             <div class="side-auth-actions">
-              <button id="authSignInBtn" class="side-action-btn side-inline-btn" type="button">Sign In</button>
-              <button id="authSignUpBtn" class="side-action-btn side-action-soft side-inline-btn" type="button">Sign Up</button>
+              <button id="authSignInBtn" class="side-action-btn side-inline-btn" type="button">Log In</button>
+              <button id="authSignUpBtn" class="side-action-btn side-action-soft side-inline-btn" type="button">Create Account</button>
             </div>
-            <button id="authForgotBtn" class="side-action-btn side-action-soft side-inline-btn" type="button">Forgot Password</button>
+            <button id="authForgotBtn" class="side-action-btn side-action-soft side-inline-btn" type="button">Reset Password</button>
           </div>
           <div id="authSignedIn" class="hidden">
             <p id="authUserInfo" class="side-v">Signed in.</p>
             <button id="authSignOutBtn" class="side-action-btn side-action-soft side-inline-btn" type="button">Sign Out</button>
           </div>
+          <p class="example side-auth-hint">Create Account rule: 6+ chars, 1 uppercase, 1 number.</p>
           <p class="example side-auth-hint">Set project URL and anon key in <code>supabase-config.js</code>.</p>
         </div>
       </div>

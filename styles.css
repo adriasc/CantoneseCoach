@@ -2052,6 +2052,38 @@ button:hover,
   margin-top: 12px;
 }
 
+#authGateModal {
+  z-index: 88;
+}
+
+#authGateModal .modal-card {
+  width: min(520px, 95vw);
+  background: linear-gradient(170deg, #ffe7d4 0%, #ffdccc 48%, #ffe8c9 100%);
+  border: 1px solid rgba(200, 133, 102, 0.36);
+}
+
+.auth-gate-card .card-head {
+  margin-bottom: 2px;
+}
+
+.auth-gate-lead {
+  margin: 0 0 8px;
+}
+
+.auth-gate-form {
+  margin-top: 8px;
+}
+
+#authGateSignedIn {
+  margin-top: 8px;
+  display: grid;
+  gap: 8px;
+}
+
+#authGateContinueBtn {
+  width: 100%;
+}
+
 @media (max-width: 680px) {
   #settingsModal .settings-noise-test-row {
     grid-template-columns: 1fr;
