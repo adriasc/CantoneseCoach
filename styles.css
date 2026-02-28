@@ -572,17 +572,24 @@ body.settings-mode .tabs {
   font-size: 0.95rem;
 }
 
+.book-nav-group {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  gap: 8px;
+}
+
 .book-nav-btn-grammar {
   font-size: 0.9rem;
+  min-width: 0;
 }
 
 .book-nav-btn-mini {
-  width: 54px;
-  min-width: 54px;
-  justify-self: start;
+  width: 44px;
+  min-width: 44px;
   padding-left: 0;
   padding-right: 0;
   font-weight: 800;
+  justify-self: stretch;
 }
 
 .stories-subpanel {
@@ -2410,9 +2417,13 @@ input[type="file"] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .book-nav-group {
+    grid-template-columns: minmax(0, 1fr) 40px;
+  }
+
   .book-nav-btn-mini {
-    width: 48px;
-    min-width: 48px;
+    width: 40px;
+    min-width: 40px;
   }
 }
 
