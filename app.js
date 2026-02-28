@@ -2000,7 +2000,6 @@ const els = {
   authGateForgotBtn: byId("authGateForgotBtn"),
   authGateResendBtn: byId("authGateResendBtn"),
   authGateUserInfo: byId("authGateUserInfo"),
-  authGateContinueBtn: byId("authGateContinueBtn"),
   closeAuthGate: byId("closeAuthGate"),
   acceptAnalyticsBtn: byId("acceptAnalyticsBtn"),
   declineAnalyticsBtn: byId("declineAnalyticsBtn"),
@@ -2414,11 +2413,6 @@ function bindUI() {
   if (els.authGateResendBtn) {
     els.authGateResendBtn.addEventListener("click", () => {
       handleAuthResendConfirmation("gate");
-    });
-  }
-  if (els.authGateContinueBtn) {
-    els.authGateContinueBtn.addEventListener("click", () => {
-      if (state.auth.user) hideAuthGate();
     });
   }
   if (els.authPanelShowSignupBtn) {
@@ -3852,8 +3846,7 @@ function setAuthBusy(isBusy) {
     els.authGateSignUpBtn,
     els.authGateGoogleBtn,
     els.authGateForgotBtn,
-    els.authGateResendBtn,
-    els.authGateContinueBtn
+    els.authGateResendBtn
   ].forEach((btn) => {
     if (btn) btn.disabled = !!isBusy;
   });

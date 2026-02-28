@@ -1053,6 +1053,13 @@ body.book-mode .book-top-tabs {
   gap: 4px;
 }
 
+.auth-sep {
+  height: 1px;
+  width: 100%;
+  background: rgba(142, 95, 76, 0.25);
+  margin: 2px 0;
+}
+
 .auth-flow-cta {
   margin: 2px 0 0;
   text-align: center;
@@ -2201,6 +2208,8 @@ body.auth-gate-open .bottom-nav {
 #authGateModal .auth-gate-brand,
 #authGateModal .card-head,
 #authGateModal .auth-gate-lead,
+#authGateModal .auth-mode-title,
+#authGateModal .auth-method-label,
 #authGateModal #authGateStatus,
 #authGateModal #authGateMessage,
 #authGateModal .auth-gate-form,
@@ -2239,12 +2248,6 @@ body.auth-gate-open .bottom-nav {
 
 #authGateSignedIn {
   margin-top: 8px;
-  display: grid;
-  gap: 8px;
-}
-
-#authGateContinueBtn {
-  width: 100%;
 }
 
 @media (max-width: 680px) {
