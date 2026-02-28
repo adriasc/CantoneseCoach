@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.63</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.64</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -1312,6 +1312,23 @@
             <option value="compare">Cantonese + Mandarin</option>
           </select>
         </div>
+        <div class="side-kv">
+          <span class="side-k">Supabase Login</span>
+          <p id="authStatus" class="example side-auth-status">Checking connection...</p>
+          <div id="authSignedOut" class="side-auth-form">
+            <input id="authEmailInput" class="side-auth-input" type="email" placeholder="Email" autocomplete="email">
+            <input id="authPasswordInput" class="side-auth-input" type="password" placeholder="Password" autocomplete="current-password">
+            <div class="side-auth-actions">
+              <button id="authSignInBtn" class="side-action-btn side-inline-btn" type="button">Sign In</button>
+              <button id="authSignUpBtn" class="side-action-btn side-action-soft side-inline-btn" type="button">Sign Up</button>
+            </div>
+          </div>
+          <div id="authSignedIn" class="hidden">
+            <p id="authUserInfo" class="side-v">Signed in.</p>
+            <button id="authSignOutBtn" class="side-action-btn side-action-soft side-inline-btn" type="button">Sign Out</button>
+          </div>
+          <p class="example side-auth-hint">Set project URL and anon key in <code>supabase-config.js</code>.</p>
+        </div>
       </div>
       <div class="side-actions-stack">
         <button id="openSettingsFromUser" class="side-action-btn" type="button">Settings</button>
@@ -1325,6 +1342,8 @@
   </div>
 
   <div id="fxLayer" class="fx-layer" aria-hidden="true"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

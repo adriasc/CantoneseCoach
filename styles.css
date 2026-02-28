@@ -1002,6 +1002,35 @@ body.book-mode .book-top-tabs {
   gap: 8px;
 }
 
+.side-auth-status {
+  margin: 0;
+}
+
+.side-auth-form {
+  display: grid;
+  gap: 6px;
+}
+
+.side-auth-input {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(179, 111, 84, 0.34);
+  background: rgba(255, 255, 255, 0.86);
+  color: #3b2b28;
+  padding: 8px 10px;
+  font-size: 0.94rem;
+}
+
+.side-auth-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.side-auth-hint {
+  margin: 2px 0 0;
+}
+
 .side-actions-stack {
   margin-top: 10px;
   display: grid;

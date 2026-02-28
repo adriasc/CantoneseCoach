@@ -1,9 +1,10 @@
-const CACHE_NAME = "cantonese-coach-v19.4.63";
+const CACHE_NAME = "cantonese-coach-v19.4.64";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
+  "./supabase-config.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png"

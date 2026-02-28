@@ -1798,7 +1798,8 @@ const state = {
   toneLabelMap: { a: "a", b: "b" },
   toneScore: { correct: 0, total: 0 },
   quizDisplay: { hanzi: false, jyutping: false, english: false, lens: false },
-  game: normalizeGameState(loadJson(STORAGE_KEYS.game, defaultGameState()))
+  game: normalizeGameState(loadJson(STORAGE_KEYS.game, defaultGameState())),
+  auth: { client: null, user: null, configured: false, ready: false, busy: false }
 };
 setRuntimeWordsForLookup(state.content?.words || []);
 
@@ -1821,6 +1822,16 @@ const els = {
   openTermsBtn: byId("openTermsBtn"),
   openAboutBtn: byId("openAboutBtn"),
   userPanelMsg: byId("userPanelMsg"),
+  authStatus: byId("authStatus"),
+  authSignedOut: byId("authSignedOut"),
+  authSignedIn: byId("authSignedIn"),
+  authEmailInput: byId("authEmailInput"),
+  authPasswordInput: byId("authPasswordInput"),
+  authSignInBtn: byId("authSignInBtn"),
+  authSignUpBtn: byId("authSignUpBtn"),
+  authSignOutBtn: byId("authSignOutBtn"),
+  authUserInfo: byId("authUserInfo"),
+  userEmailValue: byId("userEmailValue"),
   openSettingsFromUser: byId("openSettingsFromUser"),
   openContentFromUser: byId("openContentFromUser"),
   infoModal: byId("infoModal"),
@@ -2195,6 +2206,7 @@ function initializeApp() {
   renderKnownList();
   switchSearchTab(state.searchTab || "standard");
   refreshGameUI();
+  initSupabaseAuth();
   registerServiceWorker();
   initSoftLayoutTransitions();
   maybeShowAnalyticsConsentModal();
@@ -2266,7 +2278,11 @@ function bindUI() {
   }
   if (els.changeEmailBtn && els.userPanelMsg) {
     els.changeEmailBtn.addEventListener("click", () => {
-      els.userPanelMsg.textContent = "Email change/update requires backend auth. We can enable it in next phase.";
+      if (!state.auth.client || !state.auth.user) {
+        els.userPanelMsg.textContent = "Sign in first to change email.";
+        return;
+      }
+      els.userPanelMsg.textContent = "Email change flow can be added next (re-auth required by Supabase).";
     });
   }
   if (els.upgradeAccountBtn && els.userPanelMsg) {
@@ -2276,13 +2292,36 @@ function bindUI() {
   }
   if (els.changePasswordBtn && els.userPanelMsg) {
     els.changePasswordBtn.addEventListener("click", () => {
-      els.userPanelMsg.textContent = "Password change/reset requires backend auth. We can enable it in next phase.";
+      if (!state.auth.client || !state.auth.user) {
+        els.userPanelMsg.textContent = "Sign in first to reset password.";
+        return;
+      }
+      els.userPanelMsg.textContent = "Password reset flow can be added next (email reset link).";
     });
   }
   if (els.logOutBtn && els.userPanelMsg) {
-    els.logOutBtn.addEventListener("click", () => {
-      els.userPanelMsg.textContent = "Logged off (demo mode).";
+    els.logOutBtn.addEventListener("click", async () => {
+      if (state.auth.client && state.auth.user) {
+        await handleAuthSignOut(true);
+        return;
+      }
+      els.userPanelMsg.textContent = "No active account session.";
       closeUserSidePanel();
+    });
+  }
+  if (els.authSignInBtn) {
+    els.authSignInBtn.addEventListener("click", () => {
+      handleAuthSignIn();
+    });
+  }
+  if (els.authSignUpBtn) {
+    els.authSignUpBtn.addEventListener("click", () => {
+      handleAuthSignUp();
+    });
+  }
+  if (els.authSignOutBtn) {
+    els.authSignOutBtn.addEventListener("click", () => {
+      handleAuthSignOut(false);
     });
   }
   if (els.clearCacheBtn && els.userPanelMsg) {
@@ -3647,6 +3686,160 @@ function renderUserPanel() {
   }
   if (els.userLanguageMode) {
     els.userLanguageMode.value = normalizeLanguageMode(state.prefs.languageMode);
+  }
+  renderAuthUI();
+}
+
+function getSupabaseConfig() {
+  const config = window.CANCOACH_SUPABASE || {};
+  return {
+    url: String(config.url || "").trim(),
+    anonKey: String(config.anonKey || "").trim()
+  };
+}
+
+function setAuthBusy(isBusy) {
+  state.auth.busy = !!isBusy;
+  [els.authSignInBtn, els.authSignUpBtn, els.authSignOutBtn].forEach((btn) => {
+    if (btn) btn.disabled = !!isBusy;
+  });
+}
+
+function renderAuthUI() {
+  const hasClient = !!state.auth.client;
+  const user = state.auth.user;
+  if (els.authSignedOut) els.authSignedOut.classList.toggle("hidden", !!user || !hasClient);
+  if (els.authSignedIn) els.authSignedIn.classList.toggle("hidden", !user || !hasClient);
+
+  if (els.userEmailValue) {
+    els.userEmailValue.textContent = user?.email || (hasClient ? "Not signed in" : "Not connected");
+  }
+  if (els.authUserInfo) {
+    els.authUserInfo.textContent = user?.email
+      ? `Signed in as ${user.email}`
+      : "No active session.";
+  }
+  if (els.authStatus) {
+    if (!hasClient) {
+      els.authStatus.textContent = "Supabase not configured. Add URL + anon key in supabase-config.js";
+    } else if (!state.auth.ready) {
+      els.authStatus.textContent = "Checking session...";
+    } else if (user) {
+      els.authStatus.textContent = "Connected and signed in.";
+    } else {
+      els.authStatus.textContent = "Connected. Sign in or create account.";
+    }
+  }
+}
+
+function getAuthCredentials() {
+  const email = String(els.authEmailInput?.value || "").trim().toLowerCase();
+  const password = String(els.authPasswordInput?.value || "");
+  if (!email || !password) {
+    if (els.userPanelMsg) els.userPanelMsg.textContent = "Enter email and password.";
+    return null;
+  }
+  return { email, password };
+}
+
+async function handleAuthSignIn() {
+  if (!state.auth.client) {
+    if (els.userPanelMsg) els.userPanelMsg.textContent = "Supabase not configured yet.";
+    return;
+  }
+  const creds = getAuthCredentials();
+  if (!creds) return;
+  setAuthBusy(true);
+  try {
+    const { error } = await state.auth.client.auth.signInWithPassword(creds);
+    if (error) throw error;
+    if (els.userPanelMsg) els.userPanelMsg.textContent = "Signed in successfully.";
+  } catch (err) {
+    if (els.userPanelMsg) els.userPanelMsg.textContent = `Sign in failed: ${err.message || "Unknown error"}`;
+  } finally {
+    setAuthBusy(false);
+  }
+}
+
+async function handleAuthSignUp() {
+  if (!state.auth.client) {
+    if (els.userPanelMsg) els.userPanelMsg.textContent = "Supabase not configured yet.";
+    return;
+  }
+  const creds = getAuthCredentials();
+  if (!creds) return;
+  setAuthBusy(true);
+  try {
+    const { data, error } = await state.auth.client.auth.signUp(creds);
+    if (error) throw error;
+    if (data?.session) {
+      if (els.userPanelMsg) els.userPanelMsg.textContent = "Account created and signed in.";
+    } else {
+      if (els.userPanelMsg) els.userPanelMsg.textContent = "Account created. Check your email for confirmation.";
+    }
+  } catch (err) {
+    if (els.userPanelMsg) els.userPanelMsg.textContent = `Sign up failed: ${err.message || "Unknown error"}`;
+  } finally {
+    setAuthBusy(false);
+  }
+}
+
+async function handleAuthSignOut(closePanel = false) {
+  if (!state.auth.client) {
+    if (closePanel) closeUserSidePanel();
+    return;
+  }
+  setAuthBusy(true);
+  try {
+    const { error } = await state.auth.client.auth.signOut();
+    if (error) throw error;
+    if (els.userPanelMsg) els.userPanelMsg.textContent = "Signed out.";
+    if (closePanel) closeUserSidePanel();
+  } catch (err) {
+    if (els.userPanelMsg) els.userPanelMsg.textContent = `Sign out failed: ${err.message || "Unknown error"}`;
+  } finally {
+    setAuthBusy(false);
+  }
+}
+
+async function initSupabaseAuth() {
+  const canCreateClient = !!(window.supabase && typeof window.supabase.createClient === "function");
+  const { url, anonKey } = getSupabaseConfig();
+  if (!canCreateClient || !url || !anonKey) {
+    state.auth.client = null;
+    state.auth.user = null;
+    state.auth.configured = false;
+    state.auth.ready = true;
+    renderAuthUI();
+    return;
+  }
+
+  try {
+    state.auth.client = window.supabase.createClient(url, anonKey, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    });
+    state.auth.configured = true;
+    state.auth.ready = false;
+    renderAuthUI();
+
+    const { data, error } = await state.auth.client.auth.getSession();
+    if (error) throw error;
+    state.auth.user = data?.session?.user || null;
+    state.auth.ready = true;
+    renderAuthUI();
+
+    state.auth.client.auth.onAuthStateChange((_event, session) => {
+      state.auth.user = session?.user || null;
+      state.auth.ready = true;
+      renderAuthUI();
+    });
+  } catch (err) {
+    state.auth.client = null;
+    state.auth.user = null;
+    state.auth.configured = false;
+    state.auth.ready = true;
+    if (els.userPanelMsg) els.userPanelMsg.textContent = `Supabase init failed: ${err.message || "Unknown error"}`;
+    renderAuthUI();
   }
 }
 
