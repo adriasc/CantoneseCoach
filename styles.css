@@ -996,10 +996,16 @@ body.book-mode .book-top-tabs {
 }
 
 .side-inline {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
+}
+
+.side-inline .side-v {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .side-auth-status {
@@ -1072,6 +1078,7 @@ body.book-mode .book-top-tabs {
   padding: 7px 10px;
   font-size: 0.85rem;
   border-radius: 10px;
+  justify-self: end;
 }
 
 .auth-alt-btn.side-inline-btn {

@@ -1836,6 +1836,7 @@ const els = {
   authSignOutBtn: byId("authSignOutBtn"),
   authUserInfo: byId("authUserInfo"),
   userEmailValue: byId("userEmailValue"),
+  userPasswordValue: byId("userPasswordValue"),
   openSettingsFromUser: byId("openSettingsFromUser"),
   openContentFromUser: byId("openContentFromUser"),
   infoModal: byId("infoModal"),
@@ -3877,6 +3878,12 @@ function collectAuthFormValues(source = "panel") {
 function renderAuthUI() {
   const hasClient = !!state.auth.client;
   const user = state.auth.user;
+  const provider = String(
+    user?.app_metadata?.provider
+    || user?.identities?.[0]?.provider
+    || ""
+  ).toLowerCase();
+  const isGoogleAuth = provider === "google";
   if (els.authSignedOut) els.authSignedOut.classList.toggle("hidden", !!user || !hasClient);
   if (els.authSignedIn) els.authSignedIn.classList.toggle("hidden", !user || !hasClient);
   if (els.authGateSignedOut) els.authGateSignedOut.classList.toggle("hidden", !!user || !hasClient);
@@ -3884,6 +3891,18 @@ function renderAuthUI() {
 
   if (els.userEmailValue) {
     els.userEmailValue.textContent = user?.email || (hasClient ? "Not signed in" : "Not connected");
+  }
+  if (els.userPasswordValue) {
+    if (!user) {
+      els.userPasswordValue.textContent = "Not signed in";
+    } else if (isGoogleAuth) {
+      els.userPasswordValue.textContent = "Google Sign-In";
+    } else {
+      els.userPasswordValue.textContent = "••••••••";
+    }
+  }
+  if (els.changePasswordBtn) {
+    els.changePasswordBtn.textContent = isGoogleAuth ? "Set Password" : "Reset/Change";
   }
   if (els.authUserInfo) {
     els.authUserInfo.textContent = user?.email
