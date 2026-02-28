@@ -1791,6 +1791,7 @@ const state = {
   currentToneSide: null,
   storyTab: "dialogs",
   bookTab: "grammar",
+  bookToneTab: "tones",
   searchTab: "standard",
   toneLabelMap: { a: "a", b: "b" },
   toneScore: { correct: 0, total: 0 },
@@ -1827,7 +1828,9 @@ const els = {
   storyPanels: [...document.querySelectorAll(".stories-subpanel")],
   bookTabs: [...document.querySelectorAll(".book-top-tabs .book-nav-btn")],
   bookPartTabs: [...document.querySelectorAll(".book-part-btn")],
+  bookToneTabs: [...document.querySelectorAll(".book-tone-btn")],
   bookPanels: [...document.querySelectorAll(".book-subpanel")],
+  bookTonePanels: [...document.querySelectorAll(".book-tone-panel")],
   storyOfDayLabel: byId("storyOfDayLabel"),
   storyOfDayMeta: byId("storyOfDayMeta"),
   storyOfDayLines: byId("storyOfDayLines"),
@@ -2304,6 +2307,13 @@ function bindUI() {
       const nextTab = String(tab.dataset.bookTab || "").trim();
       if (!nextTab) return;
       switchBookTab(nextTab);
+    });
+  });
+  els.bookToneTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const nextTab = String(tab.dataset.bookToneTab || "").trim();
+      if (!nextTab) return;
+      switchBookToneTab(nextTab);
     });
   });
   els.searchTabs.forEach((tab) => {
@@ -2976,6 +2986,19 @@ function switchBookTab(tabName) {
   els.bookTabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.bookTab === topActive));
   els.bookPartTabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.bookTab === safeName));
   els.bookPanels.forEach((panel) => panel.classList.toggle("is-active", panel.id === panelId));
+  if (safeName === "tones") {
+    switchBookToneTab(state.bookToneTab || "tones");
+  }
+}
+
+function switchBookToneTab(tabName) {
+  const safeName = String(tabName || "").trim() === "sounds" ? "sounds" : "tones";
+  const panelId = `book-tone-${safeName}`;
+  const hasPanel = els.bookTonePanels.some((panel) => panel.id === panelId);
+  if (!hasPanel) return;
+  state.bookToneTab = safeName;
+  els.bookToneTabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.bookToneTab === safeName));
+  els.bookTonePanels.forEach((panel) => panel.classList.toggle("is-active", panel.id === panelId));
 }
 
 function switchSearchTab(tabName) {

@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.52</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.53</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -738,7 +738,11 @@
         </section>
         <section class="book-subpanel" id="book-tones">
           <p class="formula">Tones</p>
-          <div class="book-lesson">
+          <div class="book-tone-switch" role="group" aria-label="Tones lessons">
+            <button class="book-tone-btn is-active" type="button" data-book-tone-tab="tones">Tones</button>
+            <button class="book-tone-btn" type="button" data-book-tone-tab="sounds">Sounds</button>
+          </div>
+          <div class="book-lesson book-tone-panel is-active" id="book-tone-tones">
             <p class="book-subtitle">Why tones are super important in Cantonese</p>
             <p>Cantonese has <strong>6 main tones</strong>. Some people say 9, but the extra 3 are short checked versions (for syllables ending in <strong>-p, -t, -k</strong>) that map to tones 1, 3, and 6. For beginners, focus on the main 6 first.</p>
             <p>Each tone is a different pitch pattern (how your voice moves up, down, or stays level).</p>
@@ -789,6 +793,62 @@
 
             <p>Tones are pronunciation, but they also act like grammar because they decide which word you are saying. If tones are strong early, sentence building becomes much easier.</p>
             <p class="book-lead"><strong>你得㗎，慢慢練就得！</strong> (You've got this. Practice slowly and it will click.)</p>
+          </div>
+          <div class="book-lesson book-tone-panel" id="book-tone-sounds">
+            <p class="book-subtitle">Cantonese sounds guide (Jyutping)</p>
+            <p>This guide uses <strong>Jyutping</strong>, the most practical romanization for learners today.</p>
+            <p>Jyutping uses numbers <strong>1-6</strong> to show tones clearly. One wrong sound can change meaning, so sound training comes first.</p>
+
+            <p class="book-subtitle">1) Basic consonants (starting sounds)</p>
+            <div class="book-example">
+              <p><strong>b, d, g</strong>: unaspirated (gentle, less air).</p>
+              <p><strong>p, t, k</strong>: aspirated (stronger air release).</p>
+              <p><strong>j</strong>: like English y in <em>yes</em>. Example: <strong>魚 jyu4</strong> (fish).</p>
+              <p><strong>z</strong>: closer to a light <em>dz</em> onset. Example: <strong>字 zi6</strong> (character/word).</p>
+              <p><strong>c</strong>: aspirated <em>ts</em>. Example: <strong>車 ce1</strong>.</p>
+              <p><strong>s</strong>: regular s. <strong>ng</strong> can start words: <strong>我 ngo5</strong>.</p>
+              <p><strong>h</strong>: breathy h. <strong>gw/kw</strong>: rounded starts (e.g. <strong>國 gwok3</strong>).</p>
+            </div>
+
+            <p class="book-subtitle">2) Vowels (core sound shapes)</p>
+            <div class="book-example">
+              <p><strong>aa</strong>: long open a. Example: <strong>媽 maa1</strong>.</p>
+              <p><strong>a</strong>: short central vowel. Example: <strong>唔 m4</strong>.</p>
+              <p><strong>i</strong>: ee-like. Example: <strong>食 sik6</strong>.</p>
+              <p><strong>u</strong>: oo-like. Example: <strong>書 syu1</strong>.</p>
+              <p><strong>e</strong>: close-mid e. Example: <strong>車 ce1</strong>.</p>
+              <p><strong>o</strong>: open-mid o. Example: <strong>好 hou2</strong>.</p>
+              <p><strong>oe</strong>: rounded central/front vowel. Example: <strong>女 neoi5</strong>.</p>
+              <p><strong>yu</strong>: front rounded vowel (like u with rounded lips). Example: <strong>魚 jyu4</strong>.</p>
+              <p>Diphthongs: <strong>ei, ai, oi, ui, au, ou</strong> (e.g. <strong>nei5, maai5, oi3, bui1, hau2, hou2</strong>).</p>
+            </div>
+
+            <p class="book-subtitle">3) The 6 tones (voice melody)</p>
+            <div class="book-example">
+              <p><strong>Tone 1 high level:</strong> 詩 <strong>si1</strong> (poem)</p>
+              <p><strong>Tone 2 high rising:</strong> 史 <strong>si2</strong> (history)</p>
+              <p><strong>Tone 3 mid level:</strong> 試 <strong>si3</strong> (try/test)</p>
+              <p><strong>Tone 4 low falling:</strong> 時 <strong>si4</strong> (time)</p>
+              <p><strong>Tone 5 low rising:</strong> 市 <strong>si5</strong> (market/city)</p>
+              <p><strong>Tone 6 low level:</strong> 事 <strong>si6</strong> (thing/matter)</p>
+            </div>
+            <p>Quick memory pattern: <strong>1 high flat -> 2 rise -> 3 mid flat -> 4 low fall -> 5 low rise -> 6 low flat</strong>.</p>
+
+            <p class="book-subtitle">Fast practice set</p>
+            <div class="book-example">
+              <p><strong>詩 si1</strong>, <strong>史 si2</strong>, <strong>試 si3</strong>, <strong>時 si4</strong>, <strong>市 si5</strong>, <strong>事 si6</strong></p>
+              <p>Say slowly first, then speed up while keeping tone contrast clear.</p>
+            </div>
+
+            <p class="book-subtitle">Tips to improve quickly</p>
+            <div class="book-example">
+              <p><strong>1) Daily listen + repeat</strong> with native audio.</p>
+              <p><strong>2) Record yourself</strong> and compare.</p>
+              <p><strong>3) Start with flat tones</strong> (1, 3, 6), then add rising/falling ones.</p>
+              <p><strong>4) Hum tone shapes</strong> like a melody: high, rise, mid, low-fall, low-rise, low.</p>
+            </div>
+
+            <p class="book-lead"><strong>Once sounds click, words and sentences become much easier.</strong></p>
           </div>
         </section>
         <section class="book-subpanel" id="book-writing">
