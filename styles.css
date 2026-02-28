@@ -718,6 +718,31 @@ body.settings-mode .tabs {
   gap: 4px;
 }
 
+.book-tone-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.book-tone-audio-btn {
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  min-height: 24px;
+  border-radius: 999px;
+  padding: 0;
+  border: 1px solid #d8b57d;
+  background: linear-gradient(180deg, #fff9ef 0%, #ffe8c8 100%);
+  color: #8b4c2a;
+  font-size: 0.72rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(120, 84, 39, 0.18);
+}
+
 .book-quote {
   background: #f5f9ff;
   border-left: 3px solid #80a7df;

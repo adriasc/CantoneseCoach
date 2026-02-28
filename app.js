@@ -1836,6 +1836,7 @@ const els = {
   bookPanels: [...document.querySelectorAll(".book-subpanel")],
   bookTonePanels: [...document.querySelectorAll(".book-tone-panel")],
   bookWritingPanels: [...document.querySelectorAll(".book-writing-panel")],
+  bookToneRoot: byId("book-tone-tones"),
   storyOfDayLabel: byId("storyOfDayLabel"),
   storyOfDayMeta: byId("storyOfDayMeta"),
   storyOfDayLines: byId("storyOfDayLines"),
@@ -2358,6 +2359,16 @@ function bindUI() {
       switchBookWritingTab(nextTab);
     });
   });
+  if (els.bookToneRoot) {
+    els.bookToneRoot.addEventListener("click", (event) => {
+      const btn = event.target?.closest?.(".book-tone-audio-btn");
+      if (!btn) return;
+      const toneText = String(btn.dataset.tonePlay || "").trim();
+      if (!toneText) return;
+      incrementMission("listens", 1);
+      speak(toneText);
+    });
+  }
   els.searchTabs.forEach((tab) => {
     tab.addEventListener("click", () => {
       const nextTab = String(tab.dataset.searchTab || "").trim();
