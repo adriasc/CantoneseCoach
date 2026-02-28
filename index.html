@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.72</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.73</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -313,26 +313,29 @@
     <div class="modal hidden" id="authGateModal">
       <div class="modal-card auth-gate-card" role="dialog" aria-label="Authentication required">
         <div class="auth-gate-brand">
-          <svg id="authGateLogo" viewBox="0 0 100 100" role="img" aria-label="App logo">
-            <rect x="4" y="4" width="92" height="92" rx="22" fill="#e84f54"></rect>
-            <path d="M53 14c10 2 18 10 19 22 1 10-5 18-11 23-6 6-10 13-11 24l-1 6-5-8c-4-7-7-16-6-26 2-16 13-30 29-41-4 0-9 0-14 0z" fill="#fff"></path>
-            <path d="M42 49c-5 11-6 24-1 35l-3-3c-9-11-11-24-8-34 2-5 6-11 12-16z" fill="#fff"></path>
-          </svg>
+          <img id="authGateLogo" src="icons/icon-192.png" alt="App logo">
         </div>
         <div class="card-head">
           <h2>Welcome Back</h2>
           <button id="closeAuthGate" class="ghost-btn" type="button" aria-label="Close login screen">✕</button>
         </div>
         <p class="example auth-gate-lead">Log in or create an account to continue.</p>
+        <p id="authGateVersion" class="auth-gate-version">v19.4.73</p>
         <p id="authGateStatus" class="example side-auth-status">Checking connection...</p>
         <p id="authGateMessage" class="example side-auth-message"></p>
         <div id="authGateSignedOut" class="side-auth-form auth-gate-form">
+          <p id="authGateTitleLogin" class="auth-mode-title">Log In</p>
+          <p id="authGateTitleSignup" class="auth-mode-title hidden">Create Account</p>
+          <p class="auth-method-label">Email</p>
           <input id="authGateEmailInput" class="side-auth-input" type="email" placeholder="Email" autocomplete="email">
           <input id="authGatePasswordInput" class="side-auth-input" type="password" placeholder="Password" autocomplete="current-password">
+          <div id="authGateLoginHelp" class="auth-login-help">
+            <button id="authGateForgotBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Reset Password</button>
+            <p class="example side-auth-hint">If you forgot your password, tap Reset Password and we will send you an email.</p>
+          </div>
           <div id="authGateLoginView" class="auth-mode-view">
             <button id="authGateSignInBtn" class="side-action-btn side-inline-btn auth-alt-btn" type="button">Log In</button>
-            <button id="authGateGoogleBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Continue with Google</button>
-            <button id="authGateForgotBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Reset Password</button>
+            <button id="authGateGoogleBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-google-btn" type="button">Continue with Google</button>
             <p class="auth-flow-cta">If you don't have an account yet:</p>
             <button id="authGateShowSignupBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-switch-btn" type="button">Create Account</button>
           </div>
@@ -1359,12 +1362,18 @@
           <p id="authStatus" class="example side-auth-status">Checking connection...</p>
           <p id="authMessage" class="example side-auth-message"></p>
           <div id="authSignedOut" class="side-auth-form">
+            <p id="authPanelTitleLogin" class="auth-mode-title">Log In</p>
+            <p id="authPanelTitleSignup" class="auth-mode-title hidden">Create Account</p>
+            <p class="auth-method-label">Email</p>
             <input id="authEmailInput" class="side-auth-input" type="email" placeholder="Email" autocomplete="email">
             <input id="authPasswordInput" class="side-auth-input" type="password" placeholder="Password" autocomplete="current-password">
+            <div id="authPanelLoginHelp" class="auth-login-help">
+              <button id="authForgotBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Reset Password</button>
+              <p class="example side-auth-hint">If you forgot your password, tap Reset Password and we will send you an email.</p>
+            </div>
             <div id="authPanelLoginView" class="auth-mode-view">
               <button id="authSignInBtn" class="side-action-btn side-inline-btn auth-alt-btn" type="button">Log In</button>
-              <button id="authGoogleBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Continue with Google</button>
-              <button id="authForgotBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Reset Password</button>
+              <button id="authGoogleBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-google-btn" type="button">Continue with Google</button>
               <p class="auth-flow-cta">If you don't have an account yet:</p>
               <button id="authPanelShowSignupBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-switch-btn" type="button">Create Account</button>
             </div>

@@ -1830,6 +1830,9 @@ const els = {
   authPasswordInput: byId("authPasswordInput"),
   authPanelLoginView: byId("authPanelLoginView"),
   authPanelSignupView: byId("authPanelSignupView"),
+  authPanelTitleLogin: byId("authPanelTitleLogin"),
+  authPanelTitleSignup: byId("authPanelTitleSignup"),
+  authPanelLoginHelp: byId("authPanelLoginHelp"),
   authPanelShowSignupBtn: byId("authPanelShowSignupBtn"),
   authPanelShowLoginBtn: byId("authPanelShowLoginBtn"),
   authSignInBtn: byId("authSignInBtn"),
@@ -1985,6 +1988,10 @@ const els = {
   authGatePasswordInput: byId("authGatePasswordInput"),
   authGateLoginView: byId("authGateLoginView"),
   authGateSignupView: byId("authGateSignupView"),
+  authGateTitleLogin: byId("authGateTitleLogin"),
+  authGateTitleSignup: byId("authGateTitleSignup"),
+  authGateLoginHelp: byId("authGateLoginHelp"),
+  authGateVersion: byId("authGateVersion"),
   authGateShowSignupBtn: byId("authGateShowSignupBtn"),
   authGateShowLoginBtn: byId("authGateShowLoginBtn"),
   authGateSignInBtn: byId("authGateSignInBtn"),
@@ -3816,6 +3823,7 @@ function renderUserPanel() {
   if (els.userPanelVersion) {
     const appVer = document.querySelector(".version-tag")?.textContent || "v?";
     els.userPanelVersion.textContent = appVer;
+    if (els.authGateVersion) els.authGateVersion.textContent = appVer;
   }
   if (els.userLanguageMode) {
     els.userLanguageMode.value = normalizeLanguageMode(state.prefs.languageMode);
@@ -3866,6 +3874,12 @@ function setAuthFormMode(mode = "login") {
   if (els.authPanelSignupView) els.authPanelSignupView.classList.toggle("hidden", !signup);
   if (els.authGateLoginView) els.authGateLoginView.classList.toggle("hidden", signup);
   if (els.authGateSignupView) els.authGateSignupView.classList.toggle("hidden", !signup);
+  if (els.authPanelTitleLogin) els.authPanelTitleLogin.classList.toggle("hidden", signup);
+  if (els.authPanelTitleSignup) els.authPanelTitleSignup.classList.toggle("hidden", !signup);
+  if (els.authGateTitleLogin) els.authGateTitleLogin.classList.toggle("hidden", signup);
+  if (els.authGateTitleSignup) els.authGateTitleSignup.classList.toggle("hidden", !signup);
+  if (els.authPanelLoginHelp) els.authPanelLoginHelp.classList.toggle("hidden", signup);
+  if (els.authGateLoginHelp) els.authGateLoginHelp.classList.toggle("hidden", signup);
 }
 
 function validateAuthPassword(password) {
