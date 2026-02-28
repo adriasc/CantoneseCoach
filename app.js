@@ -1815,6 +1815,7 @@ const els = {
   userLanguageMode: byId("userLanguageMode"),
   changePasswordBtn: byId("changePasswordBtn"),
   logOutBtn: byId("logOutBtn"),
+  clearCacheBtn: byId("clearCacheBtn"),
   openTermsBtn: byId("openTermsBtn"),
   openAboutBtn: byId("openAboutBtn"),
   userPanelMsg: byId("userPanelMsg"),
@@ -2266,6 +2267,25 @@ function bindUI() {
     els.logOutBtn.addEventListener("click", () => {
       els.userPanelMsg.textContent = "Logged off (demo mode).";
       closeUserSidePanel();
+    });
+  }
+  if (els.clearCacheBtn && els.userPanelMsg) {
+    els.clearCacheBtn.addEventListener("click", async () => {
+      try {
+        els.userPanelMsg.textContent = "Clearing app cache...";
+        if ("caches" in window) {
+          const cacheKeys = await caches.keys();
+          await Promise.all(cacheKeys.map((key) => caches.delete(key)));
+        }
+        if ("serviceWorker" in navigator) {
+          const regs = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(regs.map((reg) => reg.unregister().catch(() => false)));
+        }
+        els.userPanelMsg.textContent = "Cache cleared. Reloading...";
+        window.setTimeout(() => window.location.reload(), 240);
+      } catch {
+        els.userPanelMsg.textContent = "Could not clear cache. Please refresh once manually.";
+      }
     });
   }
   if (els.openTermsBtn) {
