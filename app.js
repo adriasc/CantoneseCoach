@@ -1799,7 +1799,7 @@ const state = {
   toneScore: { correct: 0, total: 0 },
   quizDisplay: { hanzi: false, jyutping: false, english: false, lens: false },
   game: normalizeGameState(loadJson(STORAGE_KEYS.game, defaultGameState())),
-  auth: { client: null, user: null, configured: false, ready: false, busy: false, gateOpen: false }
+  auth: { client: null, user: null, configured: false, ready: false, busy: false, gateOpen: false, gateDismissed: false }
 };
 setRuntimeWordsForLookup(state.content?.words || []);
 
@@ -1981,6 +1981,7 @@ const els = {
   authGateForgotBtn: byId("authGateForgotBtn"),
   authGateUserInfo: byId("authGateUserInfo"),
   authGateContinueBtn: byId("authGateContinueBtn"),
+  closeAuthGate: byId("closeAuthGate"),
   acceptAnalyticsBtn: byId("acceptAnalyticsBtn"),
   declineAnalyticsBtn: byId("declineAnalyticsBtn"),
   analyticsConsentSelect: byId("analyticsConsentSelect"),
@@ -2378,6 +2379,13 @@ function bindUI() {
   if (els.authGateContinueBtn) {
     els.authGateContinueBtn.addEventListener("click", () => {
       if (state.auth.user) hideAuthGate();
+    });
+  }
+  if (els.closeAuthGate) {
+    els.closeAuthGate.addEventListener("click", () => {
+      state.auth.gateDismissed = true;
+      hideAuthGate();
+      setAuthFeedback("Login skipped for now (testing mode).");
     });
   }
   [els.authEmailInput, els.authPasswordInput].forEach((input) => {
@@ -3129,7 +3137,7 @@ function configureBottomMenu() {
   const enabled = !!ENABLE_BOTTOM_MENU_V1;
   document.body.classList.toggle("bottom-nav-enabled", enabled);
   if (els.bottomNav) {
-    els.bottomNav.classList.toggle("hidden", !enabled);
+    els.bottomNav.classList.toggle("hidden", !enabled || !!state.auth.gateOpen);
   }
   syncBottomTabState("words");
 }
@@ -3798,18 +3806,22 @@ function validateAuthPassword(password) {
 }
 
 function shouldRequireAuthGate() {
-  return !!(state.auth.configured && state.auth.ready && !state.auth.user);
+  return !!(state.auth.configured && state.auth.ready && !state.auth.user && !state.auth.gateDismissed);
 }
 
 function showAuthGate() {
   if (!els.authGateModal) return;
   state.auth.gateOpen = true;
+  document.body.classList.add("auth-gate-open");
+  if (els.bottomNav) els.bottomNav.classList.add("hidden");
   openModalAnimated(els.authGateModal);
 }
 
 function hideAuthGate() {
   if (!els.authGateModal) return;
   state.auth.gateOpen = false;
+  document.body.classList.remove("auth-gate-open");
+  configureBottomMenu();
   if (!els.authGateModal.classList.contains("hidden")) {
     closeModalAnimated(els.authGateModal);
   }
@@ -3856,6 +3868,7 @@ function renderAuthUI() {
       : "No active session.";
   }
   if (user?.email) {
+    state.auth.gateDismissed = false;
     if (els.authEmailInput) els.authEmailInput.value = user.email;
     if (els.authGateEmailInput) els.authGateEmailInput.value = user.email;
   }
@@ -3927,6 +3940,7 @@ async function handleAuthSignIn(source = "panel") {
   try {
     const { error } = await state.auth.client.auth.signInWithPassword(creds);
     if (error) throw error;
+    state.auth.gateDismissed = false;
     setAuthFeedback("Logged in successfully.");
   } catch (err) {
     setAuthFeedback(`Log in failed: ${err.message || "Unknown error"}`);
@@ -3957,6 +3971,7 @@ async function handleAuthSignUp(source = "panel") {
     });
     if (error) throw error;
     if (data?.session) {
+      state.auth.gateDismissed = false;
       setAuthFeedback("Account created and logged in.");
     } else {
       setAuthFeedback(`Account created. Check your email for confirmation. Redirect URL: ${buildPasswordResetRedirect()}`);
@@ -3999,6 +4014,7 @@ async function handleAuthSignOut(closePanel = false) {
   try {
     const { error } = await state.auth.client.auth.signOut();
     if (error) throw error;
+    state.auth.gateDismissed = false;
     setAuthFeedback("Logged out.");
     if (closePanel) closeUserSidePanel();
   } catch (err) {

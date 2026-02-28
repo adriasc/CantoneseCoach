@@ -2070,6 +2070,10 @@ button:hover,
   justify-content: stretch;
 }
 
+body.auth-gate-open .bottom-nav {
+  display: none !important;
+}
+
 #authGateModal .modal-card {
   width: 100vw;
   max-width: none;
@@ -2107,6 +2111,22 @@ button:hover,
 .auth-gate-card .card-head h2 {
   font-size: 1.42rem;
   color: #4b2f2a;
+}
+
+#closeAuthGate {
+  min-width: auto;
+  border: 0;
+  background: transparent;
+  color: #7d5a4e;
+  box-shadow: none;
+  font-size: 2rem;
+  line-height: 1;
+  padding: 0 4px;
+}
+
+#closeAuthGate:hover {
+  color: #5e433b;
+  transform: scale(1.04);
 }
 
 .auth-gate-lead {
