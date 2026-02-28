@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.58</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.59</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -247,6 +247,14 @@
             </select>
           </div>
           <div>
+            <label for="analyticsConsentSelect">Usage Analytics</label>
+            <select id="analyticsConsentSelect">
+              <option value="declined">Off (private)</option>
+              <option value="accepted">On (anonymous)</option>
+            </select>
+            <p id="analyticsConsentNote" class="example settings-note">Analytics is off by default until you accept.</p>
+          </div>
+          <div>
             <label for="audioVoice">Audio Voice</label>
             <select id="audioVoice">
               <option value="auto">Auto (best Cantonese)</option>
@@ -281,6 +289,23 @@
             </div>
             <button id="testVoice" class="play-icon-btn" aria-label="Test voice playback">▶</button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal hidden" id="analyticsConsentModal">
+      <div class="modal-card">
+        <div class="card-head">
+          <h2>Privacy Choice</h2>
+        </div>
+        <p>This app can collect anonymous usage statistics to improve lessons (for example: most used sections and average practice time).</p>
+        <div class="book-example">
+          <p>No email, no account identity, and no personal content is sent.</p>
+          <p>You can change this anytime in Audio & Display settings.</p>
+        </div>
+        <div class="actions">
+          <button id="acceptAnalyticsBtn" type="button">Allow Anonymous Analytics</button>
+          <button id="declineAnalyticsBtn" class="side-action-btn side-action-soft" type="button">Keep Analytics Off</button>
         </div>
       </div>
     </div>

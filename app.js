@@ -1766,7 +1766,8 @@ const state = {
     voiceRate: 0.9,
     audioNoiseOn: false,
     audioNoiseLevel: 0.25,
-    audioNoiseType: "white"
+    audioNoiseType: "white",
+    analyticsConsent: "unknown"
   }),
   availableVoices: [],
   rotation: { words: [], patternSentences: [], quizSentences: [], questionSentences: [], tonePairs: [], exerciseSentences: [] },
@@ -1949,6 +1950,11 @@ const els = {
   openSettings: byId("openSettings"),
   closeSettings: byId("closeSettings"),
   settingsModal: byId("settingsModal"),
+  analyticsConsentModal: byId("analyticsConsentModal"),
+  acceptAnalyticsBtn: byId("acceptAnalyticsBtn"),
+  declineAnalyticsBtn: byId("declineAnalyticsBtn"),
+  analyticsConsentSelect: byId("analyticsConsentSelect"),
+  analyticsConsentNote: byId("analyticsConsentNote"),
   grammarModal: byId("grammarModal"),
   closeGrammarModal: byId("closeGrammarModal"),
   grammarModalTitle: byId("grammarModalTitle"),
@@ -2144,20 +2150,25 @@ function refreshLexiconCoverage() {
 
 function initializeApp() {
   state.prefs.questionTheme = normalizeQuestionType(state.prefs.questionTheme);
-  let miniStoryPrefsChanged = false;
+  let prefsChanged = false;
   if (typeof state.prefs.miniStoryShowJyutping !== "boolean") {
     state.prefs.miniStoryShowJyutping = true;
-    miniStoryPrefsChanged = true;
+    prefsChanged = true;
   }
   if (typeof state.prefs.miniStoryShowEnglish !== "boolean") {
     state.prefs.miniStoryShowEnglish = true;
-    miniStoryPrefsChanged = true;
+    prefsChanged = true;
   }
   if (typeof state.prefs.miniStoryLens !== "boolean") {
     state.prefs.miniStoryLens = true;
-    miniStoryPrefsChanged = true;
+    prefsChanged = true;
   }
-  if (miniStoryPrefsChanged) saveJson(STORAGE_KEYS.prefs, state.prefs);
+  const consent = normalizeAnalyticsConsent(state.prefs.analyticsConsent);
+  if (state.prefs.analyticsConsent !== consent) {
+    state.prefs.analyticsConsent = consent;
+    prefsChanged = true;
+  }
+  if (prefsChanged) saveJson(STORAGE_KEYS.prefs, state.prefs);
   configureBottomMenu();
   bindUI();
   ensureDailyGameState();
@@ -2182,6 +2193,7 @@ function initializeApp() {
   refreshGameUI();
   registerServiceWorker();
   initSoftLayoutTransitions();
+  maybeShowAnalyticsConsentModal();
   setTimeout(() => {
     try {
       refreshLexiconCoverage();
@@ -2438,6 +2450,21 @@ function bindUI() {
   if (els.settingsModal) {
     els.settingsModal.addEventListener("click", (event) => {
       if (event.target === els.settingsModal) closeModalAnimated(els.settingsModal);
+    });
+  }
+  if (els.acceptAnalyticsBtn) {
+    els.acceptAnalyticsBtn.addEventListener("click", () => {
+      setAnalyticsConsent("accepted", { closePrompt: true });
+    });
+  }
+  if (els.declineAnalyticsBtn) {
+    els.declineAnalyticsBtn.addEventListener("click", () => {
+      setAnalyticsConsent("declined", { closePrompt: true });
+    });
+  }
+  if (els.analyticsConsentSelect) {
+    els.analyticsConsentSelect.addEventListener("change", () => {
+      setAnalyticsConsent(els.analyticsConsentSelect.value, { closePrompt: false });
     });
   }
   if (els.closeGrammarModal && els.grammarModal) {
@@ -2754,6 +2781,7 @@ function bindUI() {
       else renderSearchHint();
     });
   }
+  updateAnalyticsConsentUI();
   els.audioVoice.addEventListener("change", () => {
     state.prefs.voiceURI = els.audioVoice.value || "auto";
     saveJson(STORAGE_KEYS.prefs, state.prefs);
@@ -6452,6 +6480,7 @@ function syncControlValues() {
   if (els.audioNoiseType) els.audioNoiseType.value = state.prefs.audioNoiseType || "white";
   if (els.audioNoiseLevel) els.audioNoiseLevel.value = String(state.prefs.audioNoiseLevel || 0.25);
   if (els.audioNoiseValue) els.audioNoiseValue.textContent = Number(state.prefs.audioNoiseLevel || 0.25).toFixed(2);
+  updateAnalyticsConsentUI();
 }
 
 function initVoiceControls() {
@@ -6622,6 +6651,45 @@ function applyTheme(themeName) {
     return;
   }
   document.body.setAttribute("data-theme", normalized);
+}
+
+function normalizeAnalyticsConsent(value) {
+  const raw = String(value ?? "").trim().toLowerCase();
+  if (raw === "accepted" || raw === "on" || raw === "true" || raw === "yes") return "accepted";
+  if (raw === "declined" || raw === "off" || raw === "false" || raw === "no") return "declined";
+  return "unknown";
+}
+
+function updateAnalyticsConsentUI() {
+  const consent = normalizeAnalyticsConsent(state?.prefs?.analyticsConsent);
+  if (els.analyticsConsentSelect) {
+    els.analyticsConsentSelect.value = consent === "accepted" ? "accepted" : "declined";
+  }
+  if (els.analyticsConsentNote) {
+    if (consent === "accepted") {
+      els.analyticsConsentNote.textContent = "Anonymous analytics is ON. No email/account identity is sent.";
+    } else if (consent === "declined") {
+      els.analyticsConsentNote.textContent = "Analytics is OFF. You can enable it anytime.";
+    } else {
+      els.analyticsConsentNote.textContent = "Not decided yet. Analytics stays OFF until you accept.";
+    }
+  }
+}
+
+function setAnalyticsConsent(nextValue, options = {}) {
+  const normalized = normalizeAnalyticsConsent(nextValue) === "accepted" ? "accepted" : "declined";
+  state.prefs.analyticsConsent = normalized;
+  saveJson(STORAGE_KEYS.prefs, state.prefs);
+  updateAnalyticsConsentUI();
+  if (options.closePrompt !== false && els.analyticsConsentModal) {
+    closeModalAnimated(els.analyticsConsentModal);
+  }
+}
+
+function maybeShowAnalyticsConsentModal() {
+  if (!els.analyticsConsentModal) return;
+  if (normalizeAnalyticsConsent(state?.prefs?.analyticsConsent) !== "unknown") return;
+  openModalAnimated(els.analyticsConsentModal);
 }
 
 function setControlsCollapsed(collapsed) {

@@ -1945,11 +1945,25 @@ button:hover,
   margin-top: 10px;
 }
 
+#settingsModal .settings-note {
+  margin-top: 6px;
+}
+
 #settingsModal .play-icon-btn {
   width: 50px;
   min-width: 50px;
   height: 50px;
   min-height: 50px;
+}
+
+#analyticsConsentModal .modal-card {
+  width: min(560px, 95vw);
+  background: linear-gradient(170deg, #ffe9d9 0%, #ffe4cf 48%, #ffe9e5 100%);
+  border: 1px solid rgba(199, 144, 110, 0.36);
+}
+
+#analyticsConsentModal .actions {
+  margin-top: 12px;
 }
 
 @media (max-width: 680px) {
