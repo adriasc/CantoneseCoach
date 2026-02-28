@@ -628,6 +628,38 @@ body.settings-mode .tabs {
   display: grid;
 }
 
+.book-writing-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 2px 0 8px;
+}
+
+.book-writing-btn {
+  border: 1px solid rgba(114, 144, 178, 0.26);
+  background: rgba(255, 255, 255, 0.76);
+  border-radius: 10px;
+  padding: 8px 10px;
+  color: var(--ink);
+  font-size: 0.88rem;
+  font-weight: 800;
+  box-shadow: 0 3px 7px rgba(24, 49, 82, 0.12);
+}
+
+.book-writing-btn.is-active {
+  background: linear-gradient(160deg, #ff8f63 0%, #ff646f 48%, #ff4f85 100%);
+  border-color: rgba(233, 108, 111, 0.62);
+  color: #fff;
+}
+
+.book-lesson.book-writing-panel {
+  display: none;
+}
+
+.book-lesson.book-writing-panel.is-active {
+  display: grid;
+}
+
 .stories-subpanel {
   display: none;
   background: color-mix(in srgb, #fff 82%, var(--soft));

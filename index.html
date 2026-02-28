@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.59</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.60</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -918,7 +918,11 @@
         </section>
         <section class="book-subpanel" id="book-writing">
           <p class="formula">Writing</p>
-          <div class="book-lesson">
+          <div class="book-writing-switch" role="group" aria-label="Writing lessons">
+            <button class="book-writing-btn is-active" type="button" data-book-writing-tab="writing">Writing</button>
+            <button class="book-writing-btn" type="button" data-book-writing-tab="traditional">Traditional Intro</button>
+          </div>
+          <div class="book-lesson book-writing-panel is-active" id="book-writing-writing">
             <p class="book-subtitle">1) Main script: Traditional Chinese characters (繁體字)</p>
             <p>Cantonese in Hong Kong and Macau is written mainly with <strong>traditional characters</strong>, not simplified forms used in mainland China.</p>
             <p>Why? Hong Kong, Macau, and many overseas communities kept older full forms, so writing looks more detailed and classic.</p>
@@ -967,6 +971,60 @@
             </div>
             <p>This helps beginners see writing as: characters + sounds + context, not something scary.</p>
             <p class="book-lead"><strong>你寫得越來越靚㗎！</strong> (Your writing keeps getting better.)</p>
+          </div>
+          <div class="book-lesson book-writing-panel" id="book-writing-traditional">
+            <p class="book-subtitle">Introduction to Traditional Chinese Characters in Cantonese</p>
+            <p>As a multilingual teacher fluent in Cantonese, Mandarin, Catalan, Spanish, and English, this page explains traditional Chinese characters in short, practical steps focused on <strong>why</strong> and <strong>how</strong>.</p>
+
+            <p class="book-subtitle">What Are Chinese Characters Made Of?</p>
+            <p>Chinese characters are <strong>logograms</strong>: each one represents a word or idea, not just a sound sequence like alphabet writing.</p>
+            <div class="book-example">
+              <p>English: cat</p>
+              <p>Cantonese writing: <strong>貓</strong> (Jyutping: <strong>maau1</strong>)</p>
+              <p>Same character system works across dialects (Cantonese/Mandarin), even when pronunciation differs.</p>
+            </div>
+
+            <p>Characters are built from <strong>strokes</strong> (basic pen movements).</p>
+            <div class="book-example">
+              <p><strong>Horizontal</strong> (一): flat line</p>
+              <p><strong>Vertical</strong> (丨): straight down</p>
+              <p><strong>Dot</strong> (丶): small tap</p>
+              <p><strong>Left-falling</strong> (丿): down-left slant</p>
+              <p><strong>Right-falling</strong> (乀): down-right slant</p>
+              <p><strong>Turning</strong> (乛): bends/hooks</p>
+              <p><strong>Hook</strong> (亅): sharp curve</p>
+              <p><strong>Rising</strong> (㇀): upward slant</p>
+            </div>
+            <p>Stroke order is strict: <strong>top to bottom, left to right, outside to inside</strong>. This keeps writing balanced and readable.</p>
+
+            <p class="book-subtitle">From Simple to More Complex Characters</p>
+            <p>Characters grow from simple forms to combinations of parts.</p>
+            <div class="book-example">
+              <p><strong>Simple (1-3 strokes)</strong></p>
+              <p><strong>一</strong> (jat1, one): one line</p>
+              <p><strong>人</strong> (jan4, person): two strokes like legs</p>
+              <p><strong>山</strong> (saan1, mountain): three peaks</p>
+            </div>
+            <div class="book-example">
+              <p><strong>Medium (4-8 strokes)</strong></p>
+              <p><strong>木</strong> (muk6, tree/wood): trunk and branches</p>
+              <p><strong>日</strong> (jat6, sun/day): enclosure + inner line</p>
+            </div>
+            <div class="book-example">
+              <p><strong>Complex (9+ strokes)</strong></p>
+              <p><strong>樹</strong> (syu6, tree): layered components around 木</p>
+              <p><strong>愛</strong> (oi3, love): heart-related center with added structure</p>
+              <p>Most daily characters are about 5-15 strokes for reading efficiency.</p>
+            </div>
+
+            <p class="book-subtitle">How to Analyze Characters (So They Feel Less Complex)</p>
+            <div class="book-example">
+              <p><strong>1) Spot the radical:</strong> meaning hint (e.g. 木 in wood-related words like 林).</p>
+              <p><strong>2) Count/order strokes:</strong> keeps shape correct (e.g. 明 = 日 left + 月 right).</p>
+              <p><strong>3) Check meaning + sound parts:</strong> many characters are semantic-phonetic (e.g. 河 = 水 + 可).</p>
+              <p><strong>4) Decompose actively:</strong> 媽 = 女 (female radical) + 馬 (sound hint).</p>
+            </div>
+            <p class="book-lead"><strong>Think of characters as puzzles, not drawings. Break them into parts and they become learnable fast.</strong></p>
           </div>
         </section>
         <section class="book-subpanel" id="book-culture">

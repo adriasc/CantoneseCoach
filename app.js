@@ -1793,6 +1793,7 @@ const state = {
   storyTab: "dialogs",
   bookTab: "grammar",
   bookToneTab: "tones",
+  bookWritingTab: "writing",
   searchTab: "standard",
   toneLabelMap: { a: "a", b: "b" },
   toneScore: { correct: 0, total: 0 },
@@ -1831,8 +1832,10 @@ const els = {
   bookTabs: [...document.querySelectorAll(".book-top-tabs .book-nav-btn")],
   bookPartTabs: [...document.querySelectorAll(".book-part-btn")],
   bookToneTabs: [...document.querySelectorAll(".book-tone-btn")],
+  bookWritingTabs: [...document.querySelectorAll(".book-writing-btn")],
   bookPanels: [...document.querySelectorAll(".book-subpanel")],
   bookTonePanels: [...document.querySelectorAll(".book-tone-panel")],
+  bookWritingPanels: [...document.querySelectorAll(".book-writing-panel")],
   storyOfDayLabel: byId("storyOfDayLabel"),
   storyOfDayMeta: byId("storyOfDayMeta"),
   storyOfDayLines: byId("storyOfDayLines"),
@@ -2346,6 +2349,13 @@ function bindUI() {
       const nextTab = String(tab.dataset.bookToneTab || "").trim();
       if (!nextTab) return;
       switchBookToneTab(nextTab);
+    });
+  });
+  els.bookWritingTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const nextTab = String(tab.dataset.bookWritingTab || "").trim();
+      if (!nextTab) return;
+      switchBookWritingTab(nextTab);
     });
   });
   els.searchTabs.forEach((tab) => {
@@ -3036,6 +3046,8 @@ function switchBookTab(tabName) {
   els.bookPanels.forEach((panel) => panel.classList.toggle("is-active", panel.id === panelId));
   if (safeName === "tones") {
     switchBookToneTab(state.bookToneTab || "tones");
+  } else if (safeName === "writing") {
+    switchBookWritingTab(state.bookWritingTab || "writing");
   }
 }
 
@@ -3047,6 +3059,16 @@ function switchBookToneTab(tabName) {
   state.bookToneTab = safeName;
   els.bookToneTabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.bookToneTab === safeName));
   els.bookTonePanels.forEach((panel) => panel.classList.toggle("is-active", panel.id === panelId));
+}
+
+function switchBookWritingTab(tabName) {
+  const safeName = String(tabName || "").trim() === "traditional" ? "traditional" : "writing";
+  const panelId = `book-writing-${safeName}`;
+  const hasPanel = els.bookWritingPanels.some((panel) => panel.id === panelId);
+  if (!hasPanel) return;
+  state.bookWritingTab = safeName;
+  els.bookWritingTabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.bookWritingTab === safeName));
+  els.bookWritingPanels.forEach((panel) => panel.classList.toggle("is-active", panel.id === panelId));
 }
 
 function switchSearchTab(tabName) {
