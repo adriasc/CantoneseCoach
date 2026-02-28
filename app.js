@@ -1824,6 +1824,7 @@ const els = {
   userPanelMsg: byId("userPanelMsg"),
   authStatus: byId("authStatus"),
   authMessage: byId("authMessage"),
+  authConfigHint: byId("authConfigHint"),
   authSignedOut: byId("authSignedOut"),
   authSignedIn: byId("authSignedIn"),
   authEmailInput: byId("authEmailInput"),
@@ -3982,6 +3983,7 @@ function renderAuthUI() {
   }
   if (els.authStatus) els.authStatus.textContent = statusMessage;
   if (els.authGateStatus) els.authGateStatus.textContent = statusMessage;
+  if (els.authConfigHint) els.authConfigHint.classList.toggle("hidden", hasClient);
   if (!hasClient) {
     setAuthFeedback("Supabase not configured. Add URL + anon key in supabase-config.js");
   }

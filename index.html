@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.75</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.76</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -322,9 +322,8 @@
         <p class="example auth-gate-lead">Log in or create an account to continue.</p>
         <p id="authGateStatus" class="example side-auth-status">Checking connection...</p>
         <p id="authGateMessage" class="example side-auth-message"></p>
-        <p id="authGateTitleLogin" class="auth-mode-title">Log In</p>
+        <p id="authGateTitleLogin" class="auth-mode-title">Log in by Email</p>
         <p id="authGateTitleSignup" class="auth-mode-title hidden">Create Account</p>
-        <p class="auth-method-label">Email</p>
         <div id="authGateSignedOut" class="side-auth-form auth-gate-form">
           <input id="authGateEmailInput" class="side-auth-input" type="email" placeholder="Email" autocomplete="email">
           <input id="authGatePasswordInput" class="side-auth-input" type="password" placeholder="Password" autocomplete="current-password">
@@ -351,7 +350,7 @@
         <div id="authGateSignedIn" class="hidden">
           <p id="authGateUserInfo" class="side-v">Signed in.</p>
         </div>
-        <p id="authGateVersion" class="auth-gate-version">v19.4.75</p>
+        <p id="authGateVersion" class="auth-gate-version">v19.4.76</p>
       </div>
     </div>
 
@@ -1361,9 +1360,8 @@
           <span class="side-k">Supabase Login</span>
           <p id="authStatus" class="example side-auth-status">Checking connection...</p>
           <p id="authMessage" class="example side-auth-message"></p>
-          <p id="authPanelTitleLogin" class="auth-mode-title">Log In</p>
+          <p id="authPanelTitleLogin" class="auth-mode-title">Log in by Email</p>
           <p id="authPanelTitleSignup" class="auth-mode-title hidden">Create Account</p>
-          <p class="auth-method-label">Email</p>
           <div id="authSignedOut" class="side-auth-form">
             <input id="authEmailInput" class="side-auth-input" type="email" placeholder="Email" autocomplete="email">
             <input id="authPasswordInput" class="side-auth-input" type="password" placeholder="Password" autocomplete="current-password">
@@ -1391,7 +1389,7 @@
             <button id="authSignOutBtn" class="side-action-btn side-action-soft side-inline-btn" type="button">Sign Out</button>
           </div>
           <p class="example side-auth-hint">Create Account rule: 6+ chars, 1 uppercase, 1 number.</p>
-          <p class="example side-auth-hint">Set project URL and anon key in <code>supabase-config.js</code>.</p>
+          <p id="authConfigHint" class="example side-auth-hint">Set project URL and anon key in <code>supabase-config.js</code>.</p>
         </div>
       </div>
       <div class="side-actions-stack">
