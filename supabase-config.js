@@ -1,6 +1,6 @@
 // Fill with your Supabase project values.
 // Keep anon key here for client-side auth (public key only).
 window.CANCOACH_SUPABASE = {
-  url: "",
-  anonKey: ""
+  url: "https://gxtciqptknnurmnibwdn.supabase.co",
+  anonKey: "sb_publishable_iW15eKUFOsfzj-60VkQcuw_UJItpOmA"
 };

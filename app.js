@@ -1829,6 +1829,7 @@ const els = {
   authPasswordInput: byId("authPasswordInput"),
   authSignInBtn: byId("authSignInBtn"),
   authSignUpBtn: byId("authSignUpBtn"),
+  authForgotBtn: byId("authForgotBtn"),
   authSignOutBtn: byId("authSignOutBtn"),
   authUserInfo: byId("authUserInfo"),
   userEmailValue: byId("userEmailValue"),
@@ -2291,12 +2292,27 @@ function bindUI() {
     });
   }
   if (els.changePasswordBtn && els.userPanelMsg) {
-    els.changePasswordBtn.addEventListener("click", () => {
+    els.changePasswordBtn.addEventListener("click", async () => {
       if (!state.auth.client || !state.auth.user) {
-        els.userPanelMsg.textContent = "Sign in first to reset password.";
+        els.userPanelMsg.textContent = "Sign in first, or use Forgot Password.";
         return;
       }
-      els.userPanelMsg.textContent = "Password reset flow can be added next (email reset link).";
+      const nextPassword = window.prompt("Enter new password (minimum 6 characters):", "");
+      if (!nextPassword) return;
+      if (nextPassword.length < 6) {
+        els.userPanelMsg.textContent = "Password too short. Use at least 6 characters.";
+        return;
+      }
+      setAuthBusy(true);
+      try {
+        const { error } = await state.auth.client.auth.updateUser({ password: nextPassword });
+        if (error) throw error;
+        els.userPanelMsg.textContent = "Password updated successfully.";
+      } catch (err) {
+        els.userPanelMsg.textContent = `Password update failed: ${err.message || "Unknown error"}`;
+      } finally {
+        setAuthBusy(false);
+      }
     });
   }
   if (els.logOutBtn && els.userPanelMsg) {
@@ -2317,6 +2333,11 @@ function bindUI() {
   if (els.authSignUpBtn) {
     els.authSignUpBtn.addEventListener("click", () => {
       handleAuthSignUp();
+    });
+  }
+  if (els.authForgotBtn) {
+    els.authForgotBtn.addEventListener("click", () => {
+      handleAuthForgotPassword();
     });
   }
   if (els.authSignOutBtn) {
@@ -3700,7 +3721,7 @@ function getSupabaseConfig() {
 
 function setAuthBusy(isBusy) {
   state.auth.busy = !!isBusy;
-  [els.authSignInBtn, els.authSignUpBtn, els.authSignOutBtn].forEach((btn) => {
+  [els.authSignInBtn, els.authSignUpBtn, els.authForgotBtn, els.authSignOutBtn].forEach((btn) => {
     if (btn) btn.disabled = !!isBusy;
   });
 }
@@ -3742,6 +3763,22 @@ function getAuthCredentials() {
   return { email, password };
 }
 
+function getAuthEmailOnly() {
+  const email = String(els.authEmailInput?.value || "").trim().toLowerCase();
+  if (!email) {
+    if (els.userPanelMsg) els.userPanelMsg.textContent = "Enter your email first.";
+    return "";
+  }
+  return email;
+}
+
+function buildPasswordResetRedirect() {
+  const cfg = window.CANCOACH_SUPABASE || {};
+  const custom = String(cfg.passwordResetRedirect || "").trim();
+  if (custom) return custom;
+  return `${window.location.origin}${window.location.pathname}`;
+}
+
 async function handleAuthSignIn() {
   if (!state.auth.client) {
     if (els.userPanelMsg) els.userPanelMsg.textContent = "Supabase not configured yet.";
@@ -3779,6 +3816,28 @@ async function handleAuthSignUp() {
     }
   } catch (err) {
     if (els.userPanelMsg) els.userPanelMsg.textContent = `Sign up failed: ${err.message || "Unknown error"}`;
+  } finally {
+    setAuthBusy(false);
+  }
+}
+
+async function handleAuthForgotPassword() {
+  if (!state.auth.client) {
+    if (els.userPanelMsg) els.userPanelMsg.textContent = "Supabase not configured yet.";
+    return;
+  }
+  const email = getAuthEmailOnly();
+  if (!email) return;
+  setAuthBusy(true);
+  try {
+    const redirectTo = buildPasswordResetRedirect();
+    const { error } = await state.auth.client.auth.resetPasswordForEmail(email, { redirectTo });
+    if (error) throw error;
+    if (els.userPanelMsg) {
+      els.userPanelMsg.textContent = "Password reset email sent. Check inbox/spam.";
+    }
+  } catch (err) {
+    if (els.userPanelMsg) els.userPanelMsg.textContent = `Reset email failed: ${err.message || "Unknown error"}`;
   } finally {
     setAuthBusy(false);
   }
@@ -3831,6 +3890,9 @@ async function initSupabaseAuth() {
     state.auth.client.auth.onAuthStateChange((_event, session) => {
       state.auth.user = session?.user || null;
       state.auth.ready = true;
+      if (_event === "PASSWORD_RECOVERY" && els.userPanelMsg) {
+        els.userPanelMsg.textContent = "Recovery link opened. Set a new password with Reset/Change.";
+      }
       renderAuthUI();
     });
   } catch (err) {
