@@ -1825,7 +1825,8 @@ const els = {
   infoModalBody: byId("infoModalBody"),
   storyTabs: [...document.querySelectorAll(".stories-nav-btn")],
   storyPanels: [...document.querySelectorAll(".stories-subpanel")],
-  bookTabs: [...document.querySelectorAll(".book-nav-btn")],
+  bookTabs: [...document.querySelectorAll(".book-top-tabs .book-nav-btn")],
+  bookPartTabs: [...document.querySelectorAll(".book-part-btn")],
   bookPanels: [...document.querySelectorAll(".book-subpanel")],
   storyOfDayLabel: byId("storyOfDayLabel"),
   storyOfDayMeta: byId("storyOfDayMeta"),
@@ -2292,6 +2293,13 @@ function bindUI() {
     });
   });
   els.bookTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const nextTab = String(tab.dataset.bookTab || "").trim();
+      if (!nextTab) return;
+      switchBookTab(nextTab);
+    });
+  });
+  els.bookPartTabs.forEach((tab) => {
     tab.addEventListener("click", () => {
       const nextTab = String(tab.dataset.bookTab || "").trim();
       if (!nextTab) return;
@@ -2964,7 +2972,9 @@ function switchBookTab(tabName) {
   const hasPanel = els.bookPanels.some((panel) => panel.id === panelId);
   if (!hasPanel) return;
   state.bookTab = safeName;
-  els.bookTabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.bookTab === safeName));
+  const topActive = safeName === "grammar2" ? "grammar" : safeName;
+  els.bookTabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.bookTab === topActive));
+  els.bookPartTabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.bookTab === safeName));
   els.bookPanels.forEach((panel) => panel.classList.toggle("is-active", panel.id === panelId));
 }
 

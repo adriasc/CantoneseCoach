@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.51</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.52</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -106,10 +106,7 @@
     </nav>
 
     <nav class="book-top-tabs" aria-label="Book sections">
-      <div class="book-nav-group" role="group" aria-label="Grammar pages">
-        <button class="tab book-nav-btn book-nav-btn-grammar is-active" type="button" data-book-tab="grammar">Grammar 1</button>
-        <button class="tab book-nav-btn book-nav-btn-mini" type="button" data-book-tab="grammar2">2</button>
-      </div>
+      <button class="tab book-nav-btn is-active" type="button" data-book-tab="grammar">Grammar</button>
       <button class="tab book-nav-btn" type="button" data-book-tab="tones">Tones</button>
       <button class="tab book-nav-btn" type="button" data-book-tab="writing">Writing</button>
       <button class="tab book-nav-btn" type="button" data-book-tab="culture">Culture</button>
@@ -611,6 +608,10 @@
         <p class="stories-intro">Reference area for grammar, tones, writing, and culture notes.</p>
         <section class="book-subpanel is-active" id="book-grammar">
           <p class="formula">Grammar Adventure</p>
+          <div class="book-part-switch" role="group" aria-label="Grammar lessons">
+            <button class="book-part-btn is-active" type="button" data-book-tab="grammar">Part 1</button>
+            <button class="book-part-btn" type="button" data-book-tab="grammar2">Part 2</button>
+          </div>
           <div class="book-lesson">
             <p class="book-lead"><strong>你好！(Néih hóu!)</strong></p>
             <p>Close your eyes for a second and picture this.</p>
@@ -677,6 +678,10 @@
         </section>
         <section class="book-subpanel" id="book-grammar2">
           <p class="formula">Grammar 2</p>
+          <div class="book-part-switch" role="group" aria-label="Grammar lessons">
+            <button class="book-part-btn" type="button" data-book-tab="grammar">Part 1</button>
+            <button class="book-part-btn is-active" type="button" data-book-tab="grammar2">Part 2</button>
+          </div>
           <div class="book-lesson">
             <p class="book-lead"><strong>Real table talk: yum cha sentence building</strong></p>
             <p>Imagine you are at a noisy yum cha spot in the morning. Your friend just sat down, and you want to say:</p>
