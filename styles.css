@@ -572,6 +572,19 @@ body.settings-mode .tabs {
   font-size: 0.95rem;
 }
 
+.book-nav-btn-grammar {
+  font-size: 0.9rem;
+}
+
+.book-nav-btn-mini {
+  width: 54px;
+  min-width: 54px;
+  justify-self: start;
+  padding-left: 0;
+  padding-right: 0;
+  font-weight: 800;
+}
+
 .stories-subpanel {
   display: none;
   background: color-mix(in srgb, #fff 82%, var(--soft));
@@ -2395,6 +2408,11 @@ input[type="file"] {
 
   .book-top-tabs {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .book-nav-btn-mini {
+    width: 48px;
+    min-width: 48px;
   }
 }
 
