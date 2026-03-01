@@ -388,9 +388,15 @@ h1 {
   box-shadow: 0 7px 14px rgba(184, 71, 92, 0.28);
 }
 
-.bottom-nav-btn.utility-btn {
+.bottom-nav-btn.utility-btn:not(.is-active) {
   background: rgba(255, 255, 255, 0.6);
   border-color: rgba(103, 126, 152, 0.2);
+}
+
+.bottom-nav-btn.utility-btn.is-active {
+  background: linear-gradient(160deg, #ff8f63 0%, #ff646f 48%, #ff4f85 100%);
+  border-color: rgba(233, 108, 111, 0.62);
+  color: #fff;
 }
 
 .bottom-nav-icon {
