@@ -3924,7 +3924,10 @@ function showAuthGate() {
   document.body.classList.add("auth-gate-open");
   if (els.bottomNav) els.bottomNav.classList.add("hidden");
   openModalAnimated(els.authGateModal);
-  window.setTimeout(blurAuthInputs, 60);
+  window.setTimeout(() => {
+    blurAuthInputs();
+    try { els.closeAuthGate?.focus?.({ preventScroll: true }); } catch {}
+  }, 120);
 }
 
 function hideAuthGate() {
@@ -4017,6 +4020,8 @@ function renderAuthUI() {
   if (els.authConfigHint) els.authConfigHint.classList.toggle("hidden", hasClient);
   if (!hasClient) {
     setAuthFeedback("Supabase not configured. Add URL + anon key in supabase-config.js");
+  } else if (/supabase not configured/i.test(String(els.authMessage?.textContent || ""))) {
+    setAuthFeedback("");
   }
   setAuthFormMode(state.auth.mode || "login");
   if (shouldRequireAuthGate()) showAuthGate();
