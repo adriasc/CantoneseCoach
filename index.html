@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.90</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.91</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -1281,7 +1281,7 @@
   </main>
 
   <nav id="bottomNav" class="bottom-nav hidden" aria-label="Basic navigation">
-    <button id="openUserPanel" class="bottom-nav-btn utility-btn" type="button" aria-label="Open profile and login settings">
+    <button class="bottom-nav-btn utility-btn" type="button" data-bottom-tab="user" data-bottom-group="user" aria-label="Open profile and login settings">
       <span class="bottom-nav-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true">
           <circle cx="12" cy="8" r="3.2"></circle>
@@ -1345,12 +1345,10 @@
     </button>
   </nav>
 
-  <div id="userPanel" class="side-panel hidden" aria-hidden="true">
-    <button id="closeUserPanelBackdrop" class="side-panel-backdrop" type="button" aria-label="Close user panel"></button>
-    <aside class="side-panel-drawer" role="dialog" aria-label="User panel">
+  <section class="panel" id="panel-user">
+    <div class="card user-page-card">
       <div class="card-head">
         <h2>Your Space</h2>
-        <button id="closeUserPanel" class="ghost-btn" type="button">✕</button>
       </div>
       <div class="side-profile-head">
         <div class="side-avatar-circle" aria-hidden="true">
@@ -1456,8 +1454,8 @@
         <button id="clearCacheBtn" class="side-action-btn side-action-soft" type="button">Clear Cache</button>
       </div>
       <p id="userPanelMsg" class="example side-msg"></p>
-    </aside>
-  </div>
+    </div>
+  </section>
 
   <div id="fxLayer" class="fx-layer" aria-hidden="true"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

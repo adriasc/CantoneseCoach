@@ -917,6 +917,11 @@ body.book-mode .book-top-tabs {
   transform: translateX(-106%);
 }
 
+.user-page-card {
+  display: grid;
+  gap: 10px;
+}
+
 .side-simple-list {
   display: grid;
   gap: 8px;

@@ -3289,9 +3289,6 @@ function switchTab(tabName) {
   const targetPanelId = `panel-${tabName}`;
   const panelExists = els.panels.some((panel) => panel.id === targetPanelId);
   if (!panelExists) return;
-  if (els.userPanel && !els.userPanel.classList.contains("hidden")) {
-    closeUserSidePanel(160);
-  }
   els.tabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.tab === tabName));
   syncBottomTabState(tabName);
   els.panels.forEach((panel) => panel.classList.toggle("is-active", panel.id === targetPanelId));
@@ -3319,6 +3316,9 @@ function switchTab(tabName) {
       }, 0);
     }
   }
+  if (tabName === "user") {
+    renderUserPanel();
+  }
   if (tabName === "patterns" && state.currentSentence) {
     renderPatternSentence();
   }
@@ -3330,6 +3330,7 @@ function switchTab(tabName) {
 
 function syncBottomTabState(tabName) {
   let activeGroup = "learn";
+  if (tabName === "user") activeGroup = "user";
   if (tabName === "book") activeGroup = "book";
   if (tabName === "stories") activeGroup = "stories";
   if (tabName === "search") activeGroup = "search";
