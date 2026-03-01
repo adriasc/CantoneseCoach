@@ -2284,7 +2284,8 @@ function initializeApp() {
   applyTheme(state.prefs.uiTheme || "classic");
   setControlsCollapsed(!!state.prefs.controlsCollapsed);
   applyVisibilityPrefs();
-  setControlsMode("words");
+  const initialTab = getActiveMainTab();
+  switchTab(initialTab);
   rollWord();
   rollPattern();
   rollQuiz();
@@ -2301,6 +2302,9 @@ function initializeApp() {
   registerServiceWorker();
   initSoftLayoutTransitions();
   maybeShowAnalyticsConsentModal();
+  window.addEventListener("pageshow", () => {
+    switchTab(getActiveMainTab());
+  });
   setTimeout(() => {
     try {
       refreshLexiconCoverage();
@@ -3296,6 +3300,7 @@ function switchTab(tabName) {
   document.body.classList.toggle("book-mode", tabName === "book");
   document.body.classList.toggle("search-mode", tabName === "search");
   document.body.classList.toggle("settings-mode", tabName === "settings");
+  document.body.classList.toggle("user-mode", tabName === "user");
   setControlsMode(tabName);
   if (tabName !== "stories") {
     stopMiniStoryPlayback();
@@ -3328,6 +3333,15 @@ function switchTab(tabName) {
   }
 }
 
+function getActiveMainTab() {
+  const activePanel = els.panels.find((panel) => panel.classList.contains("is-active"));
+  if (activePanel && activePanel.id && activePanel.id.startsWith("panel-")) {
+    return activePanel.id.replace(/^panel-/, "") || "words";
+  }
+  const activeTopTab = els.tabs.find((tab) => tab.dataset.tab && tab.classList.contains("is-active"));
+  return activeTopTab?.dataset?.tab || "words";
+}
+
 function syncBottomTabState(tabName) {
   let activeGroup = "learn";
   if (tabName === "user") activeGroup = "user";
@@ -3351,7 +3365,7 @@ function configureBottomMenu() {
   if (els.bottomNav) {
     els.bottomNav.classList.toggle("hidden", !enabled || !!state.auth.gateOpen);
   }
-  syncBottomTabState("words");
+  syncBottomTabState(getActiveMainTab());
 }
 
 function switchStoryTab(tabName) {
@@ -4720,7 +4734,7 @@ function showInfoModal(kind) {
 }
 
 function setControlsMode(tabName) {
-  const hideControls = tabName === "stories" || tabName === "book" || tabName === "search" || tabName === "settings";
+  const hideControls = tabName === "stories" || tabName === "book" || tabName === "search" || tabName === "settings" || tabName === "user";
   if (els.controlsCard) {
     els.controlsCard.classList.toggle("hidden", hideControls);
   }
