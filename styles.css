@@ -925,21 +925,42 @@ body.user-mode .tabs {
   color: #5d728b;
 }
 
-.match3-legend {
-  display: flex;
-  flex-wrap: wrap;
+.match3-live-word {
+  margin: 0;
+  opacity: 0;
+  transform: translateY(-5px);
+  pointer-events: none;
+}
+
+.match3-live-word.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  animation: match3Flash 1.8s ease;
+}
+
+.match3-quiz {
+  border: 1px solid rgba(255, 127, 84, 0.45);
+  background: linear-gradient(160deg, #fff9f2 0%, #ffe8d9 100%);
+  border-radius: 12px;
+  padding: 9px;
+  display: grid;
   gap: 6px;
 }
 
-.match3-legend-item {
+.match3-quiz-title {
   margin: 0;
-  padding: 3px 8px;
-  border-radius: 999px;
-  border: 1px solid rgba(115, 143, 177, 0.3);
-  background: rgba(237, 245, 255, 0.85);
-  color: #2b4a6f;
-  font-size: 0.76rem;
-  font-weight: 700;
+  color: #994b26;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.match3-quiz-hanzi {
+  margin: 0;
+  text-align: center;
+  font-family: "PingFang TC", "Hiragino Sans GB", serif;
+  font-size: clamp(2.1rem, 7.4vw, 2.8rem);
+  line-height: 1.1;
+  color: #2f4a6f;
 }
 
 .match3-board {
@@ -960,6 +981,12 @@ body.user-mode .tabs {
   font-weight: 700;
   box-shadow: 0 3px 6px rgba(24, 49, 82, 0.14);
   padding: 0;
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+}
+
+.match3-tile:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 10px rgba(24, 49, 82, 0.2);
 }
 
 .match3-tile.is-selected {
@@ -972,6 +999,7 @@ body.user-mode .tabs {
   border-color: #ff4d7f;
   background: linear-gradient(180deg, #fff1f6 0%, #ffd9e9 100%);
   color: #8f274b;
+  animation: match3Clear 190ms ease-in forwards;
 }
 
 .mini-speed-choices {
@@ -982,6 +1010,36 @@ body.user-mode .tabs {
   text-align: center;
   font-size: 1.42rem;
   font-family: "PingFang TC", "Hiragino Sans GB", serif;
+}
+
+@keyframes match3Clear {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.6);
+    opacity: 0.2;
+  }
+}
+
+@keyframes match3Flash {
+  0% {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.98);
+  }
+  16% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  82% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.98);
+  }
 }
 
 body.stories-mode .stories-top-tabs {

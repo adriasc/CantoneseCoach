@@ -1949,12 +1949,16 @@ const els = {
   miniGameTabs: [...document.querySelectorAll(".mini-game-tab")],
   miniGamePanels: [...document.querySelectorAll(".mini-game-panel")],
   match3Board: byId("match3Board"),
-  match3Legend: byId("match3Legend"),
   match3Start: byId("match3Start"),
   match3Shuffle: byId("match3Shuffle"),
   match3Score: byId("match3Score"),
   match3Best: byId("match3Best"),
   match3Moves: byId("match3Moves"),
+  match3LiveWord: byId("match3LiveWord"),
+  match3Quiz: byId("match3Quiz"),
+  match3QuizHanzi: byId("match3QuizHanzi"),
+  match3QuizChoices: byId("match3QuizChoices"),
+  match3QuizFeedback: byId("match3QuizFeedback"),
   match3Status: byId("match3Status"),
   speedStart: byId("speedStart"),
   speedTimer: byId("speedTimer"),
@@ -2179,8 +2183,12 @@ const match3Runtime = {
   clearing: null,
   score: 0,
   moves: 0,
+  matchedSinceQuiz: 0,
   best: Number(loadJson(STORAGE_KEYS.match3Best, 0)) || 0,
-  locked: false
+  locked: false,
+  ended: false,
+  quizActive: false,
+  quizQuestion: null
 };
 const speedRuntime = {
   running: false,
@@ -2192,6 +2200,8 @@ const speedRuntime = {
   locked: false
 };
 let speedRoundTimer = null;
+let match3FlashTimer = null;
+let miniGameAudioCtx = null;
 
 function invalidateTokenizerVocabularyCache() {
   tokenizerVocabularyCache = null;
@@ -2919,6 +2929,15 @@ function bindUI() {
       handleMatch3TileClick(row, col);
     });
   }
+  if (els.match3QuizChoices) {
+    els.match3QuizChoices.addEventListener("click", (event) => {
+      const btn = event.target?.closest?.("[data-match3-meaning]");
+      if (!btn) return;
+      const choice = String(btn.dataset.match3Meaning || "").trim();
+      if (!choice) return;
+      handleMatch3QuizChoice(choice, btn);
+    });
+  }
   if (els.speedStart) {
     els.speedStart.addEventListener("click", () => {
       startSpeedGame();
@@ -3574,6 +3593,60 @@ function switchMiniGameTab(tabName) {
   els.miniGamePanels.forEach((panel) => panel.classList.toggle("is-active", panel.id === `mini-game-${safeName}`));
 }
 
+function getMiniGameAudioCtx() {
+  if (typeof window === "undefined") return null;
+  if (miniGameAudioCtx) return miniGameAudioCtx;
+  const AudioCtor = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtor) return null;
+  try {
+    miniGameAudioCtx = new AudioCtor();
+    return miniGameAudioCtx;
+  } catch {
+    return null;
+  }
+}
+
+function playMiniGameSfx(kind = "tap") {
+  const ctx = getMiniGameAudioCtx();
+  if (!ctx) return;
+  if (ctx.state === "suspended") {
+    ctx.resume().catch(() => {});
+  }
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  let freq = 460;
+  let endFreq = 430;
+  let duration = 0.09;
+  let type = "triangle";
+  let peak = 0.038;
+
+  if (kind === "swap") {
+    freq = 520; endFreq = 620; duration = 0.08; type = "sine"; peak = 0.032;
+  } else if (kind === "clear") {
+    freq = 760; endFreq = 980; duration = 0.12; type = "triangle"; peak = 0.04;
+  } else if (kind === "bad") {
+    freq = 220; endFreq = 170; duration = 0.11; type = "sawtooth"; peak = 0.03;
+  } else if (kind === "quiz") {
+    freq = 600; endFreq = 660; duration = 0.1; type = "square"; peak = 0.026;
+  } else if (kind === "ok") {
+    freq = 680; endFreq = 840; duration = 0.11; type = "triangle"; peak = 0.035;
+  } else if (kind === "end") {
+    freq = 330; endFreq = 210; duration = 0.2; type = "sine"; peak = 0.03;
+  }
+
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, now);
+  osc.frequency.linearRampToValueAtTime(endFreq, now + duration);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(peak, now + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(now);
+  osc.stop(now + duration + 0.02);
+}
+
 function getMiniGameWordPool(options = {}) {
   const maxChars = Number(options.maxChars) || 0;
   const minEnglish = options.minEnglish !== false;
@@ -3625,6 +3698,62 @@ function ensureMatch3Symbols() {
   match3Runtime.meanings = Object.create(null);
   picked.forEach((item) => {
     match3Runtime.meanings[normalizeHanzi(item.hanzi)] = item.english;
+  });
+}
+
+function match3MeaningForSymbol(symbol) {
+  const key = normalizeHanzi(symbol);
+  const direct = String(match3Runtime.meanings[key] || "").trim();
+  if (direct) return direct;
+  const fallback = String(meaningForWord(symbol, "word") || "").trim();
+  return fallback || "meaning";
+}
+
+function clearMatch3LiveWord() {
+  if (!els.match3LiveWord) return;
+  if (match3FlashTimer) {
+    clearTimeout(match3FlashTimer);
+    match3FlashTimer = null;
+  }
+  els.match3LiveWord.classList.remove("is-visible");
+}
+
+function showMatch3MeaningFlash(symbol, clearedCount = 0) {
+  if (!els.match3LiveWord || !symbol) return;
+  clearMatch3LiveWord();
+  const meaning = match3MeaningForSymbol(symbol);
+  const bonus = clearedCount > 0 ? ` (+${clearedCount})` : "";
+  els.match3LiveWord.textContent = `${symbol} = ${meaning}${bonus}`;
+  // Restart CSS animation reliably.
+  void els.match3LiveWord.offsetWidth;
+  els.match3LiveWord.classList.add("is-visible");
+  match3FlashTimer = setTimeout(() => {
+    els.match3LiveWord?.classList.remove("is-visible");
+    match3FlashTimer = null;
+  }, 1800);
+}
+
+function hideMatch3Quiz() {
+  if (els.match3Quiz) els.match3Quiz.classList.add("hidden");
+  if (els.match3QuizChoices) els.match3QuizChoices.innerHTML = "";
+  if (els.match3QuizFeedback) els.match3QuizFeedback.textContent = "";
+  match3Runtime.quizQuestion = null;
+  match3Runtime.quizActive = false;
+}
+
+function renderMatch3Quiz(question) {
+  if (!els.match3Quiz || !els.match3QuizChoices || !els.match3QuizHanzi) return;
+  els.match3Quiz.classList.remove("hidden");
+  els.match3QuizHanzi.textContent = question.hanzi;
+  if (els.match3QuizFeedback) els.match3QuizFeedback.textContent = "";
+  els.match3QuizChoices.innerHTML = "";
+  question.options.forEach((meaning) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "choice";
+    btn.dataset.match3Meaning = meaning;
+    btn.textContent = meaning;
+    els.match3QuizChoices.appendChild(btn);
   });
 }
 
@@ -3718,20 +3847,6 @@ function collapseMatch3Board(board) {
   }
 }
 
-function renderMatch3Legend() {
-  if (!els.match3Legend) return;
-  if (!match3Runtime.symbols.length) {
-    els.match3Legend.innerHTML = "";
-    return;
-  }
-  const html = match3Runtime.symbols.map((symbol) => {
-    const key = normalizeHanzi(symbol);
-    const meaning = String(match3Runtime.meanings[key] || "meaning").trim();
-    return `<p class="match3-legend-item">${escapeHtml(symbol)} = ${escapeHtml(meaning)}</p>`;
-  }).join("");
-  els.match3Legend.innerHTML = html;
-}
-
 function renderMatch3Stats() {
   if (els.match3Score) els.match3Score.textContent = `Score: ${match3Runtime.score}`;
   if (els.match3Best) els.match3Best.textContent = `Best: ${match3Runtime.best}`;
@@ -3761,10 +3876,7 @@ function renderMatch3Board() {
         btn.classList.add("is-clearing");
       }
       btn.textContent = symbol || " ";
-      const meaningKey = normalizeHanzi(symbol);
-      if (match3Runtime.meanings[meaningKey]) {
-        btn.title = `${symbol} = ${match3Runtime.meanings[meaningKey]}`;
-      }
+      if (symbol) btn.title = `${symbol} = ${match3MeaningForSymbol(symbol)}`;
       els.match3Board.appendChild(btn);
     }
   }
@@ -3772,6 +3884,19 @@ function renderMatch3Board() {
 
 function setMatch3Status(message) {
   if (els.match3Status) els.match3Status.textContent = message;
+}
+
+function endMatch3Round(message) {
+  match3Runtime.ended = true;
+  match3Runtime.locked = true;
+  match3Runtime.selected = null;
+  match3Runtime.quizActive = false;
+  match3Runtime.quizQuestion = null;
+  renderMatch3Board();
+  hideMatch3Quiz();
+  clearMatch3LiveWord();
+  setMatch3Status(message || "No possible matches. End of round. Press New Board.");
+  playMiniGameSfx("end");
 }
 
 function isAdjacentCells(a, b) {
@@ -3823,6 +3948,50 @@ function updateMatch3Best() {
   storeMatch3Best();
 }
 
+function buildMatch3MeaningQuiz() {
+  const symbolsOnBoard = [];
+  for (let row = 0; row < MATCH3_ROWS; row += 1) {
+    for (let col = 0; col < MATCH3_COLS; col += 1) {
+      const symbol = String(match3Runtime.board?.[row]?.[col] || "").trim();
+      if (!symbol) continue;
+      const key = normalizeHanzi(symbol);
+      if (!symbolsOnBoard.some((item) => item.key === key)) {
+        symbolsOnBoard.push({ key, hanzi: symbol, meaning: match3MeaningForSymbol(symbol) });
+      }
+    }
+  }
+  if (!symbolsOnBoard.length) return null;
+  const target = symbolsOnBoard[randomInt(symbolsOnBoard.length)];
+  if (!target || !target.meaning) return null;
+
+  const distractorPool = getMiniGameWordPool({ maxChars: 6, minEnglish: true })
+    .map((w) => String(w.english || "").trim())
+    .filter((m) => m && m !== target.meaning);
+  const uniqueDistractors = [...new Set(distractorPool)];
+  if (uniqueDistractors.length < 2) return null;
+  const options = shuffle([target.meaning, ...shuffle(uniqueDistractors).slice(0, 2)]);
+  return {
+    hanzi: target.hanzi,
+    correctMeaning: target.meaning,
+    options
+  };
+}
+
+function maybeOpenMatch3Quiz() {
+  if (match3Runtime.quizActive || match3Runtime.ended) return false;
+  if (match3Runtime.matchedSinceQuiz < 3) return false;
+  const question = buildMatch3MeaningQuiz();
+  match3Runtime.matchedSinceQuiz = 0;
+  if (!question) return false;
+  match3Runtime.quizQuestion = question;
+  match3Runtime.quizActive = true;
+  match3Runtime.locked = true;
+  renderMatch3Quiz(question);
+  setMatch3Status("Meaning check: pick the correct meaning to continue.");
+  playMiniGameSfx("quiz");
+  return true;
+}
+
 function startMatch3Game() {
   ensureMatch3Symbols();
   match3Runtime.board = createPlayableMatch3Board();
@@ -3830,36 +3999,55 @@ function startMatch3Game() {
   match3Runtime.clearing = null;
   match3Runtime.score = 0;
   match3Runtime.moves = 0;
+  match3Runtime.matchedSinceQuiz = 0;
   match3Runtime.locked = false;
-  renderMatch3Legend();
+  match3Runtime.ended = false;
+  match3Runtime.quizActive = false;
+  match3Runtime.quizQuestion = null;
+  hideMatch3Quiz();
+  clearMatch3LiveWord();
   renderMatch3Stats();
   renderMatch3Board();
   setMatch3Status("Swap 2 neighboring tiles and match 3+ same Hanzi.");
+  playMiniGameSfx("swap");
 }
 
 function shuffleMatch3Board() {
+  if (match3Runtime.ended) {
+    setMatch3Status("Round already ended. Start a New Board.");
+    playMiniGameSfx("bad");
+    return;
+  }
   if (match3Runtime.locked) return;
   ensureMatch3Symbols();
   match3Runtime.board = createPlayableMatch3Board();
   match3Runtime.selected = null;
   match3Runtime.clearing = null;
-  renderMatch3Legend();
+  clearMatch3LiveWord();
   renderMatch3Board();
   setMatch3Status("Board shuffled.");
+  playMiniGameSfx("swap");
 }
 
 function handleMatch3TileClick(row, col) {
+  if (match3Runtime.ended) {
+    setMatch3Status("Round ended. Press New Board to play again.");
+    playMiniGameSfx("bad");
+    return;
+  }
   if (match3Runtime.locked) return;
   if (!match3Runtime.board?.[row]?.[col]) return;
   const next = { row, col };
   const current = match3Runtime.selected;
   if (!current) {
     match3Runtime.selected = next;
+    playMiniGameSfx("tap");
     renderMatch3Board();
     return;
   }
   if (current.row === row && current.col === col) {
     match3Runtime.selected = null;
+    playMiniGameSfx("tap");
     renderMatch3Board();
     return;
   }
@@ -3873,10 +4061,11 @@ function handleMatch3TileClick(row, col) {
 }
 
 async function attemptMatch3Swap(a, b) {
-  if (match3Runtime.locked) return;
+  if (match3Runtime.locked || match3Runtime.ended || match3Runtime.quizActive) return;
   match3Runtime.locked = true;
   match3Runtime.selected = null;
   swapMatch3Cells(a, b);
+  playMiniGameSfx("swap");
   renderMatch3Board();
   await waitMiniGame(110);
   const hasMatch = findMatch3Matches(match3Runtime.board).size > 0;
@@ -3884,30 +4073,48 @@ async function attemptMatch3Swap(a, b) {
     swapMatch3Cells(a, b);
     renderMatch3Board();
     setMatch3Status("No match from that swap. Try another move.");
+    playMiniGameSfx("bad");
     match3Runtime.locked = false;
     return;
   }
 
   match3Runtime.moves += 1;
-  await resolveMatch3Board();
-  if (!hasAnyMatch3Move(match3Runtime.board)) {
-    match3Runtime.board = createPlayableMatch3Board();
-    setMatch3Status("No more moves. New board generated.");
-    renderMatch3Board();
+  const summary = await resolveMatch3Board();
+  if (summary.removedTotal > 0) {
+    match3Runtime.matchedSinceQuiz += 1;
   }
+  if (!hasAnyMatch3Move(match3Runtime.board)) {
+    endMatch3Round("No possible matches. End of round. Press New Board.");
+    return;
+  }
+  const openedQuiz = maybeOpenMatch3Quiz();
   renderMatch3Stats();
-  match3Runtime.locked = false;
+  if (!openedQuiz) {
+    match3Runtime.locked = false;
+  }
 }
 
 async function resolveMatch3Board() {
   let cascades = 0;
   let removedTotal = 0;
+  let flashSymbol = "";
   while (true) {
     const matches = findMatch3Matches(match3Runtime.board);
     if (!matches.size) break;
     cascades += 1;
     removedTotal += matches.size;
+    const matchedSymbols = [];
+    matches.forEach((key) => {
+      const [row, col] = key.split(":").map((v) => Number(v));
+      const symbol = match3Runtime.board?.[row]?.[col];
+      if (symbol) matchedSymbols.push(symbol);
+    });
+    if (matchedSymbols.length) {
+      flashSymbol = matchedSymbols[randomInt(matchedSymbols.length)] || flashSymbol;
+      showMatch3MeaningFlash(flashSymbol, matches.size);
+    }
     match3Runtime.clearing = matches;
+    playMiniGameSfx("clear");
     renderMatch3Board();
     await waitMiniGame(120);
     matches.forEach((key) => {
@@ -3928,6 +4135,39 @@ async function resolveMatch3Board() {
   if (removedTotal > 0) {
     setMatch3Status(`Nice: cleared ${removedTotal} tiles in ${cascades} cascade${cascades > 1 ? "s" : ""}.`);
   }
+  return { removedTotal, cascades, flashSymbol };
+}
+
+function handleMatch3QuizChoice(choiceMeaning, clickedBtn) {
+  if (!match3Runtime.quizActive || !match3Runtime.quizQuestion) return;
+  const question = match3Runtime.quizQuestion;
+  const isCorrect = String(choiceMeaning || "").trim() === String(question.correctMeaning || "").trim();
+  const buttons = els.match3QuizChoices ? [...els.match3QuizChoices.querySelectorAll("button")] : [];
+  buttons.forEach((btn) => {
+    btn.disabled = true;
+    const option = String(btn.dataset.match3Meaning || "").trim();
+    if (option === question.correctMeaning) btn.classList.add("is-correct");
+  });
+  if (!isCorrect && clickedBtn) clickedBtn.classList.add("is-wrong");
+
+  if (isCorrect) {
+    if (els.match3QuizFeedback) els.match3QuizFeedback.textContent = "Correct. Keep going.";
+    setMatch3Status("Correct meaning. Continue matching.");
+    playMiniGameSfx("ok");
+  } else {
+    match3Runtime.score = Math.max(0, match3Runtime.score - 20);
+    renderMatch3Stats();
+    if (els.match3QuizFeedback) els.match3QuizFeedback.textContent = "Wrong: -20 points.";
+    setMatch3Status(`Wrong meaning. -20 points. Correct: ${question.correctMeaning}.`);
+    playMiniGameSfx("bad");
+  }
+
+  setTimeout(() => {
+    hideMatch3Quiz();
+    if (!match3Runtime.ended) {
+      match3Runtime.locked = false;
+    }
+  }, 700);
 }
 
 function stopSpeedTimer() {
@@ -3985,6 +4225,7 @@ function updateSpeedBest() {
 
 function startSpeedGame() {
   stopSpeedTimer();
+  playMiniGameSfx("swap");
   speedRuntime.running = true;
   speedRuntime.score = 0;
   speedRuntime.total = 0;
@@ -4001,6 +4242,7 @@ function startSpeedGame() {
       stopSpeedGame(true);
       return;
     }
+    if (speedRuntime.timeLeft <= 5) playMiniGameSfx("tap");
     renderSpeedStats();
   }, 1000);
 }
@@ -4016,6 +4258,7 @@ function stopSpeedGame(showSummary = true) {
     if (els.speedFeedback) {
       els.speedFeedback.textContent = `Final score: ${speedRuntime.score} / ${speedRuntime.total}.`;
     }
+    playMiniGameSfx("end");
   }
   if (els.speedOptions) {
     [...els.speedOptions.querySelectorAll("button")].forEach((btn) => {
@@ -4064,8 +4307,10 @@ function handleSpeedChoice(choice, clickedBtn) {
     speedRuntime.score += 1;
     incrementMission("hanzi", 1);
     if (els.speedFeedback) els.speedFeedback.textContent = "Correct.";
+    playMiniGameSfx("ok");
   } else if (els.speedFeedback) {
     els.speedFeedback.textContent = `Wrong. Correct: ${correctHanzi} (${speedRuntime.current.correct.english}).`;
+    playMiniGameSfx("bad");
   }
   updateSpeedBest();
   renderSpeedStats();
