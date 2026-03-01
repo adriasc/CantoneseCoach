@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.81</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.82</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -327,6 +327,7 @@
         <div id="authGateSignedOut" class="side-auth-form auth-gate-form">
           <input id="authGateEmailInput" class="side-auth-input" type="email" placeholder="Email" autocomplete="email">
           <input id="authGatePasswordInput" class="side-auth-input" type="password" placeholder="Password" autocomplete="current-password">
+          <p id="authGatePasswordRule" class="example side-auth-hint hidden">Password: 6+ chars, 1 uppercase, 1 number.</p>
           <div id="authGateLoginHelp" class="auth-login-help">
             <p class="example side-auth-hint">Forgot password? Tap Reset.</p>
             <button id="authGateForgotBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Reset Password</button>
@@ -340,8 +341,7 @@
           </div>
           <div id="authGateSignupView" class="auth-mode-view hidden">
             <button id="authGateSignUpBtn" class="side-action-btn side-inline-btn auth-alt-btn" type="button">Create Account</button>
-            <button id="authGateResendBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Resend Confirmation Email</button>
-            <p class="example side-auth-hint">Create Account rule: 6+ chars, 1 uppercase, 1 number.</p>
+            <button id="authGateResendBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn hidden" type="button">Resend Confirmation Email</button>
             <p class="example side-auth-hint">If email confirmation is enabled in Supabase, check inbox/spam after Create Account.</p>
             <p class="auth-flow-cta">Already have an account?</p>
             <button id="authGateShowLoginBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-switch-btn" type="button">Back to Log In</button>
@@ -350,7 +350,7 @@
         <div id="authGateSignedIn" class="hidden">
           <p id="authGateUserInfo" class="side-v">Signed in.</p>
         </div>
-        <p id="authGateVersion" class="auth-gate-version">v19.4.81</p>
+        <p id="authGateVersion" class="auth-gate-version">v19.4.82</p>
       </div>
     </div>
 
@@ -1365,6 +1365,7 @@
           <div id="authSignedOut" class="side-auth-form">
             <input id="authEmailInput" class="side-auth-input" type="email" placeholder="Email" autocomplete="email">
             <input id="authPasswordInput" class="side-auth-input" type="password" placeholder="Password" autocomplete="current-password">
+            <p id="authPanelPasswordRule" class="example side-auth-hint hidden">Password: 6+ chars, 1 uppercase, 1 number.</p>
             <div id="authPanelLoginHelp" class="auth-login-help">
               <p class="example side-auth-hint">Forgot password? Tap Reset.</p>
               <button id="authForgotBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Reset Password</button>
@@ -1378,8 +1379,7 @@
             </div>
             <div id="authPanelSignupView" class="auth-mode-view hidden">
               <button id="authSignUpBtn" class="side-action-btn side-inline-btn auth-alt-btn" type="button">Create Account</button>
-              <button id="authResendBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Resend Confirmation Email</button>
-              <p class="example side-auth-hint">Create Account rule: 6+ chars, 1 uppercase, 1 number.</p>
+              <button id="authResendBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn hidden" type="button">Resend Confirmation Email</button>
               <p class="auth-flow-cta">Already have an account?</p>
               <button id="authPanelShowLoginBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-switch-btn" type="button">Back to Log In</button>
             </div>
@@ -1388,7 +1388,6 @@
             <p id="authUserInfo" class="side-v">Signed in.</p>
             <button id="authSignOutBtn" class="side-action-btn side-action-soft side-inline-btn" type="button">Sign Out</button>
           </div>
-          <p class="example side-auth-hint">Create Account rule: 6+ chars, 1 uppercase, 1 number.</p>
           <p id="authConfigHint" class="example side-auth-hint">Set project URL and anon key in <code>supabase-config.js</code>.</p>
         </div>
       </div>

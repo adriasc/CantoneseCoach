@@ -1173,15 +1173,15 @@ body.book-mode .book-top-tabs {
 }
 
 .auth-create-cta.side-inline-btn {
-  font-size: 0.95rem;
-  font-weight: 800;
-  padding: 10px 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 7px 10px;
   border-style: solid;
-  border-width: 2px;
+  border-width: 1px;
   border-color: #f28e63;
-  background: radial-gradient(circle at 50% 45%, #f7f9fc 0%, #eef2f7 68%, #ffe4d7 100%);
-  color: #8f5440;
-  box-shadow: inset 0 0 0 2px #f5f7fb, 0 4px 10px rgba(242, 142, 99, 0.24);
+  background: rgba(255, 255, 255, 0.72);
+  color: #6a3f2f;
+  box-shadow: none;
 }
 
 .auth-google-btn {
@@ -2214,11 +2214,11 @@ body.auth-gate-open .bottom-nav {
   border: 0;
   border-radius: 0;
   box-shadow: none;
-  padding: 24px 16px 28px;
+  padding: 44px 16px 28px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 8px;
 }
 
@@ -2258,6 +2258,12 @@ body.auth-gate-open .bottom-nav {
 #closeAuthGate:hover {
   color: #5e433b;
   transform: scale(1.04);
+}
+
+#closeAuthGate:focus,
+#closeAuthGate:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 
 .auth-gate-lead {

@@ -1809,7 +1809,8 @@ const state = {
     gateDismissed: false,
     mode: "login",
     gateUserInteracted: false,
-    suppressAutoFocusUntil: 0
+    suppressAutoFocusUntil: 0,
+    canResendConfirmation: false
   }
 };
 setRuntimeWordsForLookup(state.content?.words || []);
@@ -1840,6 +1841,7 @@ const els = {
   authSignedIn: byId("authSignedIn"),
   authEmailInput: byId("authEmailInput"),
   authPasswordInput: byId("authPasswordInput"),
+  authPanelPasswordRule: byId("authPanelPasswordRule"),
   authPanelLoginView: byId("authPanelLoginView"),
   authPanelSignupView: byId("authPanelSignupView"),
   authPanelTitleLogin: byId("authPanelTitleLogin"),
@@ -1998,6 +2000,7 @@ const els = {
   authGateSignedIn: byId("authGateSignedIn"),
   authGateEmailInput: byId("authGateEmailInput"),
   authGatePasswordInput: byId("authGatePasswordInput"),
+  authGatePasswordRule: byId("authGatePasswordRule"),
   authGateLoginView: byId("authGateLoginView"),
   authGateSignupView: byId("authGateSignupView"),
   authGateTitleLogin: byId("authGateTitleLogin"),
@@ -2429,6 +2432,7 @@ function bindUI() {
   }
   if (els.authPanelShowSignupBtn) {
     els.authPanelShowSignupBtn.addEventListener("click", () => {
+      state.auth.canResendConfirmation = false;
       setAuthFormMode("signup");
       setAuthFeedback("");
     });
@@ -2441,6 +2445,7 @@ function bindUI() {
   }
   if (els.authGateShowSignupBtn) {
     els.authGateShowSignupBtn.addEventListener("click", () => {
+      state.auth.canResendConfirmation = false;
       setAuthFormMode("signup");
       setAuthFeedback("");
     });
@@ -3900,6 +3905,11 @@ function setAuthFormMode(mode = "login") {
   if (els.authGateTitleSignup) els.authGateTitleSignup.classList.toggle("hidden", !signup);
   if (els.authPanelLoginHelp) els.authPanelLoginHelp.classList.toggle("hidden", signup);
   if (els.authGateLoginHelp) els.authGateLoginHelp.classList.toggle("hidden", signup);
+  if (els.authPanelPasswordRule) els.authPanelPasswordRule.classList.toggle("hidden", !signup);
+  if (els.authGatePasswordRule) els.authGatePasswordRule.classList.toggle("hidden", !signup);
+  const showResend = signup && !!state.auth.canResendConfirmation;
+  if (els.authResendBtn) els.authResendBtn.classList.toggle("hidden", !showResend);
+  if (els.authGateResendBtn) els.authGateResendBtn.classList.toggle("hidden", !showResend);
 }
 
 function validateAuthPassword(password) {
@@ -4149,6 +4159,8 @@ async function handleAuthSignUp(source = "panel") {
       options: { emailRedirectTo: buildPasswordResetRedirect() }
     });
     if (error) throw error;
+    state.auth.canResendConfirmation = true;
+    setAuthFormMode("signup");
     if (data?.session) {
       state.auth.gateDismissed = false;
       setAuthFeedback("Account created and logged in.");
