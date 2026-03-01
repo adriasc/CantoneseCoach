@@ -1844,6 +1844,9 @@ const els = {
   authEmailInput: byId("authEmailInput"),
   authPasswordInput: byId("authPasswordInput"),
   authPanelPasswordRule: byId("authPanelPasswordRule"),
+  authPanelRuleLen: byId("authPanelRuleLen"),
+  authPanelRuleUpper: byId("authPanelRuleUpper"),
+  authPanelRuleNum: byId("authPanelRuleNum"),
   authPanelLoginView: byId("authPanelLoginView"),
   authPanelSignupView: byId("authPanelSignupView"),
   authPanelConfirmView: byId("authPanelConfirmView"),
@@ -2018,6 +2021,9 @@ const els = {
   authGateEmailInput: byId("authGateEmailInput"),
   authGatePasswordInput: byId("authGatePasswordInput"),
   authGatePasswordRule: byId("authGatePasswordRule"),
+  authGateRuleLen: byId("authGateRuleLen"),
+  authGateRuleUpper: byId("authGateRuleUpper"),
+  authGateRuleNum: byId("authGateRuleNum"),
   authGateLoginView: byId("authGateLoginView"),
   authGateSignupView: byId("authGateSignupView"),
   authGateConfirmView: byId("authGateConfirmView"),
@@ -2576,12 +2582,18 @@ function bindUI() {
   document.addEventListener("focusin", handleAuthFocusIn, true);
   [els.authEmailInput, els.authPasswordInput].forEach((input) => {
     if (!input) return;
+    if (input === els.authPasswordInput) {
+      input.addEventListener("input", () => updateSignupPasswordRuleUI());
+    }
     input.addEventListener("keydown", (event) => {
       if (event.key === "Enter") handleAuthSignIn("panel");
     });
   });
   [els.authGateEmailInput, els.authGatePasswordInput].forEach((input) => {
     if (!input) return;
+    if (input === els.authGatePasswordInput) {
+      input.addEventListener("input", () => updateSignupPasswordRuleUI());
+    }
     input.addEventListener("keydown", (event) => {
       if (event.key === "Enter") handleAuthSignIn("gate");
     });
@@ -3993,6 +4005,24 @@ function setResetPasswordFeedback(message) {
   els.resetPasswordMessage.textContent = String(message || "");
 }
 
+function updateSignupPasswordRuleUI() {
+  const password = String(els.authGatePasswordInput?.value || els.authPasswordInput?.value || "");
+  const hasLen = password.length >= 6;
+  const hasUpper = /[A-Z]/.test(password);
+  const hasNum = /[0-9]/.test(password);
+  const setRule = (el, ok) => {
+    if (!el) return;
+    el.classList.toggle("is-ok", !!ok);
+    el.classList.toggle("is-missing", !ok);
+  };
+  setRule(els.authPanelRuleLen, hasLen);
+  setRule(els.authPanelRuleUpper, hasUpper);
+  setRule(els.authPanelRuleNum, hasNum);
+  setRule(els.authGateRuleLen, hasLen);
+  setRule(els.authGateRuleUpper, hasUpper);
+  setRule(els.authGateRuleNum, hasNum);
+}
+
 function updateResetPasswordRuleUI() {
   const password = String(els.resetPasswordInput?.value || "");
   const hasLen = password.length >= 6;
@@ -4114,6 +4144,7 @@ function setAuthFormMode(mode = "login") {
   if (els.authGateLoginHelp) els.authGateLoginHelp.classList.toggle("hidden", signup || confirm);
   if (els.authPanelPasswordRule) els.authPanelPasswordRule.classList.toggle("hidden", !signup);
   if (els.authGatePasswordRule) els.authGatePasswordRule.classList.toggle("hidden", !signup);
+  if (signup) updateSignupPasswordRuleUI();
   renderAuthResendUI();
 }
 
@@ -4290,6 +4321,7 @@ function renderAuthUI() {
     setAuthFeedback("");
   }
   startAuthResendTimer();
+  updateSignupPasswordRuleUI();
   setAuthFormMode(state.auth.mode || "login");
   if (!state.auth.resetOpen) {
     if (shouldRequireAuthGate()) showAuthGate();

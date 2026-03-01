@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.87</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.88</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -328,7 +328,11 @@
         <div id="authGateSignedOut" class="side-auth-form auth-gate-form">
           <input id="authGateEmailInput" class="side-auth-input" type="email" placeholder="Email" autocomplete="email">
           <input id="authGatePasswordInput" class="side-auth-input" type="password" placeholder="Password" autocomplete="current-password">
-          <p id="authGatePasswordRule" class="example side-auth-hint hidden">Password: 6+ chars, 1 uppercase, 1 number.</p>
+          <ul id="authGatePasswordRule" class="reset-rule-list hidden">
+            <li id="authGateRuleLen" class="reset-rule-item is-missing">At least 6 characters</li>
+            <li id="authGateRuleUpper" class="reset-rule-item is-missing">At least 1 uppercase letter</li>
+            <li id="authGateRuleNum" class="reset-rule-item is-missing">At least 1 number</li>
+          </ul>
           <div id="authGateLoginHelp" class="auth-login-help">
             <p class="example side-auth-hint">Forgot password? Tap Reset.</p>
             <button id="authGateForgotBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Reset Password</button>
@@ -360,7 +364,7 @@
         <div id="authGateSignedIn" class="hidden">
           <p id="authGateUserInfo" class="side-v">Signed in.</p>
         </div>
-        <p id="authGateVersion" class="auth-gate-version">v19.4.87</p>
+        <p id="authGateVersion" class="auth-gate-version">v19.4.88</p>
       </div>
     </div>
     <div class="modal hidden" id="resetPasswordModal">
@@ -1399,7 +1403,11 @@
           <div id="authSignedOut" class="side-auth-form">
             <input id="authEmailInput" class="side-auth-input" type="email" placeholder="Email" autocomplete="email">
             <input id="authPasswordInput" class="side-auth-input" type="password" placeholder="Password" autocomplete="current-password">
-            <p id="authPanelPasswordRule" class="example side-auth-hint hidden">Password: 6+ chars, 1 uppercase, 1 number.</p>
+            <ul id="authPanelPasswordRule" class="reset-rule-list hidden">
+              <li id="authPanelRuleLen" class="reset-rule-item is-missing">At least 6 characters</li>
+              <li id="authPanelRuleUpper" class="reset-rule-item is-missing">At least 1 uppercase letter</li>
+              <li id="authPanelRuleNum" class="reset-rule-item is-missing">At least 1 number</li>
+            </ul>
             <div id="authPanelLoginHelp" class="auth-login-help">
               <p class="example side-auth-hint">Forgot password? Tap Reset.</p>
               <button id="authForgotBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Reset Password</button>
