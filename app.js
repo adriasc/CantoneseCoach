@@ -2447,6 +2447,11 @@ function bindUI() {
       setAuthFeedback("Login skipped for now (testing mode).");
     });
   }
+  if (els.authGateModal) {
+    ["touchstart", "mousedown", "click"].forEach((eventName) => {
+      els.authGateModal.addEventListener(eventName, dismissAuthKeyboardOnOutsideTap, { passive: true });
+    });
+  }
   [els.authEmailInput, els.authPasswordInput].forEach((input) => {
     if (!input) return;
     input.addEventListener("keydown", (event) => {
@@ -3898,6 +3903,17 @@ function blurAuthInputs() {
     try { input?.blur?.(); } catch {}
   });
   try { document.activeElement?.blur?.(); } catch {}
+}
+
+function isTextEntryElement(target) {
+  if (!target || !(target instanceof Element)) return false;
+  return !!target.closest("input, textarea, select, [contenteditable='true']");
+}
+
+function dismissAuthKeyboardOnOutsideTap(event) {
+  if (!state.auth.gateOpen) return;
+  if (isTextEntryElement(event?.target)) return;
+  blurAuthInputs();
 }
 
 function showAuthGate() {

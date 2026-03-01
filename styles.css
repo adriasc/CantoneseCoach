@@ -1125,6 +1125,11 @@ body.book-mode .book-top-tabs {
   margin: 0;
 }
 
+.auth-login-help .auth-alt-btn.side-inline-btn {
+  width: auto;
+  justify-self: end;
+}
+
 .side-actions-stack {
   margin-top: 10px;
   display: grid;
