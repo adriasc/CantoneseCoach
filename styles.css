@@ -1172,10 +1172,11 @@ body.book-mode .book-top-tabs {
   font-weight: 800;
   padding: 10px 12px;
   border-style: solid;
-  background: linear-gradient(160deg, #ff9a63 0%, #ff7a73 55%, #ff5f88 100%);
-  border-color: rgba(186, 80, 73, 0.54);
-  color: #fff;
-  box-shadow: 0 6px 12px rgba(167, 79, 77, 0.22);
+  border-width: 2px;
+  border-color: #f28e63;
+  background: radial-gradient(circle at 50% 45%, #f7f9fc 0%, #eef2f7 68%, #ffe4d7 100%);
+  color: #8f5440;
+  box-shadow: inset 0 0 0 2px #f5f7fb, 0 4px 10px rgba(242, 142, 99, 0.24);
 }
 
 .auth-google-btn {
@@ -2277,7 +2278,7 @@ body.auth-gate-open .bottom-nav {
 #authGateModal #authGateMessage,
 #authGateModal .auth-gate-form,
 #authGateModal #authGateSignedIn {
-  width: min(390px, 92vw);
+  width: min(350px, 88vw);
   margin-left: auto;
   margin-right: auto;
 }
@@ -2336,16 +2337,6 @@ body.auth-gate-open .bottom-nav {
 }
 
 @media (max-width: 680px) {
-  .auth-login-help {
-    grid-template-columns: 1fr;
-    gap: 4px;
-  }
-
-  #authForgotBtn,
-  #authGateForgotBtn {
-    justify-self: start;
-  }
-
   #settingsModal .settings-noise-test-row {
     grid-template-columns: 1fr;
     align-items: stretch;

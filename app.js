@@ -3888,18 +3888,33 @@ function shouldRequireAuthGate() {
   return !!(state.auth.configured && state.auth.ready && !state.auth.user && !state.auth.gateDismissed);
 }
 
+function blurAuthInputs() {
+  [
+    els.authEmailInput,
+    els.authPasswordInput,
+    els.authGateEmailInput,
+    els.authGatePasswordInput
+  ].forEach((input) => {
+    try { input?.blur?.(); } catch {}
+  });
+  try { document.activeElement?.blur?.(); } catch {}
+}
+
 function showAuthGate() {
   if (!els.authGateModal) return;
   state.auth.gateOpen = true;
   setAuthFormMode("login");
+  blurAuthInputs();
   document.body.classList.add("auth-gate-open");
   if (els.bottomNav) els.bottomNav.classList.add("hidden");
   openModalAnimated(els.authGateModal);
+  window.setTimeout(blurAuthInputs, 60);
 }
 
 function hideAuthGate() {
   if (!els.authGateModal) return;
   state.auth.gateOpen = false;
+  blurAuthInputs();
   document.body.classList.remove("auth-gate-open");
   configureBottomMenu();
   if (!els.authGateModal.classList.contains("hidden")) {
