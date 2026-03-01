@@ -1287,7 +1287,8 @@ const DEFAULT_DATA = {
     { id: "w46", hanzi: "點解", jyutping: "dim2 gaai2", english: "why", category: "question", example: "點解唔去？" },
     { id: "w47", hanzi: "一", jyutping: "jat1", english: "one", category: "number", example: "一杯茶。" },
     { id: "w48", hanzi: "二", jyutping: "ji6", english: "two", category: "number", example: "二杯水。" },
-    { id: "w49", hanzi: "三", jyutping: "saam1", english: "three", category: "number", example: "三個朋友。" }
+    { id: "w49", hanzi: "三", jyutping: "saam1", english: "three", category: "number", example: "三個朋友。" },
+    { id: "w50", hanzi: "貓", jyutping: "maau1", english: "cat (animal)", mandarin_hanzi: "猫", pinyin: "mao1", mandarin_english: "cat (animal)", category: "noun", example: "我見到一隻貓。" }
   ],
   patterns: [
     {
@@ -5344,7 +5345,9 @@ function renderQuizGrammar() {
   const localized = localizeEntry(state.currentQuiz);
   const analysis = analyzeSentence({ hanzi: localized.analysis.hanzi, jyutping: localized.analysis.roman });
   state.currentQuizAnalysis = analysis;
-  const showRuby = !!state.quizDisplay.jyutping;
+  const showHanzi = !!state.quizDisplay.hanzi;
+  const showJp = !!state.quizDisplay.jyutping;
+  const showRuby = showHanzi && showJp;
   if (localized.isCompare) {
     const cantoHanzi = state.quizDisplay.lens
       ? (showRuby ? analysis.annotatedRubyHanzi : analysis.annotatedHanzi)
@@ -5355,7 +5358,10 @@ function renderQuizGrammar() {
       ? buildRubyByCharacter(localized.mandarin.hanzi, localized.mandarin.roman)
       : escapeHtml(localized.mandarin.hanzi || "-");
     els.quizHanzi.innerHTML = buildCompareLabeledLine(cantoHanzi, mandoHanzi);
-    els.quizJyutping.textContent = "";
+    els.quizJyutping.innerHTML = buildCompareLabeledLine(
+      escapeHtml(localized.cantonese.roman || "-"),
+      escapeHtml(localized.mandarin.roman || "-")
+    );
     els.quizEnglish.textContent = localized.display.english;
     els.quizHanzi.classList.toggle("pattern-ruby", showRuby);
     els.quizHanzi.classList.add("compare-lines");
@@ -7763,7 +7769,8 @@ function applyVisibilityPrefs() {
   const inlineRubyCompare = languageMode === "compare";
 
   els.wordJyutping.classList.toggle("hidden", inlineRubyCompare || !showJp);
-  els.patternJyutping.classList.toggle("hidden", inlineRubyCompare || !showJp);
+  // Pattern card uses inline ruby over Hanzi; keep standalone roman line hidden.
+  els.patternJyutping.classList.add("hidden");
   if (els.questionJyutping) {
     els.questionJyutping.classList.toggle("hidden", inlineRubyCompare || !showJp);
   }
@@ -7793,12 +7800,11 @@ function applyQuizVisibility() {
   const showJp = !!state.quizDisplay.jyutping;
   const showEn = !!state.quizDisplay.english;
   const showLens = !!state.quizDisplay.lens;
-  const languageMode = normalizeLanguageMode(state.prefs.languageMode);
+  const showQuizRomanLine = !!showJp && !showHanzi;
 
   if (els.quizHanzi) els.quizHanzi.classList.toggle("hidden", !showHanzi);
   if (els.quizJyutping) {
-    const hideQuizRomanLine = languageMode === "compare" || !showJp;
-    els.quizJyutping.classList.toggle("hidden", hideQuizRomanLine);
+    els.quizJyutping.classList.toggle("hidden", !showQuizRomanLine);
   }
   if (els.quizEnglish) els.quizEnglish.classList.toggle("hidden", !showEn);
   if (els.quizLiteral) els.quizLiteral.classList.toggle("hidden", !showEn && !showLens);
