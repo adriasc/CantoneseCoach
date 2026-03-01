@@ -1799,7 +1799,18 @@ const state = {
   toneScore: { correct: 0, total: 0 },
   quizDisplay: { hanzi: false, jyutping: false, english: false, lens: false },
   game: normalizeGameState(loadJson(STORAGE_KEYS.game, defaultGameState())),
-  auth: { client: null, user: null, configured: false, ready: false, busy: false, gateOpen: false, gateDismissed: false, mode: "login" }
+  auth: {
+    client: null,
+    user: null,
+    configured: false,
+    ready: false,
+    busy: false,
+    gateOpen: false,
+    gateDismissed: false,
+    mode: "login",
+    gateUserInteracted: false,
+    suppressAutoFocusUntil: 0
+  }
 };
 setRuntimeWordsForLookup(state.content?.words || []);
 
@@ -2452,6 +2463,7 @@ function bindUI() {
       els.authGateModal.addEventListener(eventName, dismissAuthKeyboardOnOutsideTap, { passive: true });
     });
   }
+  document.addEventListener("focusin", handleAuthFocusIn, true);
   [els.authEmailInput, els.authPasswordInput].forEach((input) => {
     if (!input) return;
     input.addEventListener("keydown", (event) => {
@@ -3868,6 +3880,15 @@ function setAuthFeedback(message) {
 function setAuthFormMode(mode = "login") {
   const normalized = String(mode || "").trim().toLowerCase() === "signup" ? "signup" : "login";
   state.auth.mode = normalized;
+  if (normalized === "signup") {
+    state.auth.gateUserInteracted = false;
+    state.auth.suppressAutoFocusUntil = 0;
+    blurAuthInputs();
+  } else if (state.auth.gateOpen) {
+    state.auth.gateUserInteracted = false;
+    state.auth.suppressAutoFocusUntil = Date.now() + 1800;
+    blurAuthInputs();
+  }
   const signup = normalized === "signup";
   if (els.authPanelLoginView) els.authPanelLoginView.classList.toggle("hidden", signup);
   if (els.authPanelSignupView) els.authPanelSignupView.classList.toggle("hidden", !signup);
@@ -3912,13 +3933,33 @@ function isTextEntryElement(target) {
 
 function dismissAuthKeyboardOnOutsideTap(event) {
   if (!state.auth.gateOpen) return;
-  if (isTextEntryElement(event?.target)) return;
+  if (isTextEntryElement(event?.target)) {
+    state.auth.gateUserInteracted = true;
+    return;
+  }
   blurAuthInputs();
+}
+
+function shouldSuppressAuthAutoFocus(target) {
+  if (!state.auth.gateOpen) return false;
+  if (state.auth.mode !== "login") return false;
+  if (state.auth.gateUserInteracted) return false;
+  if (Date.now() > Number(state.auth.suppressAutoFocusUntil || 0)) return false;
+  return target === els.authGateEmailInput || target === els.authGatePasswordInput;
+}
+
+function handleAuthFocusIn(event) {
+  const target = event?.target;
+  if (!shouldSuppressAuthAutoFocus(target)) return;
+  blurAuthInputs();
+  try { els.closeAuthGate?.focus?.({ preventScroll: true }); } catch {}
 }
 
 function showAuthGate() {
   if (!els.authGateModal) return;
   state.auth.gateOpen = true;
+  state.auth.gateUserInteracted = false;
+  state.auth.suppressAutoFocusUntil = Date.now() + 2500;
   setAuthFormMode("login");
   blurAuthInputs();
   document.body.classList.add("auth-gate-open");
@@ -3933,6 +3974,8 @@ function showAuthGate() {
 function hideAuthGate() {
   if (!els.authGateModal) return;
   state.auth.gateOpen = false;
+  state.auth.gateUserInteracted = false;
+  state.auth.suppressAutoFocusUntil = 0;
   blurAuthInputs();
   document.body.classList.remove("auth-gate-open");
   configureBottomMenu();
