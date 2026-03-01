@@ -6,7 +6,9 @@ const STORAGE_KEYS = {
   streak: "cancoach_streak_v1",
   reviewed: "cancoach_reviewed_v1",
   prefs: "cancoach_prefs_v1",
-  game: "cancoach_game_v1"
+  game: "cancoach_game_v1",
+  match3Best: "cancoach_match3_best_v1",
+  speedBest: "cancoach_speed_best_v1"
 };
 
 const USER_CORE_WORDS = [
@@ -1820,6 +1822,7 @@ const state = {
   currentToneKind: "word",
   currentToneSide: null,
   storyTab: "dialogs",
+  miniGameTab: "match3",
   bookTab: "grammar",
   bookToneTab: "tones",
   bookWritingTab: "writing",
@@ -1943,6 +1946,23 @@ const els = {
   toggleMiniStoryJyutping: byId("toggleMiniStoryJyutping"),
   toggleMiniStoryEnglish: byId("toggleMiniStoryEnglish"),
   toggleMiniStoryLens: byId("toggleMiniStoryLens"),
+  miniGameTabs: [...document.querySelectorAll(".mini-game-tab")],
+  miniGamePanels: [...document.querySelectorAll(".mini-game-panel")],
+  match3Board: byId("match3Board"),
+  match3Legend: byId("match3Legend"),
+  match3Start: byId("match3Start"),
+  match3Shuffle: byId("match3Shuffle"),
+  match3Score: byId("match3Score"),
+  match3Best: byId("match3Best"),
+  match3Moves: byId("match3Moves"),
+  match3Status: byId("match3Status"),
+  speedStart: byId("speedStart"),
+  speedTimer: byId("speedTimer"),
+  speedScore: byId("speedScore"),
+  speedBest: byId("speedBest"),
+  speedPrompt: byId("speedPrompt"),
+  speedOptions: byId("speedOptions"),
+  speedFeedback: byId("speedFeedback"),
   panels: [...document.querySelectorAll(".panel")],
   wordCategory: byId("wordCategory"),
   wordHanzi: byId("wordHanzi"),
@@ -2147,6 +2167,31 @@ const miniStoryPlayer = { token: 0, lineIndex: 0, chunkIndex: 0, active: false, 
 var AUTO_TOKEN_JYUTPING = Object.create(null);
 let tokenizerVocabularyCache = null;
 var runtimeWordsForLookup = [];
+const MATCH3_ROWS = 6;
+const MATCH3_COLS = 6;
+const MATCH3_SYMBOLS_COUNT = 7;
+const SPEED_ROUND_SECONDS = 45;
+const match3Runtime = {
+  board: [],
+  symbols: [],
+  meanings: Object.create(null),
+  selected: null,
+  clearing: null,
+  score: 0,
+  moves: 0,
+  best: Number(loadJson(STORAGE_KEYS.match3Best, 0)) || 0,
+  locked: false
+};
+const speedRuntime = {
+  running: false,
+  score: 0,
+  total: 0,
+  timeLeft: SPEED_ROUND_SECONDS,
+  current: null,
+  best: Number(loadJson(STORAGE_KEYS.speedBest, 0)) || 0,
+  locked: false
+};
+let speedRoundTimer = null;
 
 function invalidateTokenizerVocabularyCache() {
   tokenizerVocabularyCache = null;
@@ -2340,6 +2385,7 @@ function initializeApp() {
   renderKnownList();
   switchSearchTab(state.searchTab || "standard");
   refreshGameUI();
+  initializeMiniGames();
   initSupabaseAuth();
   registerServiceWorker();
   initSoftLayoutTransitions();
@@ -2846,6 +2892,47 @@ function bindUI() {
       openGrammarInfoFromAnalysis(analysis, tokenIndex);
     });
   }
+  els.miniGameTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const nextGame = String(tab.dataset.miniGame || "").trim();
+      if (!nextGame) return;
+      switchMiniGameTab(nextGame);
+    });
+  });
+  if (els.match3Start) {
+    els.match3Start.addEventListener("click", () => {
+      startMatch3Game();
+    });
+  }
+  if (els.match3Shuffle) {
+    els.match3Shuffle.addEventListener("click", () => {
+      shuffleMatch3Board();
+    });
+  }
+  if (els.match3Board) {
+    els.match3Board.addEventListener("click", (event) => {
+      const tile = event.target?.closest?.(".match3-tile");
+      if (!tile) return;
+      const row = Number(tile.dataset.row);
+      const col = Number(tile.dataset.col);
+      if (!Number.isFinite(row) || !Number.isFinite(col)) return;
+      handleMatch3TileClick(row, col);
+    });
+  }
+  if (els.speedStart) {
+    els.speedStart.addEventListener("click", () => {
+      startSpeedGame();
+    });
+  }
+  if (els.speedOptions) {
+    els.speedOptions.addEventListener("click", (event) => {
+      const btn = event.target?.closest?.("[data-speed-hanzi]");
+      if (!btn) return;
+      const choice = String(btn.dataset.speedHanzi || "").trim();
+      if (!choice) return;
+      handleSpeedChoice(choice, btn);
+    });
+  }
   if (els.openFunLoop && els.funModal) {
     els.openFunLoop.addEventListener("click", () => {
       ensureDailyGameState();
@@ -3291,6 +3378,7 @@ function bindUI() {
     rollQuestion();
     rollTonePair();
     rollExercise();
+    resetMiniGamesFromContent();
     refreshStats();
     renderKnownList();
     if (els.searchInput && String(els.searchInput.value || "").trim()) runWordSearch();
@@ -3462,7 +3550,538 @@ function switchStoryTab(tabName) {
     renderStoryOfDay();
   } else if (safeName === "dialogs") {
     renderMiniStory();
+  } else if (safeName === "facts") {
+    switchMiniGameTab(state.miniGameTab || "match3");
   }
+}
+
+function initializeMiniGames() {
+  switchMiniGameTab(state.miniGameTab || "match3");
+  startMatch3Game();
+  renderSpeedIdle();
+}
+
+function resetMiniGamesFromContent() {
+  startMatch3Game();
+  stopSpeedGame(false);
+  renderSpeedIdle();
+}
+
+function switchMiniGameTab(tabName) {
+  const safeName = String(tabName || "").trim() === "speed" ? "speed" : "match3";
+  state.miniGameTab = safeName;
+  els.miniGameTabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.miniGame === safeName));
+  els.miniGamePanels.forEach((panel) => panel.classList.toggle("is-active", panel.id === `mini-game-${safeName}`));
+}
+
+function getMiniGameWordPool(options = {}) {
+  const maxChars = Number(options.maxChars) || 0;
+  const minEnglish = options.minEnglish !== false;
+  const out = new Map();
+
+  function addWord(rawHanzi, rawEnglish, category = "") {
+    const hanzi = String(rawHanzi || "").trim();
+    if (!hanzi) return;
+    if (maxChars > 0 && Array.from(hanzi).length > maxChars) return;
+    const english = String(rawEnglish || "").trim()
+      || (minEnglish ? String(meaningForWord(hanzi, category)).trim() : "");
+    if (minEnglish && !english) return;
+    const key = normalizeHanzi(hanzi);
+    if (!key || out.has(key)) return;
+    out.set(key, { hanzi, english: english || "meaning", category: category || "word" });
+  }
+
+  (state.content?.words || []).forEach((word) => {
+    addWord(word?.hanzi, word?.english, word?.category);
+  });
+  USER_CORE_WORDS.forEach((word) => {
+    addWord(word?.hanzi, word?.english, word?.category);
+  });
+  return [...out.values()];
+}
+
+function ensureMatch3Symbols() {
+  const fallback = [
+    { hanzi: "我", english: "I / me" },
+    { hanzi: "你", english: "you" },
+    { hanzi: "食", english: "eat" },
+    { hanzi: "飲", english: "drink" },
+    { hanzi: "學", english: "study" },
+    { hanzi: "去", english: "go" },
+    { hanzi: "好", english: "good" },
+    { hanzi: "茶", english: "tea" }
+  ];
+  const shortPool = getMiniGameWordPool({ maxChars: 2, minEnglish: true });
+  const picked = shuffle(shortPool.slice()).slice(0, MATCH3_SYMBOLS_COUNT);
+  const seen = new Set(picked.map((item) => normalizeHanzi(item.hanzi)));
+  fallback.forEach((item) => {
+    const key = normalizeHanzi(item.hanzi);
+    if (picked.length >= MATCH3_SYMBOLS_COUNT || seen.has(key)) return;
+    picked.push(item);
+    seen.add(key);
+  });
+
+  match3Runtime.symbols = picked.slice(0, MATCH3_SYMBOLS_COUNT).map((item) => item.hanzi);
+  match3Runtime.meanings = Object.create(null);
+  picked.forEach((item) => {
+    match3Runtime.meanings[normalizeHanzi(item.hanzi)] = item.english;
+  });
+}
+
+function randomMatch3Symbol() {
+  if (!match3Runtime.symbols.length) ensureMatch3Symbols();
+  return match3Runtime.symbols[randomInt(match3Runtime.symbols.length)] || "我";
+}
+
+function shouldAvoidMatchAtSpawn(board, row, col, symbol) {
+  if (col >= 2 && board[row][col - 1] === symbol && board[row][col - 2] === symbol) return true;
+  if (row >= 2 && board[row - 1][col] === symbol && board[row - 2][col] === symbol) return true;
+  return false;
+}
+
+function buildMatch3Board() {
+  const board = Array.from({ length: MATCH3_ROWS }, () => Array(MATCH3_COLS).fill(null));
+  for (let row = 0; row < MATCH3_ROWS; row += 1) {
+    for (let col = 0; col < MATCH3_COLS; col += 1) {
+      const options = shuffle(match3Runtime.symbols.slice());
+      let selected = options[0] || randomMatch3Symbol();
+      for (let i = 0; i < options.length; i += 1) {
+        if (!shouldAvoidMatchAtSpawn(board, row, col, options[i])) {
+          selected = options[i];
+          break;
+        }
+      }
+      board[row][col] = selected;
+    }
+  }
+  return board;
+}
+
+function createPlayableMatch3Board() {
+  let candidate = buildMatch3Board();
+  for (let tries = 0; tries < 40; tries += 1) {
+    if (hasAnyMatch3Move(candidate)) return candidate;
+    candidate = buildMatch3Board();
+  }
+  return candidate;
+}
+
+function keyForCell(row, col) {
+  return `${row}:${col}`;
+}
+
+function findMatch3Matches(board) {
+  const matches = new Set();
+  if (!Array.isArray(board) || !board.length) return matches;
+
+  for (let row = 0; row < MATCH3_ROWS; row += 1) {
+    let runStart = 0;
+    for (let col = 1; col <= MATCH3_COLS; col += 1) {
+      const prev = board[row][col - 1];
+      const current = col < MATCH3_COLS ? board[row][col] : null;
+      if (current && prev && current === prev) continue;
+      const runLength = col - runStart;
+      if (prev && runLength >= 3) {
+        for (let idx = runStart; idx < col; idx += 1) matches.add(keyForCell(row, idx));
+      }
+      runStart = col;
+    }
+  }
+
+  for (let col = 0; col < MATCH3_COLS; col += 1) {
+    let runStart = 0;
+    for (let row = 1; row <= MATCH3_ROWS; row += 1) {
+      const prev = board[row - 1][col];
+      const current = row < MATCH3_ROWS ? board[row][col] : null;
+      if (current && prev && current === prev) continue;
+      const runLength = row - runStart;
+      if (prev && runLength >= 3) {
+        for (let idx = runStart; idx < row; idx += 1) matches.add(keyForCell(idx, col));
+      }
+      runStart = row;
+    }
+  }
+
+  return matches;
+}
+
+function collapseMatch3Board(board) {
+  for (let col = 0; col < MATCH3_COLS; col += 1) {
+    const survivors = [];
+    for (let row = MATCH3_ROWS - 1; row >= 0; row -= 1) {
+      if (board[row][col]) survivors.push(board[row][col]);
+    }
+    for (let row = MATCH3_ROWS - 1; row >= 0; row -= 1) {
+      const idx = MATCH3_ROWS - 1 - row;
+      board[row][col] = survivors[idx] || randomMatch3Symbol();
+    }
+  }
+}
+
+function renderMatch3Legend() {
+  if (!els.match3Legend) return;
+  if (!match3Runtime.symbols.length) {
+    els.match3Legend.innerHTML = "";
+    return;
+  }
+  const html = match3Runtime.symbols.map((symbol) => {
+    const key = normalizeHanzi(symbol);
+    const meaning = String(match3Runtime.meanings[key] || "meaning").trim();
+    return `<p class="match3-legend-item">${escapeHtml(symbol)} = ${escapeHtml(meaning)}</p>`;
+  }).join("");
+  els.match3Legend.innerHTML = html;
+}
+
+function renderMatch3Stats() {
+  if (els.match3Score) els.match3Score.textContent = `Score: ${match3Runtime.score}`;
+  if (els.match3Best) els.match3Best.textContent = `Best: ${match3Runtime.best}`;
+  if (els.match3Moves) els.match3Moves.textContent = `Moves: ${match3Runtime.moves}`;
+}
+
+function renderMatch3Board() {
+  if (!els.match3Board) return;
+  if (!Array.isArray(match3Runtime.board) || !match3Runtime.board.length) {
+    els.match3Board.innerHTML = "";
+    return;
+  }
+  els.match3Board.innerHTML = "";
+  for (let row = 0; row < MATCH3_ROWS; row += 1) {
+    for (let col = 0; col < MATCH3_COLS; col += 1) {
+      const symbol = match3Runtime.board[row][col];
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "match3-tile";
+      btn.dataset.row = String(row);
+      btn.dataset.col = String(col);
+      const key = keyForCell(row, col);
+      if (match3Runtime.selected && match3Runtime.selected.row === row && match3Runtime.selected.col === col) {
+        btn.classList.add("is-selected");
+      }
+      if (match3Runtime.clearing && match3Runtime.clearing.has(key)) {
+        btn.classList.add("is-clearing");
+      }
+      btn.textContent = symbol || " ";
+      const meaningKey = normalizeHanzi(symbol);
+      if (match3Runtime.meanings[meaningKey]) {
+        btn.title = `${symbol} = ${match3Runtime.meanings[meaningKey]}`;
+      }
+      els.match3Board.appendChild(btn);
+    }
+  }
+}
+
+function setMatch3Status(message) {
+  if (els.match3Status) els.match3Status.textContent = message;
+}
+
+function isAdjacentCells(a, b) {
+  const rowDiff = Math.abs((a?.row ?? -99) - (b?.row ?? -99));
+  const colDiff = Math.abs((a?.col ?? -99) - (b?.col ?? -99));
+  return rowDiff + colDiff === 1;
+}
+
+function swapMatch3Cells(a, b) {
+  const board = match3Runtime.board;
+  const temp = board[a.row][a.col];
+  board[a.row][a.col] = board[b.row][b.col];
+  board[b.row][b.col] = temp;
+}
+
+function waitMiniGame(ms) {
+  return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
+}
+
+function hasAnyMatch3Move(board) {
+  for (let row = 0; row < MATCH3_ROWS; row += 1) {
+    for (let col = 0; col < MATCH3_COLS; col += 1) {
+      const neighbors = [
+        { row, col: col + 1 },
+        { row: row + 1, col }
+      ];
+      for (const n of neighbors) {
+        if (n.row >= MATCH3_ROWS || n.col >= MATCH3_COLS) continue;
+        const temp = board[row][col];
+        board[row][col] = board[n.row][n.col];
+        board[n.row][n.col] = temp;
+        const hasMatch = findMatch3Matches(board).size > 0;
+        board[n.row][n.col] = board[row][col];
+        board[row][col] = temp;
+        if (hasMatch) return true;
+      }
+    }
+  }
+  return false;
+}
+
+function storeMatch3Best() {
+  saveJson(STORAGE_KEYS.match3Best, match3Runtime.best);
+}
+
+function updateMatch3Best() {
+  if (match3Runtime.score <= match3Runtime.best) return;
+  match3Runtime.best = match3Runtime.score;
+  storeMatch3Best();
+}
+
+function startMatch3Game() {
+  ensureMatch3Symbols();
+  match3Runtime.board = createPlayableMatch3Board();
+  match3Runtime.selected = null;
+  match3Runtime.clearing = null;
+  match3Runtime.score = 0;
+  match3Runtime.moves = 0;
+  match3Runtime.locked = false;
+  renderMatch3Legend();
+  renderMatch3Stats();
+  renderMatch3Board();
+  setMatch3Status("Swap 2 neighboring tiles and match 3+ same Hanzi.");
+}
+
+function shuffleMatch3Board() {
+  if (match3Runtime.locked) return;
+  ensureMatch3Symbols();
+  match3Runtime.board = createPlayableMatch3Board();
+  match3Runtime.selected = null;
+  match3Runtime.clearing = null;
+  renderMatch3Legend();
+  renderMatch3Board();
+  setMatch3Status("Board shuffled.");
+}
+
+function handleMatch3TileClick(row, col) {
+  if (match3Runtime.locked) return;
+  if (!match3Runtime.board?.[row]?.[col]) return;
+  const next = { row, col };
+  const current = match3Runtime.selected;
+  if (!current) {
+    match3Runtime.selected = next;
+    renderMatch3Board();
+    return;
+  }
+  if (current.row === row && current.col === col) {
+    match3Runtime.selected = null;
+    renderMatch3Board();
+    return;
+  }
+  if (!isAdjacentCells(current, next)) {
+    match3Runtime.selected = next;
+    setMatch3Status("Choose a neighboring tile to swap.");
+    renderMatch3Board();
+    return;
+  }
+  attemptMatch3Swap(current, next);
+}
+
+async function attemptMatch3Swap(a, b) {
+  if (match3Runtime.locked) return;
+  match3Runtime.locked = true;
+  match3Runtime.selected = null;
+  swapMatch3Cells(a, b);
+  renderMatch3Board();
+  await waitMiniGame(110);
+  const hasMatch = findMatch3Matches(match3Runtime.board).size > 0;
+  if (!hasMatch) {
+    swapMatch3Cells(a, b);
+    renderMatch3Board();
+    setMatch3Status("No match from that swap. Try another move.");
+    match3Runtime.locked = false;
+    return;
+  }
+
+  match3Runtime.moves += 1;
+  await resolveMatch3Board();
+  if (!hasAnyMatch3Move(match3Runtime.board)) {
+    match3Runtime.board = createPlayableMatch3Board();
+    setMatch3Status("No more moves. New board generated.");
+    renderMatch3Board();
+  }
+  renderMatch3Stats();
+  match3Runtime.locked = false;
+}
+
+async function resolveMatch3Board() {
+  let cascades = 0;
+  let removedTotal = 0;
+  while (true) {
+    const matches = findMatch3Matches(match3Runtime.board);
+    if (!matches.size) break;
+    cascades += 1;
+    removedTotal += matches.size;
+    match3Runtime.clearing = matches;
+    renderMatch3Board();
+    await waitMiniGame(120);
+    matches.forEach((key) => {
+      const [row, col] = key.split(":").map((v) => Number(v));
+      if (Number.isFinite(row) && Number.isFinite(col) && match3Runtime.board?.[row]) {
+        match3Runtime.board[row][col] = null;
+      }
+    });
+    collapseMatch3Board(match3Runtime.board);
+    match3Runtime.clearing = null;
+    const gained = matches.size * 10 * cascades;
+    match3Runtime.score += gained;
+    updateMatch3Best();
+    renderMatch3Stats();
+    renderMatch3Board();
+    await waitMiniGame(80);
+  }
+  if (removedTotal > 0) {
+    setMatch3Status(`Nice: cleared ${removedTotal} tiles in ${cascades} cascade${cascades > 1 ? "s" : ""}.`);
+  }
+}
+
+function stopSpeedTimer() {
+  if (!speedRoundTimer) return;
+  clearInterval(speedRoundTimer);
+  speedRoundTimer = null;
+}
+
+function renderSpeedStats() {
+  if (els.speedTimer) els.speedTimer.textContent = `Time: ${Math.max(0, speedRuntime.timeLeft)}s`;
+  if (els.speedScore) els.speedScore.textContent = `Score: ${speedRuntime.score} / ${speedRuntime.total}`;
+  if (els.speedBest) els.speedBest.textContent = `Best: ${speedRuntime.best}`;
+  if (els.speedStart) {
+    els.speedStart.textContent = speedRuntime.running ? "Restart Round" : `Start ${SPEED_ROUND_SECONDS}s Round`;
+  }
+}
+
+function renderSpeedPrompt(text) {
+  if (els.speedPrompt) els.speedPrompt.textContent = text;
+}
+
+function renderSpeedOptions(options = []) {
+  if (!els.speedOptions) return;
+  els.speedOptions.innerHTML = "";
+  options.forEach((hanzi) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "choice";
+    btn.dataset.speedHanzi = hanzi;
+    btn.textContent = hanzi;
+    if (!speedRuntime.running) btn.disabled = true;
+    els.speedOptions.appendChild(btn);
+  });
+}
+
+function renderSpeedIdle() {
+  speedRuntime.current = null;
+  speedRuntime.locked = false;
+  speedRuntime.timeLeft = speedRuntime.running ? speedRuntime.timeLeft : SPEED_ROUND_SECONDS;
+  renderSpeedPrompt("Tap Start to begin.");
+  if (els.speedFeedback) els.speedFeedback.textContent = "";
+  renderSpeedOptions([]);
+  renderSpeedStats();
+}
+
+function storeSpeedBest() {
+  saveJson(STORAGE_KEYS.speedBest, speedRuntime.best);
+}
+
+function updateSpeedBest() {
+  if (speedRuntime.score <= speedRuntime.best) return;
+  speedRuntime.best = speedRuntime.score;
+  storeSpeedBest();
+}
+
+function startSpeedGame() {
+  stopSpeedTimer();
+  speedRuntime.running = true;
+  speedRuntime.score = 0;
+  speedRuntime.total = 0;
+  speedRuntime.timeLeft = SPEED_ROUND_SECONDS;
+  speedRuntime.locked = false;
+  speedRuntime.current = null;
+  if (els.speedFeedback) els.speedFeedback.textContent = "";
+  renderSpeedStats();
+  nextSpeedQuestion();
+  speedRoundTimer = setInterval(() => {
+    speedRuntime.timeLeft -= 1;
+    if (speedRuntime.timeLeft <= 0) {
+      speedRuntime.timeLeft = 0;
+      stopSpeedGame(true);
+      return;
+    }
+    renderSpeedStats();
+  }, 1000);
+}
+
+function stopSpeedGame(showSummary = true) {
+  stopSpeedTimer();
+  speedRuntime.running = false;
+  speedRuntime.locked = false;
+  updateSpeedBest();
+  renderSpeedStats();
+  if (showSummary) {
+    renderSpeedPrompt("Round over.");
+    if (els.speedFeedback) {
+      els.speedFeedback.textContent = `Final score: ${speedRuntime.score} / ${speedRuntime.total}.`;
+    }
+  }
+  if (els.speedOptions) {
+    [...els.speedOptions.querySelectorAll("button")].forEach((btn) => {
+      btn.disabled = true;
+    });
+  }
+}
+
+function nextSpeedQuestion() {
+  if (!speedRuntime.running) return;
+  const pool = getMiniGameWordPool({ maxChars: 4, minEnglish: true });
+  if (pool.length < 4) {
+    stopSpeedGame(true);
+    if (els.speedFeedback) {
+      els.speedFeedback.textContent = "Need at least 4 words with Hanzi + English to run this game.";
+    }
+    return;
+  }
+  const source = shuffle(pool.slice());
+  const correct = source[0];
+  const distractors = source
+    .slice(1)
+    .filter((item) => normalizeHanzi(item.hanzi) !== normalizeHanzi(correct.hanzi))
+    .slice(0, 3);
+  if (distractors.length < 3) {
+    stopSpeedGame(true);
+    if (els.speedFeedback) els.speedFeedback.textContent = "Not enough unique options for Sprint.";
+    return;
+  }
+  const options = shuffle([correct.hanzi, ...distractors.map((item) => item.hanzi)]);
+  speedRuntime.current = { correct, options };
+  speedRuntime.locked = false;
+  renderSpeedPrompt(`Meaning: ${correct.english}`);
+  renderSpeedOptions(options);
+}
+
+function handleSpeedChoice(choice, clickedBtn) {
+  if (!speedRuntime.running || speedRuntime.locked || !speedRuntime.current) return;
+  speedRuntime.locked = true;
+  const correctHanzi = speedRuntime.current.correct.hanzi;
+  const correctNorm = normalizeHanzi(correctHanzi);
+  const choiceNorm = normalizeHanzi(choice);
+  const isCorrect = choiceNorm === correctNorm;
+  speedRuntime.total += 1;
+  if (isCorrect) {
+    speedRuntime.score += 1;
+    incrementMission("hanzi", 1);
+    if (els.speedFeedback) els.speedFeedback.textContent = "Correct.";
+  } else if (els.speedFeedback) {
+    els.speedFeedback.textContent = `Wrong. Correct: ${correctHanzi} (${speedRuntime.current.correct.english}).`;
+  }
+  updateSpeedBest();
+  renderSpeedStats();
+
+  const buttons = els.speedOptions ? [...els.speedOptions.querySelectorAll("button")] : [];
+  buttons.forEach((btn) => {
+    btn.disabled = true;
+    const btnNorm = normalizeHanzi(btn.dataset.speedHanzi || "");
+    if (btnNorm === correctNorm) btn.classList.add("is-correct");
+  });
+  if (!isCorrect && clickedBtn) clickedBtn.classList.add("is-wrong");
+
+  setTimeout(() => {
+    if (!speedRuntime.running || speedRuntime.timeLeft <= 0) return;
+    nextSpeedQuestion();
+  }, 240);
 }
 
 function switchBookTab(tabName) {
@@ -6474,6 +7093,7 @@ function importDataFile(event) {
       rollQuiz();
       rollQuestion();
       rollExercise();
+      resetMiniGamesFromContent();
       renderKnownList();
       if (els.searchInput && String(els.searchInput.value || "").trim()) runWordSearch();
       else renderSearchHint();

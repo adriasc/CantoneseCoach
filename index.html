@@ -1167,8 +1167,48 @@
         </section>
         <section class="stories-subpanel" id="stories-facts">
           <p class="formula">Fun Games</p>
-          <p>Simple fun games live here (quick challenges, tiny memory rounds, and fast quizzes).</p>
-          <p class="example">Next step: add one-tap mini game cards for 30-second practice.</p>
+          <p>Pick a game and practice Cantonese Hanzi in short rounds.</p>
+          <div class="mini-game-nav" role="tablist" aria-label="Fun game selector">
+            <button class="mini-game-tab is-active" type="button" data-mini-game="match3">Hanzi Match-3</button>
+            <button class="mini-game-tab" type="button" data-mini-game="speed">Meaning Sprint</button>
+          </div>
+
+          <section class="mini-game-panel is-active" id="mini-game-match3">
+            <div class="mini-game-head">
+              <p class="mini-game-title">Hanzi Match-3</p>
+              <p class="mini-game-subtitle">Tap 2 neighboring tiles to swap. Match 3+ same Hanzi.</p>
+            </div>
+            <div class="mini-stats">
+              <p id="match3Score">Score: 0</p>
+              <p id="match3Best">Best: 0</p>
+              <p id="match3Moves">Moves: 0</p>
+            </div>
+            <div class="actions">
+              <button id="match3Start" type="button">New Board</button>
+              <button id="match3Shuffle" type="button">Shuffle</button>
+            </div>
+            <div id="match3Legend" class="match3-legend"></div>
+            <div id="match3Board" class="match3-board" aria-live="polite"></div>
+            <p class="example" id="match3Status">Press New Board to start.</p>
+          </section>
+
+          <section class="mini-game-panel" id="mini-game-speed">
+            <div class="mini-game-head">
+              <p class="mini-game-title">Meaning Sprint</p>
+              <p class="mini-game-subtitle">You see an English meaning. Tap the correct Hanzi fast.</p>
+            </div>
+            <div class="mini-stats">
+              <p id="speedTimer">Time: 45s</p>
+              <p id="speedScore">Score: 0 / 0</p>
+              <p id="speedBest">Best: 0</p>
+            </div>
+            <div class="actions">
+              <button id="speedStart" type="button">Start 45s Round</button>
+            </div>
+            <p class="formula" id="speedPrompt">Tap Start to begin.</p>
+            <div class="choices mini-speed-choices" id="speedOptions"></div>
+            <p class="example" id="speedFeedback"></p>
+          </section>
         </section>
         <section class="stories-subpanel is-active" id="stories-dialogs">
           <p class="formula">Mini Stories</p>
