@@ -1025,6 +1025,8 @@ body.book-mode .book-top-tabs {
 .side-auth-form {
   display: grid;
   gap: 6px;
+  width: 100%;
+  max-width: 360px;
 }
 
 .auth-mode-view {
@@ -1050,7 +1052,9 @@ body.book-mode .book-top-tabs {
 
 .auth-login-help {
   display: grid;
-  gap: 4px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
 }
 
 .auth-flow-cta {
@@ -1064,7 +1068,7 @@ body.book-mode .book-top-tabs {
 .auth-flow-cta-strong {
   margin-top: 16px;
   color: #a93f2f;
-  font-size: 0.93rem;
+  font-size: 0.98rem;
   font-weight: 800;
 }
 
@@ -1117,6 +1121,10 @@ body.book-mode .book-top-tabs {
   margin: 2px 0 0;
 }
 
+.auth-login-help .side-auth-hint {
+  margin: 0;
+}
+
 .side-actions-stack {
   margin-top: 10px;
   display: grid;
@@ -1157,6 +1165,17 @@ body.book-mode .book-top-tabs {
 
 .auth-switch-btn.side-inline-btn {
   border-style: dashed;
+}
+
+.auth-create-cta.side-inline-btn {
+  font-size: 0.95rem;
+  font-weight: 800;
+  padding: 10px 12px;
+  border-style: solid;
+  background: linear-gradient(160deg, #ff9a63 0%, #ff7a73 55%, #ff5f88 100%);
+  border-color: rgba(186, 80, 73, 0.54);
+  color: #fff;
+  box-shadow: 0 6px 12px rgba(167, 79, 77, 0.22);
 }
 
 .auth-google-btn {
@@ -2258,7 +2277,7 @@ body.auth-gate-open .bottom-nav {
 #authGateModal #authGateMessage,
 #authGateModal .auth-gate-form,
 #authGateModal #authGateSignedIn {
-  width: min(420px, 100%);
+  width: min(390px, 92vw);
   margin-left: auto;
   margin-right: auto;
 }
@@ -2288,7 +2307,7 @@ body.auth-gate-open .bottom-nav {
 #authForgotBtn,
 #authGateForgotBtn {
   width: auto;
-  justify-self: start;
+  justify-self: end;
   min-width: 0;
   padding: 6px 10px;
   font-size: 0.8rem;
@@ -2317,6 +2336,16 @@ body.auth-gate-open .bottom-nav {
 }
 
 @media (max-width: 680px) {
+  .auth-login-help {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  #authForgotBtn,
+  #authGateForgotBtn {
+    justify-self: start;
+  }
+
   #settingsModal .settings-noise-test-row {
     grid-template-columns: 1fr;
     align-items: stretch;
