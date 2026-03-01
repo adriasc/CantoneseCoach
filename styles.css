@@ -742,15 +742,15 @@ body.user-mode .tabs {
   min-height: 24px;
   border-radius: 999px;
   padding: 0;
-  border: 1px solid #d8b57d;
-  background: linear-gradient(180deg, #fff9ef 0%, #ffe8c8 100%);
-  color: #8b4c2a;
+  border: 1px solid #fff4ec;
+  background: linear-gradient(160deg, #ff8f63 0%, #ff646f 48%, #ff4f85 100%);
+  color: #fff;
   font-size: 0.72rem;
   line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 6px rgba(120, 84, 39, 0.18);
+  box-shadow: 0 3px 7px rgba(225, 80, 95, 0.24);
 }
 
 .book-quote {
@@ -836,24 +836,21 @@ body.user-mode .tabs {
   white-space: normal;
   overflow-wrap: anywhere;
   word-break: break-word;
-  font-size: clamp(1.45rem, 6.2vw, 2.2rem);
-  line-height: 1.72;
+  font-size: clamp(1.6rem, 6.6vw, 2.36rem);
+  line-height: 1.78;
 }
 
 #stories-dialogs .story-hanzi-line ruby {
-  white-space: normal;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  vertical-align: bottom;
-  max-width: 100%;
+  ruby-position: over;
+  ruby-align: center;
+  white-space: nowrap;
 }
 
 #stories-dialogs .story-hanzi-line rt {
-  white-space: nowrap;
-  font-size: 0.34em;
-  max-width: 100%;
-  overflow-wrap: anywhere;
+  font-family: "Menlo", "Courier New", monospace;
+  font-size: 0.39em;
+  line-height: 1;
+  color: #365173;
 }
 
 .story-hanzi-line {
@@ -1996,6 +1993,10 @@ button:hover,
   font-size: 1.2rem;
   line-height: 1;
   font-weight: 800;
+  border: 2px solid #fff8f4;
+  background: linear-gradient(160deg, #ff8f63 0%, #ff646f 48%, #ff4f85 100%);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(225, 80, 95, 0.29);
 }
 
 .play-tone-btn {

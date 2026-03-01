@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.97</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.98</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -99,9 +99,8 @@
 
     <nav class="stories-top-tabs" aria-label="Stories sections">
       <button class="tab stories-nav-btn is-active" type="button" data-story-tab="dialogs">Mini Stories</button>
-      <button class="tab stories-nav-btn" type="button" data-story-tab="culture">Street Culture</button>
-      <button class="tab stories-nav-btn" type="button" data-story-tab="curiosities">Curiosities</button>
-      <button class="tab stories-nav-btn" type="button" data-story-tab="facts">Fun Facts</button>
+      <button class="tab stories-nav-btn" type="button" data-story-tab="culture">Culture</button>
+      <button class="tab stories-nav-btn" type="button" data-story-tab="facts">Fun Games</button>
       <button class="tab stories-nav-btn" type="button" data-story-tab="fun">Fun Loop</button>
     </nav>
 
@@ -109,7 +108,6 @@
       <button class="tab book-nav-btn is-active" type="button" data-book-tab="grammar">Grammar</button>
       <button class="tab book-nav-btn" type="button" data-book-tab="tones">Tones</button>
       <button class="tab book-nav-btn" type="button" data-book-tab="writing">Writing</button>
-      <button class="tab book-nav-btn" type="button" data-book-tab="culture">Culture</button>
     </nav>
 
     <section class="card controls-card">
@@ -367,7 +365,7 @@
         <div id="authGateSignedIn" class="hidden">
           <p id="authGateUserInfo" class="side-v">Signed in.</p>
         </div>
-        <p id="authGateVersion" class="auth-gate-version">v19.4.97</p>
+        <p id="authGateVersion" class="auth-gate-version">v19.4.98</p>
       </div>
     </div>
     <div class="modal hidden" id="resetPasswordModal">
@@ -904,12 +902,12 @@
 
             <p class="book-subtitle">Examples you will hear often</p>
             <div class="book-example">
-              <p><strong>史 si2</strong> = history</p>
+              <p><strong>買 maai5</strong> = buy</p>
+              <p><strong>賣 maai6</strong> = sell</p>
+              <p><strong>詩 si1</strong> = poem</p>
               <p><strong>試 si3</strong> = try</p>
-              <p><strong>時 si4</strong> = time</p>
-              <p><strong>市 si5</strong> = market</p>
-              <p><strong>事 si6</strong> = thing</p>
-              <p><strong>媽 maa1</strong> = mother</p>
+              <p><strong>心 sam1</strong> = heart</p>
+              <p><strong>審 sam2</strong> = examine</p>
             </div>
 
             <p>In <strong>Jyutping</strong>, the tone number at the end tells you the tone. This is why Jyutping is very useful for training.</p>
@@ -1148,6 +1146,61 @@
           </div>
         </section>
         <section class="book-subpanel" id="book-culture">
+          <p class="formula">Culture moved</p>
+          <p>Culture content is now in <strong>Stories → Culture</strong>.</p>
+        </section>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-stories">
+      <div class="card stories-card">
+        <h2>Stories</h2>
+        <p class="stories-intro">Story area with a focused sub-menu. We can expand each section with full read-along content.</p>
+        <section class="stories-subpanel" id="stories-curiosities">
+          <div class="story-day-head">
+            <p class="formula" id="storyOfDayLabel">Story of the day</p>
+            <button id="playStoryAudio" class="play-icon-btn" type="button" aria-label="Play story of the day">▶</button>
+          </div>
+          <p class="example" id="storyOfDayMeta">Loading daily story...</p>
+          <div id="storyOfDayLines" class="story-lines"></div>
+          <p class="example" id="storyTapHint">Tap any highlighted Hanzi to open quick explanation.</p>
+        </section>
+        <section class="stories-subpanel" id="stories-facts">
+          <p class="formula">Fun Games</p>
+          <p>Simple fun games live here (quick challenges, tiny memory rounds, and fast quizzes).</p>
+          <p class="example">Next step: add one-tap mini game cards for 30-second practice.</p>
+        </section>
+        <section class="stories-subpanel is-active" id="stories-dialogs">
+          <p class="formula">Mini Stories</p>
+          <div class="mini-story-select-wrap">
+            <select id="miniStorySelect" class="side-select mini-story-select">
+              <option value="fox_rabbit_easy">Story 1 (Easy): Fox and Rabbit</option>
+              <option value="wet_market_advanced">Story 2 (Advanced): Wet Market</option>
+            </select>
+          </div>
+          <div class="actions pattern-actions panel-actions">
+            <div class="pattern-control-col">
+              <button id="playMiniStoryAudio" class="play-icon-btn pattern-play-main" aria-label="Play mini story audio">▶</button>
+              <p class="pattern-control-text">Play/Pause</p>
+            </div>
+            <div class="pattern-control-col">
+              <button id="toggleMiniStoryJyutping" class="pattern-mini-btn pattern-toggle-btn is-off" aria-pressed="false" aria-label="Toggle mini story Jyutping">粵</button>
+              <p class="pattern-control-text">Jyutping</p>
+            </div>
+            <div class="pattern-control-col">
+              <button id="toggleMiniStoryEnglish" class="pattern-mini-btn pattern-toggle-btn is-off" aria-pressed="false" aria-label="Toggle mini story English">EN</button>
+              <p class="pattern-control-text">English</p>
+            </div>
+            <div class="pattern-control-col">
+              <button id="toggleMiniStoryLens" class="pattern-mini-btn pattern-toggle-btn is-on" aria-pressed="true" aria-label="Toggle mini story grammar lens">◎</button>
+              <p class="pattern-control-text">Lens</p>
+            </div>
+          </div>
+          <p class="example" id="miniStoryMeta">Select a story and tap Play.</p>
+          <div id="miniStoryLines" class="story-lines"></div>
+          <p class="example" id="miniStoryTapHint">Tap any highlighted Hanzi to open quick explanation.</p>
+        </section>
+        <section class="stories-subpanel" id="stories-culture">
           <p class="formula">Culture</p>
           <div class="book-lesson">
             <p class="book-subtitle">Quick History Background</p>
@@ -1200,62 +1253,6 @@
             <p>Hong Kong feels fast, resilient, food-focused, and proudly Cantonese while still globally connected.</p>
             <p class="book-lead"><strong>你嚟香港一定會愛上佢㗎！</strong> (You will likely fall in love with Hong Kong when you visit.)</p>
           </div>
-        </section>
-      </div>
-    </section>
-
-    <section class="panel" id="panel-stories">
-      <div class="card stories-card">
-        <h2>Stories</h2>
-        <p class="stories-intro">Story area with a focused sub-menu. We can expand each section with full read-along content.</p>
-        <section class="stories-subpanel" id="stories-curiosities">
-          <div class="story-day-head">
-            <p class="formula" id="storyOfDayLabel">Story of the day</p>
-            <button id="playStoryAudio" class="play-icon-btn" type="button" aria-label="Play story of the day">▶</button>
-          </div>
-          <p class="example" id="storyOfDayMeta">Loading daily story...</p>
-          <div id="storyOfDayLines" class="story-lines"></div>
-          <p class="example" id="storyTapHint">Tap any highlighted Hanzi to open quick explanation.</p>
-        </section>
-        <section class="stories-subpanel" id="stories-facts">
-          <p class="formula">Fun Facts</p>
-          <p>Some words share Hanzi with Mandarin but sound very different, so romanization comparison is useful for memory.</p>
-          <p class="example">Use compare mode to spot Cantonese vs Mandarin pronunciation quickly.</p>
-        </section>
-        <section class="stories-subpanel is-active" id="stories-dialogs">
-          <p class="formula">Mini Stories</p>
-          <div class="mini-story-select-wrap">
-            <select id="miniStorySelect" class="side-select mini-story-select">
-              <option value="fox_rabbit_easy">Story 1 (Easy): Fox and Rabbit</option>
-              <option value="wet_market_advanced">Story 2 (Advanced): Wet Market</option>
-            </select>
-          </div>
-          <div class="actions pattern-actions panel-actions">
-            <div class="pattern-control-col">
-              <button id="playMiniStoryAudio" class="play-icon-btn pattern-play-main" aria-label="Play mini story audio">▶</button>
-              <p class="pattern-control-text">Play/Pause</p>
-            </div>
-            <div class="pattern-control-col">
-              <button id="toggleMiniStoryJyutping" class="pattern-mini-btn pattern-toggle-btn is-off" aria-pressed="false" aria-label="Toggle mini story Jyutping">粵</button>
-              <p class="pattern-control-text">Jyutping</p>
-            </div>
-            <div class="pattern-control-col">
-              <button id="toggleMiniStoryEnglish" class="pattern-mini-btn pattern-toggle-btn is-off" aria-pressed="false" aria-label="Toggle mini story English">EN</button>
-              <p class="pattern-control-text">English</p>
-            </div>
-            <div class="pattern-control-col">
-              <button id="toggleMiniStoryLens" class="pattern-mini-btn pattern-toggle-btn is-on" aria-pressed="true" aria-label="Toggle mini story grammar lens">◎</button>
-              <p class="pattern-control-text">Lens</p>
-            </div>
-          </div>
-          <p class="example" id="miniStoryMeta">Select a story and tap Play.</p>
-          <div id="miniStoryLines" class="story-lines"></div>
-          <p class="example" id="miniStoryTapHint">Tap any highlighted Hanzi to open quick explanation.</p>
-        </section>
-        <section class="stories-subpanel" id="stories-culture">
-          <p class="formula">Street Culture</p>
-          <p>Transport, wet market, and cha chaan teng phrases should be grouped by real situations to improve recall.</p>
-          <p class="example">Next upgrade: add HK location packs and one-tap drill playlists.</p>
         </section>
         <section class="stories-subpanel" id="stories-fun">
           <p class="formula">Fun Loop</p>

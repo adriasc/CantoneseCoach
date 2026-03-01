@@ -1816,6 +1816,7 @@ const state = {
   currentMiniStoryAnalyses: [],
   currentMiniStoryChunkTexts: [],
   supplementalSearchWords: [],
+  lastSearchResults: [],
   currentToneKind: "word",
   currentToneSide: null,
   storyTab: "dialogs",
@@ -2922,7 +2923,12 @@ function bindUI() {
       if (!playBtn) return;
       const wordId = String(playBtn.dataset.wordId || "").trim();
       if (!wordId) return;
-      const targetWord = (state.content?.words || []).find((w) => String(w.id) === wordId);
+      const searchPool = []
+        .concat(state.lastSearchResults || [])
+        .concat(state.content?.words || [])
+        .concat(state.supplementalSearchWords || [])
+        .concat(SLANG_SEARCH_ENTRIES || []);
+      const targetWord = searchPool.find((w) => String(w?.id || "").trim() === wordId);
       if (!targetWord) return;
       incrementMission("listens", 1);
       speak(localizedSpeechText(targetWord));
@@ -3440,7 +3446,9 @@ function configureBottomMenu() {
 }
 
 function switchStoryTab(tabName) {
-  const safeName = String(tabName || "").trim() || "dialogs";
+  const allowed = new Set(["dialogs", "culture", "facts", "fun"]);
+  const rawName = String(tabName || "").trim() || "dialogs";
+  const safeName = allowed.has(rawName) ? rawName : "dialogs";
   const panelId = `stories-${safeName}`;
   const hasPanel = els.storyPanels.some((panel) => panel.id === panelId);
   if (!hasPanel) return;
@@ -3458,7 +3466,9 @@ function switchStoryTab(tabName) {
 }
 
 function switchBookTab(tabName) {
-  const safeName = String(tabName || "").trim() || "grammar";
+  const allowed = new Set(["grammar", "grammar2", "tones", "writing"]);
+  const rawName = String(tabName || "").trim() || "grammar";
+  const safeName = allowed.has(rawName) ? rawName : "grammar";
   const panelId = `book-${safeName}`;
   const hasPanel = els.bookPanels.some((panel) => panel.id === panelId);
   if (!hasPanel) return;
@@ -4911,11 +4921,33 @@ function scoreSearchField(queryNorm, queryCompact, value, weight = 1) {
   const fieldNorm = normalizeSearchText(value);
   if (!fieldNorm) return 0;
   const fieldCompact = fieldNorm.replace(/\s+/g, "");
+  const fieldBase = fieldNorm.replace(/^to\s+/, "");
+  const fieldBaseCompact = fieldBase.replace(/\s+/g, "");
   let score = 0;
   if (fieldNorm === queryNorm || fieldCompact === queryCompact) score += 140 * weight;
+  if (fieldBase === queryNorm || fieldBaseCompact === queryCompact) score += 120 * weight;
   if (fieldNorm.startsWith(queryNorm) || fieldCompact.startsWith(queryCompact)) score += 90 * weight;
+  if (fieldBase.startsWith(queryNorm) || fieldBaseCompact.startsWith(queryCompact)) score += 70 * weight;
   if (fieldNorm.includes(queryNorm) || fieldCompact.includes(queryCompact)) score += 45 * weight;
+  if (fieldBase.includes(queryNorm) || fieldBaseCompact.includes(queryCompact)) score += 36 * weight;
   return score;
+}
+
+function searchFieldMatchLength(queryNorm, queryCompact, value) {
+  const fieldNorm = normalizeSearchText(value);
+  if (!fieldNorm) return Number.POSITIVE_INFINITY;
+  const fieldCompact = fieldNorm.replace(/\s+/g, "");
+  const fieldBase = fieldNorm.replace(/^to\s+/, "");
+  const fieldBaseCompact = fieldBase.replace(/\s+/g, "");
+  if (
+    fieldNorm.includes(queryNorm)
+    || fieldCompact.includes(queryCompact)
+    || fieldBase.includes(queryNorm)
+    || fieldBaseCompact.includes(queryCompact)
+  ) {
+    return fieldBase.length;
+  }
+  return Number.POSITIVE_INFINITY;
 }
 
 function uniqueWordsByHanzi(words) {
@@ -4962,12 +4994,17 @@ function getWordSearchMatches(query, mode = "standard") {
 
     const score = fields.reduce((sum, field) => sum + scoreSearchField(queryNorm, queryCompact, field.v, field.w), 0);
     if (score <= 0) return;
-    out.push({ word, score });
+    const matchLen = fields.reduce((minLen, field) => {
+      const len = searchFieldMatchLength(queryNorm, queryCompact, field.v);
+      return Math.min(minLen, len);
+    }, Number.POSITIVE_INFINITY);
+    out.push({ word, score, matchLen });
   });
 
   return out
     .sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
+      if (a.matchLen !== b.matchLen) return a.matchLen - b.matchLen;
       const la = wordLevel(a.word);
       const lb = wordLevel(b.word);
       if (la !== lb) return la - lb;
@@ -4979,6 +5016,7 @@ function getWordSearchMatches(query, mode = "standard") {
 
 function renderSearchHint() {
   if (!els.searchResults) return;
+  state.lastSearchResults = [];
   const mode = normalizeLanguageMode(state.prefs.languageMode);
   const searchMode = state.searchTab === "slang" ? "slang" : "standard";
   if (els.searchHint) {
@@ -5004,6 +5042,7 @@ function runWordSearch() {
   }
 
   const matches = getWordSearchMatches(query, state.searchTab);
+  state.lastSearchResults = matches.slice();
   if (!matches.length) {
     els.searchResults.innerHTML = `<p class="example">No matches for “${escapeHtml(query)}”. Try English, Hanzi, Jyutping, or Pinyin.</p>`;
     return;
@@ -5197,6 +5236,7 @@ function openGrammarInfoFromAnalysis(analysis, tokenIndex) {
   const normalizedToken = normalizeHanzi(token);
   const byWord = (state.content?.words || []).find((w) => normalizeHanzi(w.hanzi) === normalizedToken);
   const tokenMeaning = byWord?.english || literalForToken(token);
+  const displayMeaning = (tokenMeaning && tokenMeaning !== token) ? tokenMeaning : "Meaning to confirm";
   const roleLabelMap = { past: "Past marker", prog: "Progressive marker", future: "Future marker" };
   const marker = meta.marker || null;
   const isVerb = !!meta.isVerb;
@@ -5216,6 +5256,7 @@ function openGrammarInfoFromAnalysis(analysis, tokenIndex) {
   if (marker) {
     const details = GRAMMAR_MARKER_DETAILS[token] || {};
     title = `${roleLabelMap[marker.role] || "Grammar marker"} · ${token}`;
+    chunks.push(`<div class="grammar-row"><span class="grammar-label">Meaning</span><p>${escapeHtml(displayMeaning)}</p></div>`);
     chunks.push(`<div class="grammar-row"><span class="grammar-label">Core</span><p>${escapeHtml(details.core || marker.label)}</p></div>`);
     chunks.push(`<div class="grammar-row"><span class="grammar-label">Pattern</span><p>${escapeHtml(details.pattern || "See this sentence pattern.")}</p></div>`);
     chunks.push(`<div class="grammar-row"><span class="grammar-label">Use</span><p>${escapeHtml(details.use || "Use in this tense/aspect context.")}</p></div>`);
@@ -5240,6 +5281,7 @@ function openGrammarInfoFromAnalysis(analysis, tokenIndex) {
       .map((entry) => entry.token)
       .filter(Boolean);
     chunks.push(`<div class="grammar-row"><span class="grammar-label">Role</span><p>Main action verb in this sentence.</p></div>`);
+    chunks.push(`<div class="grammar-row"><span class="grammar-label">Meaning</span><p>${escapeHtml(displayMeaning)}</p></div>`);
     chunks.push(`<div class="grammar-row"><span class="grammar-label">Use</span><p>Read nearby markers to know if it is past, progressive, future, or experiential.</p></div>`);
     chunks.push(`<div class="grammar-row"><span class="grammar-label">Also</span><p>Some verbs can act as full verbs or auxiliaries depending on context.</p></div>`);
     if (linkedMarkers.length) {
@@ -5249,7 +5291,7 @@ function openGrammarInfoFromAnalysis(analysis, tokenIndex) {
     }
   } else {
     title = `Token Info · ${token}`;
-    chunks.push(`<div class="grammar-row"><span class="grammar-label">Meaning</span><p>${escapeHtml(String(tokenMeaning || token))}</p></div>`);
+    chunks.push(`<div class="grammar-row"><span class="grammar-label">Meaning</span><p>${escapeHtml(displayMeaning)}</p></div>`);
     chunks.push(`<div class="grammar-row"><span class="grammar-label">Role</span><p>${escapeHtml(byWord?.category || "word/token in this sentence")}</p></div>`);
     chunks.push("<div class=\"grammar-row\"><span class=\"grammar-label\">Use</span><p>This token is not a tense/aspect marker. Use it as normal sentence vocabulary here.</p></div>");
   }
