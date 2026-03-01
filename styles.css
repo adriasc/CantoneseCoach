@@ -2284,6 +2284,33 @@ body.reset-password-open .bottom-nav {
   margin-right: auto;
 }
 
+.reset-rule-list {
+  margin: 2px 0 2px;
+  padding-left: 18px;
+  display: grid;
+  gap: 3px;
+}
+
+.reset-rule-item {
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.reset-rule-item.is-missing {
+  color: #d5122d;
+}
+
+.reset-rule-item.is-ok {
+  color: #2f8f50;
+}
+
+#resetPasswordMessage {
+  color: #d5122d;
+  font-size: 0.9rem;
+  font-weight: 800;
+  min-height: 1.3em;
+}
+
 .auth-gate-brand {
   display: grid;
   place-items: center;

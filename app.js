@@ -2007,6 +2007,9 @@ const els = {
   resetPasswordConfirmInput: byId("resetPasswordConfirmInput"),
   saveNewPasswordBtn: byId("saveNewPasswordBtn"),
   resetPasswordMessage: byId("resetPasswordMessage"),
+  resetRuleLen: byId("resetRuleLen"),
+  resetRuleUpper: byId("resetRuleUpper"),
+  resetRuleNum: byId("resetRuleNum"),
   authGateLogo: byId("authGateLogo"),
   authGateStatus: byId("authGateStatus"),
   authGateMessage: byId("authGateMessage"),
@@ -2523,6 +2526,7 @@ function bindUI() {
       }
       const nextPassword = String(els.resetPasswordInput?.value || "");
       const confirmPassword = String(els.resetPasswordConfirmInput?.value || "");
+      const rules = updateResetPasswordRuleUI();
       if (!nextPassword || !confirmPassword) {
         setResetPasswordFeedback("Enter and confirm your new password.");
         return;
@@ -2531,9 +2535,12 @@ function bindUI() {
         setResetPasswordFeedback("Passwords do not match.");
         return;
       }
-      const passwordIssue = validateAuthPassword(nextPassword);
-      if (passwordIssue) {
-        setResetPasswordFeedback(passwordIssue);
+      const missing = [];
+      if (!rules.hasLen) missing.push("6+ characters");
+      if (!rules.hasUpper) missing.push("1 uppercase letter");
+      if (!rules.hasNum) missing.push("1 number");
+      if (missing.length > 0) {
+        setResetPasswordFeedback(`Missing: ${missing.join(", ")}.`);
         return;
       }
       setResetPasswordFeedback("Saving new password...");
@@ -2555,6 +2562,12 @@ function bindUI() {
       }
     });
   }
+  [els.resetPasswordInput, els.resetPasswordConfirmInput].forEach((input) => {
+    if (!input) return;
+    input.addEventListener("input", () => {
+      updateResetPasswordRuleUI();
+    });
+  });
   if (els.authGateModal) {
     ["touchstart", "mousedown", "click"].forEach((eventName) => {
       els.authGateModal.addEventListener(eventName, dismissAuthKeyboardOnOutsideTap, { passive: true });
@@ -3980,6 +3993,22 @@ function setResetPasswordFeedback(message) {
   els.resetPasswordMessage.textContent = String(message || "");
 }
 
+function updateResetPasswordRuleUI() {
+  const password = String(els.resetPasswordInput?.value || "");
+  const hasLen = password.length >= 6;
+  const hasUpper = /[A-Z]/.test(password);
+  const hasNum = /[0-9]/.test(password);
+  const setRule = (el, ok) => {
+    if (!el) return;
+    el.classList.toggle("is-ok", !!ok);
+    el.classList.toggle("is-missing", !ok);
+  };
+  setRule(els.resetRuleLen, hasLen);
+  setRule(els.resetRuleUpper, hasUpper);
+  setRule(els.resetRuleNum, hasNum);
+  return { hasLen, hasUpper, hasNum };
+}
+
 function openResetPasswordModal() {
   if (!els.resetPasswordModal) return;
   state.auth.resetOpen = true;
@@ -3989,6 +4018,7 @@ function openResetPasswordModal() {
   if (els.resetPasswordInput) els.resetPasswordInput.value = "";
   if (els.resetPasswordConfirmInput) els.resetPasswordConfirmInput.value = "";
   setResetPasswordFeedback("");
+  updateResetPasswordRuleUI();
 }
 
 function closeResetPasswordModal() {

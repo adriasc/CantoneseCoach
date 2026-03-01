@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.86</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.87</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -360,7 +360,7 @@
         <div id="authGateSignedIn" class="hidden">
           <p id="authGateUserInfo" class="side-v">Signed in.</p>
         </div>
-        <p id="authGateVersion" class="auth-gate-version">v19.4.86</p>
+        <p id="authGateVersion" class="auth-gate-version">v19.4.87</p>
       </div>
     </div>
     <div class="modal hidden" id="resetPasswordModal">
@@ -375,8 +375,12 @@
         <p class="example auth-gate-lead">Enter your new password to finish recovery.</p>
         <div class="side-auth-form auth-gate-form">
           <input id="resetPasswordInput" class="side-auth-input" type="password" placeholder="New Password" autocomplete="new-password">
+          <ul id="resetPasswordRules" class="reset-rule-list">
+            <li id="resetRuleLen" class="reset-rule-item is-missing">At least 6 characters</li>
+            <li id="resetRuleUpper" class="reset-rule-item is-missing">At least 1 uppercase letter</li>
+            <li id="resetRuleNum" class="reset-rule-item is-missing">At least 1 number</li>
+          </ul>
           <input id="resetPasswordConfirmInput" class="side-auth-input" type="password" placeholder="Confirm New Password" autocomplete="new-password">
-          <p class="example side-auth-hint">Password: 6+ chars, 1 uppercase, 1 number.</p>
           <button id="saveNewPasswordBtn" class="side-action-btn side-inline-btn auth-alt-btn" type="button">Save New Password</button>
           <p id="resetPasswordMessage" class="example side-auth-message"></p>
         </div>
