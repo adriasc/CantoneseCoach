@@ -1215,6 +1215,12 @@ body.book-mode .book-top-tabs {
   font-weight: 700;
 }
 
+.auth-captcha-wrap {
+  display: grid;
+  justify-content: center;
+  margin: 2px 0 4px;
+}
+
 .google-g {
   display: inline-flex;
   align-items: center;

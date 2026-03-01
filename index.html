@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.88</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.89</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -345,6 +345,9 @@
             <button id="authGateShowSignupBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-switch-btn auth-create-cta" type="button">Create Account</button>
           </div>
           <div id="authGateSignupView" class="auth-mode-view hidden">
+            <div id="authGateCaptchaWrap" class="auth-captcha-wrap hidden">
+              <div id="authGateCaptcha"></div>
+            </div>
             <button id="authGateSignUpBtn" class="side-action-btn side-inline-btn auth-alt-btn" type="button">Create Account</button>
             <p class="example side-auth-hint">If email confirmation is enabled in Supabase, check inbox/spam after Create Account.</p>
             <p class="auth-flow-cta">Already have an account?</p>
@@ -364,7 +367,7 @@
         <div id="authGateSignedIn" class="hidden">
           <p id="authGateUserInfo" class="side-v">Signed in.</p>
         </div>
-        <p id="authGateVersion" class="auth-gate-version">v19.4.88</p>
+        <p id="authGateVersion" class="auth-gate-version">v19.4.89</p>
       </div>
     </div>
     <div class="modal hidden" id="resetPasswordModal">
@@ -1420,6 +1423,9 @@
               <button id="authPanelShowSignupBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-switch-btn auth-create-cta" type="button">Create Account</button>
             </div>
             <div id="authPanelSignupView" class="auth-mode-view hidden">
+              <div id="authPanelCaptchaWrap" class="auth-captcha-wrap hidden">
+                <div id="authPanelCaptcha"></div>
+              </div>
               <button id="authSignUpBtn" class="side-action-btn side-inline-btn auth-alt-btn" type="button">Create Account</button>
               <p class="auth-flow-cta">Already have an account?</p>
               <button id="authPanelShowLoginBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-switch-btn" type="button">Back to Log In</button>
@@ -1455,6 +1461,7 @@
 
   <div id="fxLayer" class="fx-layer" aria-hidden="true"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
   <script src="supabase-config.js"></script>
   <script src="app.js"></script>
 </body>

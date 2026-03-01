@@ -1812,7 +1812,13 @@ const state = {
     gateUserInteracted: false,
     suppressAutoFocusUntil: 0,
     pendingEmail: "",
-    resendAvailableAt: 0
+    resendAvailableAt: 0,
+    captchaEnabled: false,
+    captchaSiteKey: "",
+    captchaPanelToken: "",
+    captchaGateToken: "",
+    captchaPanelWidgetId: null,
+    captchaGateWidgetId: null
   }
 };
 setRuntimeWordsForLookup(state.content?.words || []);
@@ -1844,6 +1850,8 @@ const els = {
   authEmailInput: byId("authEmailInput"),
   authPasswordInput: byId("authPasswordInput"),
   authPanelPasswordRule: byId("authPanelPasswordRule"),
+  authPanelCaptchaWrap: byId("authPanelCaptchaWrap"),
+  authPanelCaptcha: byId("authPanelCaptcha"),
   authPanelRuleLen: byId("authPanelRuleLen"),
   authPanelRuleUpper: byId("authPanelRuleUpper"),
   authPanelRuleNum: byId("authPanelRuleNum"),
@@ -2021,6 +2029,8 @@ const els = {
   authGateEmailInput: byId("authGateEmailInput"),
   authGatePasswordInput: byId("authGatePasswordInput"),
   authGatePasswordRule: byId("authGatePasswordRule"),
+  authGateCaptchaWrap: byId("authGateCaptchaWrap"),
+  authGateCaptcha: byId("authGateCaptcha"),
   authGateRuleLen: byId("authGateRuleLen"),
   authGateRuleUpper: byId("authGateRuleUpper"),
   authGateRuleNum: byId("authGateRuleNum"),
@@ -2094,6 +2104,7 @@ let layoutResizeObserver = null;
 const softResizeHeights = new WeakMap();
 const modalCloseTimers = new WeakMap();
 let authResendTick = null;
+let authCaptchaTick = null;
 let storyBankCache = null;
 const miniStoryPlayer = { token: 0, lineIndex: 0, chunkIndex: 0, active: false, paused: false };
 var AUTO_TOKEN_JYUTPING = Object.create(null);
@@ -2464,6 +2475,7 @@ function bindUI() {
     els.authPanelShowSignupBtn.addEventListener("click", () => {
       state.auth.pendingEmail = "";
       state.auth.resendAvailableAt = 0;
+      resetAuthCaptcha("panel");
       setAuthFormMode("signup");
       setAuthFeedback("");
     });
@@ -2478,6 +2490,7 @@ function bindUI() {
     els.authGateShowSignupBtn.addEventListener("click", () => {
       state.auth.pendingEmail = "";
       state.auth.resendAvailableAt = 0;
+      resetAuthCaptcha("gate");
       setAuthFormMode("signup");
       setAuthFeedback("");
     });
@@ -3969,7 +3982,8 @@ function getSupabaseConfig() {
   const config = window.CANCOACH_SUPABASE || {};
   return {
     url: String(config.url || "").trim(),
-    anonKey: String(config.anonKey || "").trim()
+    anonKey: String(config.anonKey || "").trim(),
+    turnstileSiteKey: String(config.turnstileSiteKey || config.captchaSiteKey || "").trim()
   };
 }
 
@@ -3998,6 +4012,64 @@ function setAuthFeedback(message) {
   if (els.userPanelMsg) els.userPanelMsg.textContent = text;
   if (els.authMessage) els.authMessage.textContent = text;
   if (els.authGateMessage) els.authGateMessage.textContent = text;
+}
+
+function resetAuthCaptcha(source = "panel") {
+  if (!state.auth.captchaEnabled || !window.turnstile) return;
+  const isGate = source === "gate";
+  const widgetId = isGate ? state.auth.captchaGateWidgetId : state.auth.captchaPanelWidgetId;
+  if (widgetId !== null && widgetId !== undefined) {
+    try { window.turnstile.reset(widgetId); } catch {}
+  }
+  if (isGate) state.auth.captchaGateToken = "";
+  else state.auth.captchaPanelToken = "";
+}
+
+function renderAuthCaptchaWidgets() {
+  if (!state.auth.captchaEnabled) return;
+  if (!window.turnstile) return;
+  if (els.authPanelCaptcha && state.auth.captchaPanelWidgetId === null) {
+    try {
+      state.auth.captchaPanelWidgetId = window.turnstile.render(els.authPanelCaptcha, {
+        sitekey: state.auth.captchaSiteKey,
+        callback: (token) => { state.auth.captchaPanelToken = String(token || ""); },
+        "expired-callback": () => { state.auth.captchaPanelToken = ""; },
+        "error-callback": () => { state.auth.captchaPanelToken = ""; }
+      });
+    } catch {}
+  }
+  if (els.authGateCaptcha && state.auth.captchaGateWidgetId === null) {
+    try {
+      state.auth.captchaGateWidgetId = window.turnstile.render(els.authGateCaptcha, {
+        sitekey: state.auth.captchaSiteKey,
+        callback: (token) => { state.auth.captchaGateToken = String(token || ""); },
+        "expired-callback": () => { state.auth.captchaGateToken = ""; },
+        "error-callback": () => { state.auth.captchaGateToken = ""; }
+      });
+    } catch {}
+  }
+}
+
+function startAuthCaptchaRenderLoop() {
+  if (!state.auth.captchaEnabled) return;
+  renderAuthCaptchaWidgets();
+  const done = state.auth.captchaPanelWidgetId !== null && state.auth.captchaGateWidgetId !== null;
+  if (done) {
+    if (authCaptchaTick) {
+      clearInterval(authCaptchaTick);
+      authCaptchaTick = null;
+    }
+    return;
+  }
+  if (authCaptchaTick) return;
+  authCaptchaTick = setInterval(() => {
+    renderAuthCaptchaWidgets();
+    const ready = state.auth.captchaPanelWidgetId !== null && state.auth.captchaGateWidgetId !== null;
+    if (ready) {
+      clearInterval(authCaptchaTick);
+      authCaptchaTick = null;
+    }
+  }, 500);
 }
 
 function setResetPasswordFeedback(message) {
@@ -4144,6 +4216,9 @@ function setAuthFormMode(mode = "login") {
   if (els.authGateLoginHelp) els.authGateLoginHelp.classList.toggle("hidden", signup || confirm);
   if (els.authPanelPasswordRule) els.authPanelPasswordRule.classList.toggle("hidden", !signup);
   if (els.authGatePasswordRule) els.authGatePasswordRule.classList.toggle("hidden", !signup);
+  if (els.authPanelCaptchaWrap) els.authPanelCaptchaWrap.classList.toggle("hidden", !(signup && state.auth.captchaEnabled));
+  if (els.authGateCaptchaWrap) els.authGateCaptchaWrap.classList.toggle("hidden", !(signup && state.auth.captchaEnabled));
+  if (signup && state.auth.captchaEnabled) startAuthCaptchaRenderLoop();
   if (signup) updateSignupPasswordRuleUI();
   renderAuthResendUI();
 }
@@ -4397,6 +4472,13 @@ async function handleAuthSignUp(source = "panel") {
     return;
   }
   blurAuthInputs();
+  if (state.auth.captchaEnabled) {
+    const captchaToken = source === "gate" ? state.auth.captchaGateToken : state.auth.captchaPanelToken;
+    if (!captchaToken) {
+      setAuthFeedback("Complete CAPTCHA first.");
+      return;
+    }
+  }
   const creds = getAuthCredentials(source);
   if (!creds) return;
   const passwordIssue = validateAuthPassword(creds.password);
@@ -4407,10 +4489,14 @@ async function handleAuthSignUp(source = "panel") {
   setAuthFeedback("Creating account...");
   setAuthBusy(true);
   try {
+    const captchaToken = source === "gate" ? state.auth.captchaGateToken : state.auth.captchaPanelToken;
     const { data, error } = await state.auth.client.auth.signUp({
       email: creds.email,
       password: creds.password,
-      options: { emailRedirectTo: buildPasswordResetRedirect() }
+      options: {
+        emailRedirectTo: buildPasswordResetRedirect(),
+        ...(state.auth.captchaEnabled && captchaToken ? { captchaToken } : {})
+      }
     });
     if (error) throw error;
     if (data?.session) {
@@ -4428,6 +4514,7 @@ async function handleAuthSignUp(source = "panel") {
   } catch (err) {
     setAuthFeedback(`Create account failed: ${err.message || "Unknown error"}`);
   } finally {
+    if (state.auth.captchaEnabled) resetAuthCaptcha(source);
     setAuthBusy(false);
   }
 }
@@ -4528,7 +4615,19 @@ async function handleAuthSignOut(closePanel = false) {
 
 async function initSupabaseAuth() {
   const canCreateClient = !!(window.supabase && typeof window.supabase.createClient === "function");
-  const { url, anonKey } = getSupabaseConfig();
+  const { url, anonKey, turnstileSiteKey } = getSupabaseConfig();
+  state.auth.captchaSiteKey = turnstileSiteKey;
+  state.auth.captchaEnabled = !!turnstileSiteKey;
+  if (!state.auth.captchaEnabled) {
+    if (authCaptchaTick) {
+      clearInterval(authCaptchaTick);
+      authCaptchaTick = null;
+    }
+    state.auth.captchaPanelToken = "";
+    state.auth.captchaGateToken = "";
+    state.auth.captchaPanelWidgetId = null;
+    state.auth.captchaGateWidgetId = null;
+  }
   if (!canCreateClient || !url || !anonKey) {
     state.auth.client = null;
     state.auth.user = null;
@@ -4545,6 +4644,7 @@ async function initSupabaseAuth() {
     state.auth.configured = true;
     state.auth.ready = false;
     renderAuthUI();
+    startAuthCaptchaRenderLoop();
 
     const { data, error } = await state.auth.client.auth.getSession();
     if (error) throw error;

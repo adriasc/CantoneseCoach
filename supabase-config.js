@@ -3,5 +3,6 @@
 window.CANCOACH_SUPABASE = {
   url: "https://gxtciqptknnurmnibwdn.supabase.co",
   anonKey: "sb_publishable_iW15eKUFOsfzj-60VkQcuw_UJItpOmA",
-  authRedirect: "https://adriasc.github.io/CantoneseCoach/"
+  authRedirect: "https://adriasc.github.io/CantoneseCoach/",
+  turnstileSiteKey: ""
 };
