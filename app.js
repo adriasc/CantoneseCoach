@@ -4473,6 +4473,14 @@ async function handleAuthSignUp(source = "panel") {
   }
   blurAuthInputs();
   if (state.auth.captchaEnabled) {
+    startAuthCaptchaRenderLoop();
+    const hasWidget = source === "gate"
+      ? state.auth.captchaGateWidgetId !== null
+      : state.auth.captchaPanelWidgetId !== null;
+    if (!window.turnstile || !hasWidget) {
+      setAuthFeedback("CAPTCHA widget not loaded. Refresh page and verify Turnstile hostname includes adriasc.github.io.");
+      return;
+    }
     const captchaToken = source === "gate" ? state.auth.captchaGateToken : state.auth.captchaPanelToken;
     if (!captchaToken) {
       setAuthFeedback("Complete CAPTCHA first.");
