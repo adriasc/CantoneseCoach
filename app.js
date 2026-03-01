@@ -3916,7 +3916,7 @@ function authResendRemainingSeconds() {
 function renderAuthResendUI() {
   const remaining = authResendRemainingSeconds();
   const base = "Resend Confirmation Email";
-  const btnLabel = remaining > 0 ? `${base} (${remaining}s)` : base;
+  const btnLabel = base;
   const timerText = remaining > 0 ? `You can resend in ${remaining}s.` : "You can resend now.";
   [els.authResendBtn, els.authGateResendBtn].forEach((btn) => {
     if (!btn) return;
@@ -3968,6 +3968,10 @@ function setAuthFormMode(mode = "login") {
   if (els.authGateLoginView) els.authGateLoginView.classList.toggle("hidden", signup || confirm);
   if (els.authGateSignupView) els.authGateSignupView.classList.toggle("hidden", !signup);
   if (els.authGateConfirmView) els.authGateConfirmView.classList.toggle("hidden", !confirm);
+  if (els.authEmailInput) els.authEmailInput.classList.toggle("hidden", confirm);
+  if (els.authPasswordInput) els.authPasswordInput.classList.toggle("hidden", confirm);
+  if (els.authGateEmailInput) els.authGateEmailInput.classList.toggle("hidden", confirm);
+  if (els.authGatePasswordInput) els.authGatePasswordInput.classList.toggle("hidden", confirm);
   if (els.authPanelTitleLogin) els.authPanelTitleLogin.classList.toggle("hidden", signup || confirm);
   if (els.authPanelTitleSignup) els.authPanelTitleSignup.classList.toggle("hidden", !signup);
   if (els.authPanelTitleConfirm) els.authPanelTitleConfirm.classList.toggle("hidden", !confirm);
@@ -4010,12 +4014,18 @@ function isTextEntryElement(target) {
   return !!target.closest("input, textarea, select, [contenteditable='true']");
 }
 
+function isActionElement(target) {
+  if (!target || !(target instanceof Element)) return false;
+  return !!target.closest("button, a, [role='button'], label");
+}
+
 function dismissAuthKeyboardOnOutsideTap(event) {
   if (!state.auth.gateOpen) return;
   if (isTextEntryElement(event?.target)) {
     state.auth.gateUserInteracted = true;
     return;
   }
+  if (isActionElement(event?.target)) return;
   blurAuthInputs();
 }
 
@@ -4215,6 +4225,7 @@ async function handleAuthSignUp(source = "panel") {
     setAuthFeedback("Supabase not configured yet.");
     return;
   }
+  blurAuthInputs();
   const creds = getAuthCredentials(source);
   if (!creds) return;
   const passwordIssue = validateAuthPassword(creds.password);
