@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.84</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.86</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -348,15 +348,38 @@
           </div>
           <div id="authGateConfirmView" class="auth-mode-view hidden">
             <p class="example auth-confirm-note">Your account was created. Check your email inbox/spam and confirm your address.</p>
+            <p id="authGateConfirmEmail" class="example side-auth-hint auth-confirm-email"></p>
+            <p class="example side-auth-hint">After confirming your email, tap Log In Now.</p>
+            <p class="example side-auth-hint">If you did not receive the email, tap Resend Confirmation Email.</p>
             <button id="authGateResendBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Resend Confirmation Email</button>
             <p id="authGateResendTimer" class="example side-auth-hint auth-resend-timer"></p>
+            <button id="authGateLoginNowBtn" class="side-action-btn side-inline-btn auth-alt-btn" type="button">Log In Now</button>
             <button id="authGateShowLoginFromConfirmBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-switch-btn" type="button">Back to Log In</button>
           </div>
         </div>
         <div id="authGateSignedIn" class="hidden">
           <p id="authGateUserInfo" class="side-v">Signed in.</p>
         </div>
-        <p id="authGateVersion" class="auth-gate-version">v19.4.84</p>
+        <p id="authGateVersion" class="auth-gate-version">v19.4.86</p>
+      </div>
+    </div>
+    <div class="modal hidden" id="resetPasswordModal">
+      <div class="modal-card auth-gate-card" role="dialog" aria-label="Reset password">
+        <div class="auth-gate-brand">
+          <img src="icons/icon-192.png" alt="App logo">
+        </div>
+        <div class="card-head">
+          <h2>Set New Password</h2>
+          <button id="closeResetPassword" class="ghost-btn" type="button" aria-label="Close reset password screen">✕</button>
+        </div>
+        <p class="example auth-gate-lead">Enter your new password to finish recovery.</p>
+        <div class="side-auth-form auth-gate-form">
+          <input id="resetPasswordInput" class="side-auth-input" type="password" placeholder="New Password" autocomplete="new-password">
+          <input id="resetPasswordConfirmInput" class="side-auth-input" type="password" placeholder="Confirm New Password" autocomplete="new-password">
+          <p class="example side-auth-hint">Password: 6+ chars, 1 uppercase, 1 number.</p>
+          <button id="saveNewPasswordBtn" class="side-action-btn side-inline-btn auth-alt-btn" type="button">Save New Password</button>
+          <p id="resetPasswordMessage" class="example side-auth-message"></p>
+        </div>
       </div>
     </div>
 
@@ -1391,8 +1414,12 @@
             </div>
             <div id="authPanelConfirmView" class="auth-mode-view hidden">
               <p class="example auth-confirm-note">Account created. Confirm your email from inbox/spam before logging in.</p>
+              <p id="authPanelConfirmEmail" class="example side-auth-hint auth-confirm-email"></p>
+              <p class="example side-auth-hint">After confirming your email, tap Log In Now.</p>
+              <p class="example side-auth-hint">If you did not receive the email, tap Resend Confirmation Email.</p>
               <button id="authResendBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Resend Confirmation Email</button>
               <p id="authPanelResendTimer" class="example side-auth-hint auth-resend-timer"></p>
+              <button id="authPanelLoginNowBtn" class="side-action-btn side-inline-btn auth-alt-btn" type="button">Log In Now</button>
               <button id="authPanelShowLoginFromConfirmBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-switch-btn" type="button">Back to Log In</button>
             </div>
           </div>

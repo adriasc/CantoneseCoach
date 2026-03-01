@@ -1806,6 +1806,7 @@ const state = {
     ready: false,
     busy: false,
     gateOpen: false,
+    resetOpen: false,
     gateDismissed: false,
     mode: "login",
     gateUserInteracted: false,
@@ -1853,12 +1854,14 @@ const els = {
   authPanelShowSignupBtn: byId("authPanelShowSignupBtn"),
   authPanelShowLoginBtn: byId("authPanelShowLoginBtn"),
   authPanelShowLoginFromConfirmBtn: byId("authPanelShowLoginFromConfirmBtn"),
+  authPanelLoginNowBtn: byId("authPanelLoginNowBtn"),
   authSignInBtn: byId("authSignInBtn"),
   authSignUpBtn: byId("authSignUpBtn"),
   authGoogleBtn: byId("authGoogleBtn"),
   authForgotBtn: byId("authForgotBtn"),
   authResendBtn: byId("authResendBtn"),
   authPanelResendTimer: byId("authPanelResendTimer"),
+  authPanelConfirmEmail: byId("authPanelConfirmEmail"),
   authSignOutBtn: byId("authSignOutBtn"),
   authUserInfo: byId("authUserInfo"),
   userEmailValue: byId("userEmailValue"),
@@ -1998,6 +2001,12 @@ const els = {
   settingsModal: byId("settingsModal"),
   analyticsConsentModal: byId("analyticsConsentModal"),
   authGateModal: byId("authGateModal"),
+  resetPasswordModal: byId("resetPasswordModal"),
+  closeResetPassword: byId("closeResetPassword"),
+  resetPasswordInput: byId("resetPasswordInput"),
+  resetPasswordConfirmInput: byId("resetPasswordConfirmInput"),
+  saveNewPasswordBtn: byId("saveNewPasswordBtn"),
+  resetPasswordMessage: byId("resetPasswordMessage"),
   authGateLogo: byId("authGateLogo"),
   authGateStatus: byId("authGateStatus"),
   authGateMessage: byId("authGateMessage"),
@@ -2017,12 +2026,14 @@ const els = {
   authGateShowSignupBtn: byId("authGateShowSignupBtn"),
   authGateShowLoginBtn: byId("authGateShowLoginBtn"),
   authGateShowLoginFromConfirmBtn: byId("authGateShowLoginFromConfirmBtn"),
+  authGateLoginNowBtn: byId("authGateLoginNowBtn"),
   authGateSignInBtn: byId("authGateSignInBtn"),
   authGateSignUpBtn: byId("authGateSignUpBtn"),
   authGateGoogleBtn: byId("authGateGoogleBtn"),
   authGateForgotBtn: byId("authGateForgotBtn"),
   authGateResendBtn: byId("authGateResendBtn"),
   authGateResendTimer: byId("authGateResendTimer"),
+  authGateConfirmEmail: byId("authGateConfirmEmail"),
   authGateUserInfo: byId("authGateUserInfo"),
   closeAuthGate: byId("closeAuthGate"),
   acceptAnalyticsBtn: byId("acceptAnalyticsBtn"),
@@ -2468,10 +2479,22 @@ function bindUI() {
       setAuthFeedback("");
     });
   }
+  if (els.authPanelLoginNowBtn) {
+    els.authPanelLoginNowBtn.addEventListener("click", () => {
+      setAuthFormMode("login");
+      setAuthFeedback("Email confirmed? Log in with your email and password.");
+    });
+  }
   if (els.authGateShowLoginFromConfirmBtn) {
     els.authGateShowLoginFromConfirmBtn.addEventListener("click", () => {
       setAuthFormMode("login");
       setAuthFeedback("");
+    });
+  }
+  if (els.authGateLoginNowBtn) {
+    els.authGateLoginNowBtn.addEventListener("click", () => {
+      setAuthFormMode("login");
+      setAuthFeedback("Email confirmed? Log in with your email and password.");
     });
   }
   if (els.authGateShowLoginBtn) {
@@ -2485,6 +2508,51 @@ function bindUI() {
       state.auth.gateDismissed = true;
       hideAuthGate();
       setAuthFeedback("Login skipped for now (testing mode).");
+    });
+  }
+  if (els.closeResetPassword) {
+    els.closeResetPassword.addEventListener("click", () => {
+      closeResetPasswordModal();
+    });
+  }
+  if (els.saveNewPasswordBtn) {
+    els.saveNewPasswordBtn.addEventListener("click", async () => {
+      if (!state.auth.client) {
+        setResetPasswordFeedback("Supabase is not configured.");
+        return;
+      }
+      const nextPassword = String(els.resetPasswordInput?.value || "");
+      const confirmPassword = String(els.resetPasswordConfirmInput?.value || "");
+      if (!nextPassword || !confirmPassword) {
+        setResetPasswordFeedback("Enter and confirm your new password.");
+        return;
+      }
+      if (nextPassword !== confirmPassword) {
+        setResetPasswordFeedback("Passwords do not match.");
+        return;
+      }
+      const passwordIssue = validateAuthPassword(nextPassword);
+      if (passwordIssue) {
+        setResetPasswordFeedback(passwordIssue);
+        return;
+      }
+      setResetPasswordFeedback("Saving new password...");
+      setAuthBusy(true);
+      try {
+        const { error } = await state.auth.client.auth.updateUser({ password: nextPassword });
+        if (error) throw error;
+        setResetPasswordFeedback("Password updated. You can log in now.");
+        setAuthFeedback("Password updated. Please log in.");
+        setTimeout(() => {
+          closeResetPasswordModal();
+          setAuthFormMode("login");
+          showAuthGate();
+        }, 450);
+      } catch (err) {
+        setResetPasswordFeedback(`Could not update password: ${err.message || "Unknown error"}`);
+      } finally {
+        setAuthBusy(false);
+      }
     });
   }
   if (els.authGateModal) {
@@ -3907,6 +3975,30 @@ function setAuthFeedback(message) {
   if (els.authGateMessage) els.authGateMessage.textContent = text;
 }
 
+function setResetPasswordFeedback(message) {
+  if (!els.resetPasswordMessage) return;
+  els.resetPasswordMessage.textContent = String(message || "");
+}
+
+function openResetPasswordModal() {
+  if (!els.resetPasswordModal) return;
+  state.auth.resetOpen = true;
+  document.body.classList.add("reset-password-open");
+  if (els.bottomNav) els.bottomNav.classList.add("hidden");
+  openModalAnimated(els.resetPasswordModal);
+  if (els.resetPasswordInput) els.resetPasswordInput.value = "";
+  if (els.resetPasswordConfirmInput) els.resetPasswordConfirmInput.value = "";
+  setResetPasswordFeedback("");
+}
+
+function closeResetPasswordModal() {
+  if (!els.resetPasswordModal) return;
+  state.auth.resetOpen = false;
+  document.body.classList.remove("reset-password-open");
+  configureBottomMenu();
+  closeModalAnimated(els.resetPasswordModal);
+}
+
 function authResendRemainingSeconds() {
   const ms = Number(state.auth.resendAvailableAt || 0) - Date.now();
   if (ms <= 0) return 0;
@@ -3918,6 +4010,8 @@ function renderAuthResendUI() {
   const base = "Resend Confirmation Email";
   const btnLabel = base;
   const timerText = remaining > 0 ? `You can resend in ${remaining}s.` : "You can resend now.";
+  const pendingEmail = String(state.auth.pendingEmail || "").trim();
+  const confirmText = pendingEmail ? `Confirmation sent to: ${pendingEmail}` : "";
   [els.authResendBtn, els.authGateResendBtn].forEach((btn) => {
     if (!btn) return;
     btn.textContent = btnLabel;
@@ -3925,6 +4019,14 @@ function renderAuthResendUI() {
   });
   if (els.authPanelResendTimer) els.authPanelResendTimer.textContent = timerText;
   if (els.authGateResendTimer) els.authGateResendTimer.textContent = timerText;
+  if (els.authPanelConfirmEmail) {
+    els.authPanelConfirmEmail.textContent = confirmText;
+    els.authPanelConfirmEmail.classList.toggle("hidden", !confirmText);
+  }
+  if (els.authGateConfirmEmail) {
+    els.authGateConfirmEmail.textContent = confirmText;
+    els.authGateConfirmEmail.classList.toggle("hidden", !confirmText);
+  }
 }
 
 function startAuthResendTimer() {
@@ -4159,8 +4261,10 @@ function renderAuthUI() {
   }
   startAuthResendTimer();
   setAuthFormMode(state.auth.mode || "login");
-  if (shouldRequireAuthGate()) showAuthGate();
-  else hideAuthGate();
+  if (!state.auth.resetOpen) {
+    if (shouldRequireAuthGate()) showAuthGate();
+    else hideAuthGate();
+  }
 }
 
 function getAuthCredentials(source = "panel") {
@@ -4197,6 +4301,11 @@ function readAuthUrlHint() {
     return "Email confirmed. You can log in now.";
   }
   return "";
+}
+
+function hasRecoveryInUrl() {
+  const raw = `${window.location.search || ""}&${window.location.hash || ""}`.toLowerCase();
+  return raw.includes("type=recovery");
 }
 
 async function handleAuthSignIn(source = "panel") {
@@ -4382,12 +4491,17 @@ async function initSupabaseAuth() {
     renderAuthUI();
     const authHint = readAuthUrlHint();
     if (authHint) setAuthFeedback(authHint);
+    if (hasRecoveryInUrl()) {
+      openResetPasswordModal();
+      setResetPasswordFeedback("Recovery link opened. Enter your new password.");
+    }
 
     state.auth.client.auth.onAuthStateChange((_event, session) => {
       state.auth.user = session?.user || null;
       state.auth.ready = true;
       if (_event === "PASSWORD_RECOVERY") {
-        setAuthFeedback("Recovery link opened. Set a new password with Reset/Change.");
+        openResetPasswordModal();
+        setResetPasswordFeedback("Recovery link opened. Enter your new password.");
       }
       renderAuthUI();
     });

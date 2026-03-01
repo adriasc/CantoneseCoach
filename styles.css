@@ -1207,6 +1207,14 @@ body.book-mode .book-top-tabs {
   font-weight: 600;
 }
 
+.auth-confirm-email {
+  margin: 0;
+  text-align: center;
+  color: #6f4639;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
 .google-g {
   display: inline-flex;
   align-items: center;
@@ -2221,6 +2229,10 @@ body.auth-gate-open .bottom-nav {
   display: none !important;
 }
 
+body.reset-password-open .bottom-nav {
+  display: none !important;
+}
+
 #authGateModal .modal-card {
   width: 100vw;
   max-width: none;
@@ -2236,6 +2248,40 @@ body.auth-gate-open .bottom-nav {
   flex-direction: column;
   justify-content: flex-start;
   gap: 8px;
+}
+
+#resetPasswordModal {
+  z-index: 92;
+  background: #fff3ea;
+  padding: 0;
+  align-items: stretch;
+  justify-content: stretch;
+}
+
+#resetPasswordModal .modal-card {
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: 100dvh;
+  background: linear-gradient(180deg, #fff4ec 0%, #fff8f2 100%);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 74px 16px 28px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+#resetPasswordModal .auth-gate-brand,
+#resetPasswordModal .card-head,
+#resetPasswordModal .auth-gate-lead,
+#resetPasswordModal .auth-gate-form {
+  width: min(350px, 88vw);
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .auth-gate-brand {
@@ -2260,7 +2306,8 @@ body.auth-gate-open .bottom-nav {
   color: #4b2f2a;
 }
 
-#closeAuthGate {
+#closeAuthGate,
+#closeResetPassword {
   min-width: auto;
   border: 0;
   background: transparent;
@@ -2271,13 +2318,16 @@ body.auth-gate-open .bottom-nav {
   padding: 0 4px;
 }
 
-#closeAuthGate:hover {
+#closeAuthGate:hover,
+#closeResetPassword:hover {
   color: #5e433b;
   transform: scale(1.04);
 }
 
 #closeAuthGate:focus,
-#closeAuthGate:focus-visible {
+#closeAuthGate:focus-visible,
+#closeResetPassword:focus,
+#closeResetPassword:focus-visible {
   outline: none;
   box-shadow: none;
 }
