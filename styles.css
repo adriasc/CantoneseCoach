@@ -1049,6 +1049,30 @@ body.book-mode .book-top-tabs {
   justify-self: end;
 }
 
+.password-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 8px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+}
+
+.password-row .side-inline {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.password-row #changePasswordBtn.side-inline-btn {
+  min-width: 88px;
+  padding: 6px 10px;
+}
+
+.password-row #userPasswordHint {
+  display: none;
+}
+
 .side-auth-status {
   margin: 0;
   color: #6a3f2f;
