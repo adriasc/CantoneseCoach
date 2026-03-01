@@ -1191,6 +1191,22 @@ body.book-mode .book-top-tabs {
   margin-bottom: 14px;
 }
 
+.auth-confirm-note {
+  margin: 0;
+  text-align: center;
+  color: #6a3f2f;
+  font-size: 0.88rem;
+  line-height: 1.42;
+}
+
+.auth-resend-timer {
+  margin: 0;
+  text-align: center;
+  color: #8b5a49;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
 .google-g {
   display: inline-flex;
   align-items: center;
@@ -2214,7 +2230,7 @@ body.auth-gate-open .bottom-nav {
   border: 0;
   border-radius: 0;
   box-shadow: none;
-  padding: 44px 16px 28px;
+  padding: 50px 16px 28px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;

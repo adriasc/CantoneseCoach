@@ -1810,7 +1810,8 @@ const state = {
     mode: "login",
     gateUserInteracted: false,
     suppressAutoFocusUntil: 0,
-    canResendConfirmation: false
+    pendingEmail: "",
+    resendAvailableAt: 0
   }
 };
 setRuntimeWordsForLookup(state.content?.words || []);
@@ -1844,16 +1845,20 @@ const els = {
   authPanelPasswordRule: byId("authPanelPasswordRule"),
   authPanelLoginView: byId("authPanelLoginView"),
   authPanelSignupView: byId("authPanelSignupView"),
+  authPanelConfirmView: byId("authPanelConfirmView"),
   authPanelTitleLogin: byId("authPanelTitleLogin"),
   authPanelTitleSignup: byId("authPanelTitleSignup"),
+  authPanelTitleConfirm: byId("authPanelTitleConfirm"),
   authPanelLoginHelp: byId("authPanelLoginHelp"),
   authPanelShowSignupBtn: byId("authPanelShowSignupBtn"),
   authPanelShowLoginBtn: byId("authPanelShowLoginBtn"),
+  authPanelShowLoginFromConfirmBtn: byId("authPanelShowLoginFromConfirmBtn"),
   authSignInBtn: byId("authSignInBtn"),
   authSignUpBtn: byId("authSignUpBtn"),
   authGoogleBtn: byId("authGoogleBtn"),
   authForgotBtn: byId("authForgotBtn"),
   authResendBtn: byId("authResendBtn"),
+  authPanelResendTimer: byId("authPanelResendTimer"),
   authSignOutBtn: byId("authSignOutBtn"),
   authUserInfo: byId("authUserInfo"),
   userEmailValue: byId("userEmailValue"),
@@ -2003,17 +2008,21 @@ const els = {
   authGatePasswordRule: byId("authGatePasswordRule"),
   authGateLoginView: byId("authGateLoginView"),
   authGateSignupView: byId("authGateSignupView"),
+  authGateConfirmView: byId("authGateConfirmView"),
   authGateTitleLogin: byId("authGateTitleLogin"),
   authGateTitleSignup: byId("authGateTitleSignup"),
+  authGateTitleConfirm: byId("authGateTitleConfirm"),
   authGateLoginHelp: byId("authGateLoginHelp"),
   authGateVersion: byId("authGateVersion"),
   authGateShowSignupBtn: byId("authGateShowSignupBtn"),
   authGateShowLoginBtn: byId("authGateShowLoginBtn"),
+  authGateShowLoginFromConfirmBtn: byId("authGateShowLoginFromConfirmBtn"),
   authGateSignInBtn: byId("authGateSignInBtn"),
   authGateSignUpBtn: byId("authGateSignUpBtn"),
   authGateGoogleBtn: byId("authGateGoogleBtn"),
   authGateForgotBtn: byId("authGateForgotBtn"),
   authGateResendBtn: byId("authGateResendBtn"),
+  authGateResendTimer: byId("authGateResendTimer"),
   authGateUserInfo: byId("authGateUserInfo"),
   closeAuthGate: byId("closeAuthGate"),
   acceptAnalyticsBtn: byId("acceptAnalyticsBtn"),
@@ -2064,6 +2073,7 @@ let bossAdvanceTimer = null;
 let layoutResizeObserver = null;
 const softResizeHeights = new WeakMap();
 const modalCloseTimers = new WeakMap();
+let authResendTick = null;
 let storyBankCache = null;
 const miniStoryPlayer = { token: 0, lineIndex: 0, chunkIndex: 0, active: false, paused: false };
 var AUTO_TOKEN_JYUTPING = Object.create(null);
@@ -2432,7 +2442,8 @@ function bindUI() {
   }
   if (els.authPanelShowSignupBtn) {
     els.authPanelShowSignupBtn.addEventListener("click", () => {
-      state.auth.canResendConfirmation = false;
+      state.auth.pendingEmail = "";
+      state.auth.resendAvailableAt = 0;
       setAuthFormMode("signup");
       setAuthFeedback("");
     });
@@ -2445,8 +2456,21 @@ function bindUI() {
   }
   if (els.authGateShowSignupBtn) {
     els.authGateShowSignupBtn.addEventListener("click", () => {
-      state.auth.canResendConfirmation = false;
+      state.auth.pendingEmail = "";
+      state.auth.resendAvailableAt = 0;
       setAuthFormMode("signup");
+      setAuthFeedback("");
+    });
+  }
+  if (els.authPanelShowLoginFromConfirmBtn) {
+    els.authPanelShowLoginFromConfirmBtn.addEventListener("click", () => {
+      setAuthFormMode("login");
+      setAuthFeedback("");
+    });
+  }
+  if (els.authGateShowLoginFromConfirmBtn) {
+    els.authGateShowLoginFromConfirmBtn.addEventListener("click", () => {
+      setAuthFormMode("login");
       setAuthFeedback("");
     });
   }
@@ -3873,6 +3897,7 @@ function setAuthBusy(isBusy) {
   ].forEach((btn) => {
     if (btn) btn.disabled = !!isBusy;
   });
+  renderAuthResendUI();
 }
 
 function setAuthFeedback(message) {
@@ -3882,10 +3907,51 @@ function setAuthFeedback(message) {
   if (els.authGateMessage) els.authGateMessage.textContent = text;
 }
 
+function authResendRemainingSeconds() {
+  const ms = Number(state.auth.resendAvailableAt || 0) - Date.now();
+  if (ms <= 0) return 0;
+  return Math.ceil(ms / 1000);
+}
+
+function renderAuthResendUI() {
+  const remaining = authResendRemainingSeconds();
+  const base = "Resend Confirmation Email";
+  const btnLabel = remaining > 0 ? `${base} (${remaining}s)` : base;
+  const timerText = remaining > 0 ? `You can resend in ${remaining}s.` : "You can resend now.";
+  [els.authResendBtn, els.authGateResendBtn].forEach((btn) => {
+    if (!btn) return;
+    btn.textContent = btnLabel;
+    btn.disabled = state.auth.busy || remaining > 0;
+  });
+  if (els.authPanelResendTimer) els.authPanelResendTimer.textContent = timerText;
+  if (els.authGateResendTimer) els.authGateResendTimer.textContent = timerText;
+}
+
+function startAuthResendTimer() {
+  if (authResendTick) {
+    clearInterval(authResendTick);
+    authResendTick = null;
+  }
+  renderAuthResendUI();
+  if (authResendRemainingSeconds() <= 0) return;
+  authResendTick = setInterval(() => {
+    renderAuthResendUI();
+    if (authResendRemainingSeconds() <= 0) {
+      clearInterval(authResendTick);
+      authResendTick = null;
+    }
+  }, 1000);
+}
+
 function setAuthFormMode(mode = "login") {
-  const normalized = String(mode || "").trim().toLowerCase() === "signup" ? "signup" : "login";
+  const raw = String(mode || "").trim().toLowerCase();
+  const normalized = raw === "signup" || raw === "confirm" ? raw : "login";
   state.auth.mode = normalized;
   if (normalized === "signup") {
+    state.auth.gateUserInteracted = false;
+    state.auth.suppressAutoFocusUntil = 0;
+    blurAuthInputs();
+  } else if (normalized === "confirm") {
     state.auth.gateUserInteracted = false;
     state.auth.suppressAutoFocusUntil = 0;
     blurAuthInputs();
@@ -3895,21 +3961,24 @@ function setAuthFormMode(mode = "login") {
     blurAuthInputs();
   }
   const signup = normalized === "signup";
-  if (els.authPanelLoginView) els.authPanelLoginView.classList.toggle("hidden", signup);
+  const confirm = normalized === "confirm";
+  if (els.authPanelLoginView) els.authPanelLoginView.classList.toggle("hidden", signup || confirm);
   if (els.authPanelSignupView) els.authPanelSignupView.classList.toggle("hidden", !signup);
-  if (els.authGateLoginView) els.authGateLoginView.classList.toggle("hidden", signup);
+  if (els.authPanelConfirmView) els.authPanelConfirmView.classList.toggle("hidden", !confirm);
+  if (els.authGateLoginView) els.authGateLoginView.classList.toggle("hidden", signup || confirm);
   if (els.authGateSignupView) els.authGateSignupView.classList.toggle("hidden", !signup);
-  if (els.authPanelTitleLogin) els.authPanelTitleLogin.classList.toggle("hidden", signup);
+  if (els.authGateConfirmView) els.authGateConfirmView.classList.toggle("hidden", !confirm);
+  if (els.authPanelTitleLogin) els.authPanelTitleLogin.classList.toggle("hidden", signup || confirm);
   if (els.authPanelTitleSignup) els.authPanelTitleSignup.classList.toggle("hidden", !signup);
-  if (els.authGateTitleLogin) els.authGateTitleLogin.classList.toggle("hidden", signup);
+  if (els.authPanelTitleConfirm) els.authPanelTitleConfirm.classList.toggle("hidden", !confirm);
+  if (els.authGateTitleLogin) els.authGateTitleLogin.classList.toggle("hidden", signup || confirm);
   if (els.authGateTitleSignup) els.authGateTitleSignup.classList.toggle("hidden", !signup);
-  if (els.authPanelLoginHelp) els.authPanelLoginHelp.classList.toggle("hidden", signup);
-  if (els.authGateLoginHelp) els.authGateLoginHelp.classList.toggle("hidden", signup);
+  if (els.authGateTitleConfirm) els.authGateTitleConfirm.classList.toggle("hidden", !confirm);
+  if (els.authPanelLoginHelp) els.authPanelLoginHelp.classList.toggle("hidden", signup || confirm);
+  if (els.authGateLoginHelp) els.authGateLoginHelp.classList.toggle("hidden", signup || confirm);
   if (els.authPanelPasswordRule) els.authPanelPasswordRule.classList.toggle("hidden", !signup);
   if (els.authGatePasswordRule) els.authGatePasswordRule.classList.toggle("hidden", !signup);
-  const showResend = signup && !!state.auth.canResendConfirmation;
-  if (els.authResendBtn) els.authResendBtn.classList.toggle("hidden", !showResend);
-  if (els.authGateResendBtn) els.authGateResendBtn.classList.toggle("hidden", !showResend);
+  renderAuthResendUI();
 }
 
 function validateAuthPassword(password) {
@@ -4054,6 +4123,8 @@ function renderAuthUI() {
   }
   if (user?.email) {
     state.auth.gateDismissed = false;
+    state.auth.pendingEmail = "";
+    state.auth.resendAvailableAt = 0;
     if (els.authEmailInput) els.authEmailInput.value = user.email;
     if (els.authGateEmailInput) els.authGateEmailInput.value = user.email;
   }
@@ -4076,6 +4147,7 @@ function renderAuthUI() {
   } else if (/supabase not configured/i.test(String(els.authMessage?.textContent || ""))) {
     setAuthFeedback("");
   }
+  startAuthResendTimer();
   setAuthFormMode(state.auth.mode || "login");
   if (shouldRequireAuthGate()) showAuthGate();
   else hideAuthGate();
@@ -4159,13 +4231,17 @@ async function handleAuthSignUp(source = "panel") {
       options: { emailRedirectTo: buildPasswordResetRedirect() }
     });
     if (error) throw error;
-    state.auth.canResendConfirmation = true;
-    setAuthFormMode("signup");
     if (data?.session) {
       state.auth.gateDismissed = false;
+      state.auth.pendingEmail = "";
+      state.auth.resendAvailableAt = 0;
       setAuthFeedback("Account created and logged in.");
     } else {
-      setAuthFeedback(`Account created. Check your email for confirmation. Redirect URL: ${buildPasswordResetRedirect()}`);
+      state.auth.pendingEmail = creds.email;
+      state.auth.resendAvailableAt = Date.now() + 60000;
+      setAuthFormMode("confirm");
+      startAuthResendTimer();
+      setAuthFeedback("Account created. Check your email and confirm your address.");
     }
   } catch (err) {
     setAuthFeedback(`Create account failed: ${err.message || "Unknown error"}`);
@@ -4200,7 +4276,12 @@ async function handleAuthResendConfirmation(source = "panel") {
     setAuthFeedback("Supabase not configured yet.");
     return;
   }
-  const email = getAuthEmailOnly(source);
+  if (authResendRemainingSeconds() > 0) {
+    setAuthFeedback(`Please wait ${authResendRemainingSeconds()}s before resending.`);
+    return;
+  }
+  const savedEmail = String(state.auth.pendingEmail || "").trim().toLowerCase();
+  const email = savedEmail || getAuthEmailOnly(source);
   if (!email) return;
   setAuthFeedback("Resending confirmation email...");
   setAuthBusy(true);
@@ -4212,6 +4293,9 @@ async function handleAuthResendConfirmation(source = "panel") {
       options: { emailRedirectTo: redirectTo }
     });
     if (error) throw error;
+    state.auth.pendingEmail = email;
+    state.auth.resendAvailableAt = Date.now() + 60000;
+    startAuthResendTimer();
     setAuthFeedback("Confirmation email sent again. Check inbox/spam.");
   } catch (err) {
     setAuthFeedback(`Resend failed: ${err.message || "Unknown error"}`);

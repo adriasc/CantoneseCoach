@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.82</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.83</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -324,6 +324,7 @@
         <p id="authGateMessage" class="example side-auth-message"></p>
         <p id="authGateTitleLogin" class="auth-mode-title">Log in by Email</p>
         <p id="authGateTitleSignup" class="auth-mode-title hidden">Create Account</p>
+        <p id="authGateTitleConfirm" class="auth-mode-title hidden">Check Your Email</p>
         <div id="authGateSignedOut" class="side-auth-form auth-gate-form">
           <input id="authGateEmailInput" class="side-auth-input" type="email" placeholder="Email" autocomplete="email">
           <input id="authGatePasswordInput" class="side-auth-input" type="password" placeholder="Password" autocomplete="current-password">
@@ -341,16 +342,21 @@
           </div>
           <div id="authGateSignupView" class="auth-mode-view hidden">
             <button id="authGateSignUpBtn" class="side-action-btn side-inline-btn auth-alt-btn" type="button">Create Account</button>
-            <button id="authGateResendBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn hidden" type="button">Resend Confirmation Email</button>
             <p class="example side-auth-hint">If email confirmation is enabled in Supabase, check inbox/spam after Create Account.</p>
             <p class="auth-flow-cta">Already have an account?</p>
             <button id="authGateShowLoginBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-switch-btn" type="button">Back to Log In</button>
+          </div>
+          <div id="authGateConfirmView" class="auth-mode-view hidden">
+            <p class="example auth-confirm-note">Your account was created. Check your email inbox/spam and confirm your address.</p>
+            <button id="authGateResendBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Resend Confirmation Email</button>
+            <p id="authGateResendTimer" class="example side-auth-hint auth-resend-timer"></p>
+            <button id="authGateShowLoginFromConfirmBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-switch-btn" type="button">Back to Log In</button>
           </div>
         </div>
         <div id="authGateSignedIn" class="hidden">
           <p id="authGateUserInfo" class="side-v">Signed in.</p>
         </div>
-        <p id="authGateVersion" class="auth-gate-version">v19.4.82</p>
+        <p id="authGateVersion" class="auth-gate-version">v19.4.83</p>
       </div>
     </div>
 
@@ -1362,6 +1368,7 @@
           <p id="authMessage" class="example side-auth-message"></p>
           <p id="authPanelTitleLogin" class="auth-mode-title">Log in by Email</p>
           <p id="authPanelTitleSignup" class="auth-mode-title hidden">Create Account</p>
+          <p id="authPanelTitleConfirm" class="auth-mode-title hidden">Check Your Email</p>
           <div id="authSignedOut" class="side-auth-form">
             <input id="authEmailInput" class="side-auth-input" type="email" placeholder="Email" autocomplete="email">
             <input id="authPasswordInput" class="side-auth-input" type="password" placeholder="Password" autocomplete="current-password">
@@ -1379,9 +1386,14 @@
             </div>
             <div id="authPanelSignupView" class="auth-mode-view hidden">
               <button id="authSignUpBtn" class="side-action-btn side-inline-btn auth-alt-btn" type="button">Create Account</button>
-              <button id="authResendBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn hidden" type="button">Resend Confirmation Email</button>
               <p class="auth-flow-cta">Already have an account?</p>
               <button id="authPanelShowLoginBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-switch-btn" type="button">Back to Log In</button>
+            </div>
+            <div id="authPanelConfirmView" class="auth-mode-view hidden">
+              <p class="example auth-confirm-note">Account created. Confirm your email from inbox/spam before logging in.</p>
+              <button id="authResendBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Resend Confirmation Email</button>
+              <p id="authPanelResendTimer" class="example side-auth-hint auth-resend-timer"></p>
+              <button id="authPanelShowLoginFromConfirmBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-switch-btn" type="button">Back to Log In</button>
             </div>
           </div>
           <div id="authSignedIn" class="hidden">
