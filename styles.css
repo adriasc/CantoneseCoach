@@ -871,6 +871,7 @@ body.book-mode .book-top-tabs {
   display: grid;
 }
 
+/* Legacy User drawer styles (kept intentionally for possible rollback). */
 .side-panel {
   position: fixed;
   inset: 0;

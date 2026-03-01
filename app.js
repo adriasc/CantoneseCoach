@@ -3514,6 +3514,15 @@ const MINI_STORY_LIBRARY = [
   }
 ];
 
+// USER SURFACE MODE
+// Current active UI: "page" (panel-user in main navigation).
+// Legacy retained: side-panel functions/styles/markup hooks for easy rollback.
+// If you want to restore legacy behavior later:
+// 1) Re-add the side-panel wrapper markup for #userPanel in index.html
+// 2) Re-enable trigger by wiring the User button to openUserSidePanel()
+// 3) Keep panel-user hidden or remove it
+const USER_SURFACE_MODE = "page";
+
 function normalizeMiniStoryId(inputId) {
   const id = String(inputId || "").trim();
   if (MINI_STORY_LIBRARY.some((story) => story.id === id)) return id;
@@ -3936,6 +3945,7 @@ function speakMiniStoryChunk(playToken) {
   window.speechSynthesis.speak(utterance);
 }
 
+// Legacy: retained for fast rollback to slide-in user drawer.
 function openUserSidePanel() {
   if (!els.userPanel) return;
   renderUserPanel();
@@ -3950,6 +3960,7 @@ function openUserSidePanel() {
   });
 }
 
+// Legacy: retained for fast rollback to slide-in user drawer.
 function closeUserSidePanel(duration = 230) {
   if (!els.userPanel || els.userPanel.classList.contains("hidden")) return;
   if (modalCloseTimers.has(els.userPanel)) {
