@@ -1737,6 +1737,32 @@ function normalizeGameState(input) {
   };
 }
 
+const USER_AVATAR_LIBRARY = [
+  { id: "smile", glyph: "🙂", label: "Smile" },
+  { id: "cool", glyph: "😎", label: "Cool" },
+  { id: "fox", glyph: "🦊", label: "Fox" },
+  { id: "rabbit", glyph: "🐰", label: "Rabbit" },
+  { id: "cat", glyph: "🐱", label: "Cat" },
+  { id: "panda", glyph: "🐼", label: "Panda" },
+  { id: "dragon", glyph: "🐲", label: "Dragon" },
+  { id: "lion", glyph: "🦁", label: "Lion" },
+  { id: "tea", glyph: "🍵", label: "Tea" },
+  { id: "taxi", glyph: "🚕", label: "Taxi" },
+  { id: "book", glyph: "📘", label: "Book" },
+  { id: "star", glyph: "🌟", label: "Star" }
+];
+
+function normalizeAvatarId(value) {
+  const raw = String(value || "").trim().toLowerCase();
+  if (USER_AVATAR_LIBRARY.some((item) => item.id === raw)) return raw;
+  return "smile";
+}
+
+function getAvatarMeta(value) {
+  const id = normalizeAvatarId(value);
+  return USER_AVATAR_LIBRARY.find((item) => item.id === id) || USER_AVATAR_LIBRARY[0];
+}
+
 const state = {
   content: loadContent(),
   known: new Set(loadJson(STORAGE_KEYS.known, [])),
@@ -1767,7 +1793,8 @@ const state = {
     audioNoiseOn: false,
     audioNoiseLevel: 0.25,
     audioNoiseType: "white",
-    analyticsConsent: "unknown"
+    analyticsConsent: "unknown",
+    avatarId: "smile"
   }),
   availableVoices: [],
   rotation: { words: [], patternSentences: [], quizSentences: [], questionSentences: [], tonePairs: [], exerciseSentences: [] },
@@ -1833,9 +1860,17 @@ const els = {
   closeUserPanel: byId("closeUserPanel"),
   closeUserPanelBackdrop: byId("closeUserPanelBackdrop"),
   userPanelVersion: byId("userPanelVersion"),
+  userAvatarBtn: byId("userAvatarBtn"),
+  userAvatarGlyph: byId("userAvatarGlyph"),
+  avatarPickerModal: byId("avatarPickerModal"),
+  closeAvatarPicker: byId("closeAvatarPicker"),
+  avatarChoiceButtons: [...document.querySelectorAll(".avatar-choice-btn")],
   changeEmailBtn: byId("changeEmailBtn"),
   upgradeAccountBtn: byId("upgradeAccountBtn"),
   userLanguageMode: byId("userLanguageMode"),
+  userAuthMethod: byId("userAuthMethod"),
+  userAuthHint: byId("userAuthHint"),
+  userPasswordHint: byId("userPasswordHint"),
   changePasswordBtn: byId("changePasswordBtn"),
   logOutBtn: byId("logOutBtn"),
   clearCacheBtn: byId("clearCacheBtn"),
@@ -2269,6 +2304,11 @@ function initializeApp() {
     state.prefs.miniStoryLens = true;
     prefsChanged = true;
   }
+  const normalizedAvatar = normalizeAvatarId(state.prefs.avatarId);
+  if (state.prefs.avatarId !== normalizedAvatar) {
+    state.prefs.avatarId = normalizedAvatar;
+    prefsChanged = true;
+  }
   const consent = normalizeAnalyticsConsent(state.prefs.analyticsConsent);
   if (state.prefs.analyticsConsent !== consent) {
     state.prefs.analyticsConsent = consent;
@@ -2371,10 +2411,39 @@ function bindUI() {
       else renderSearchHint();
     });
   }
+  if (els.userAvatarBtn) {
+    els.userAvatarBtn.addEventListener("click", () => {
+      openAvatarPicker();
+    });
+  }
+  if (els.closeAvatarPicker) {
+    els.closeAvatarPicker.addEventListener("click", () => {
+      closeAvatarPicker();
+    });
+  }
+  if (els.avatarPickerModal) {
+    els.avatarPickerModal.addEventListener("click", (event) => {
+      if (event.target === els.avatarPickerModal) closeAvatarPicker();
+    });
+  }
+  els.avatarChoiceButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const avatarId = String(btn.dataset.avatarId || "").trim();
+      if (!avatarId) return;
+      setUserAvatar(avatarId);
+      closeAvatarPicker();
+    });
+  });
   if (els.changeEmailBtn && els.userPanelMsg) {
     els.changeEmailBtn.addEventListener("click", () => {
       if (!state.auth.client || !state.auth.user) {
         els.userPanelMsg.textContent = "Log in first to change email.";
+        showAuthGate();
+        return;
+      }
+      const provider = getAuthProvider(state.auth.user);
+      if (provider === "google") {
+        els.userPanelMsg.textContent = "Google account email is managed by Google settings.";
         return;
       }
       els.userPanelMsg.textContent = "Email change flow can be added next (re-auth required by Supabase).";
@@ -2388,23 +2457,23 @@ function bindUI() {
   if (els.changePasswordBtn && els.userPanelMsg) {
     els.changePasswordBtn.addEventListener("click", async () => {
       if (!state.auth.client || !state.auth.user) {
-        els.userPanelMsg.textContent = "Log in first, or use Reset Password.";
+        els.userPanelMsg.textContent = "Log in first to change password.";
+        showAuthGate();
         return;
       }
-      const nextPassword = window.prompt("Enter new password (6+ chars, 1 uppercase, 1 number):", "");
-      if (!nextPassword) return;
-      const passwordIssue = validateAuthPassword(nextPassword);
-      if (passwordIssue) {
-        els.userPanelMsg.textContent = passwordIssue;
+      const email = String(state.auth.user.email || "").trim();
+      if (!email) {
+        els.userPanelMsg.textContent = "No account email found for reset.";
         return;
       }
       setAuthBusy(true);
       try {
-        const { error } = await state.auth.client.auth.updateUser({ password: nextPassword });
+        const redirectTo = buildPasswordResetRedirect();
+        const { error } = await state.auth.client.auth.resetPasswordForEmail(email, { redirectTo });
         if (error) throw error;
-        els.userPanelMsg.textContent = "Password updated successfully.";
+        els.userPanelMsg.textContent = `Password reset email sent to ${email}.`;
       } catch (err) {
-        els.userPanelMsg.textContent = `Password update failed: ${err.message || "Unknown error"}`;
+        els.userPanelMsg.textContent = `Password reset failed: ${err.message || "Unknown error"}`;
       } finally {
         setAuthBusy(false);
       }
@@ -2413,11 +2482,12 @@ function bindUI() {
   if (els.logOutBtn && els.userPanelMsg) {
     els.logOutBtn.addEventListener("click", async () => {
       if (state.auth.client && state.auth.user) {
-        await handleAuthSignOut(true);
+        await handleAuthSignOut(false);
+        showAuthGate();
         return;
       }
       els.userPanelMsg.textContent = "No active account session.";
-      closeUserSidePanel();
+      showAuthGate();
     });
   }
   if (els.authSignInBtn) {
@@ -3992,6 +4062,49 @@ function closeUserSidePanel(duration = 230) {
   modalCloseTimers.set(els.userPanel, timerId);
 }
 
+function renderAvatarPickerSelection() {
+  const current = normalizeAvatarId(state.prefs.avatarId);
+  els.avatarChoiceButtons.forEach((btn) => {
+    const id = String(btn.dataset.avatarId || "").trim().toLowerCase();
+    const selected = id === current;
+    btn.classList.toggle("is-selected", selected);
+    btn.setAttribute("aria-pressed", selected ? "true" : "false");
+  });
+}
+
+function renderUserAvatar() {
+  const avatar = getAvatarMeta(state.prefs.avatarId);
+  if (els.userAvatarGlyph) els.userAvatarGlyph.textContent = avatar.glyph;
+  if (els.userAvatarBtn) els.userAvatarBtn.setAttribute("aria-label", `Choose avatar (current: ${avatar.label})`);
+  renderAvatarPickerSelection();
+}
+
+function openAvatarPicker() {
+  if (!els.avatarPickerModal) return;
+  renderAvatarPickerSelection();
+  openModalAnimated(els.avatarPickerModal);
+}
+
+function closeAvatarPicker() {
+  if (!els.avatarPickerModal) return;
+  closeModalAnimated(els.avatarPickerModal);
+}
+
+function setUserAvatar(nextId) {
+  const normalized = normalizeAvatarId(nextId);
+  state.prefs.avatarId = normalized;
+  saveJson(STORAGE_KEYS.prefs, state.prefs);
+  renderUserAvatar();
+}
+
+function getAuthProvider(user) {
+  return String(
+    user?.app_metadata?.provider
+    || user?.identities?.[0]?.provider
+    || ""
+  ).toLowerCase();
+}
+
 function renderUserPanel() {
   if (els.userPanelVersion) {
     const appVer = document.querySelector(".version-tag")?.textContent || "v?";
@@ -4001,6 +4114,7 @@ function renderUserPanel() {
   if (els.userLanguageMode) {
     els.userLanguageMode.value = normalizeLanguageMode(state.prefs.languageMode);
   }
+  renderUserAvatar();
   renderAuthUI();
 }
 
@@ -4359,11 +4473,7 @@ function collectAuthFormValues(source = "panel") {
 function renderAuthUI() {
   const hasClient = !!state.auth.client;
   const user = state.auth.user;
-  const provider = String(
-    user?.app_metadata?.provider
-    || user?.identities?.[0]?.provider
-    || ""
-  ).toLowerCase();
+  const provider = getAuthProvider(user);
   const isGoogleAuth = provider === "google";
   if (els.authSignedOut) els.authSignedOut.classList.toggle("hidden", !!user || !hasClient);
   if (els.authSignedIn) els.authSignedIn.classList.toggle("hidden", !user || !hasClient);
@@ -4373,17 +4483,26 @@ function renderAuthUI() {
   if (els.userEmailValue) {
     els.userEmailValue.textContent = user?.email || (hasClient ? "Not signed in" : "Not connected");
   }
-  if (els.userPasswordValue) {
-    if (!user) {
-      els.userPasswordValue.textContent = "Not signed in";
-    } else if (isGoogleAuth) {
-      els.userPasswordValue.textContent = "Google Sign-In";
-    } else {
-      els.userPasswordValue.textContent = "••••••••";
-    }
+  if (els.userAuthMethod) {
+    if (!user) els.userAuthMethod.textContent = hasClient ? "Not signed in" : "Not connected";
+    else if (isGoogleAuth) els.userAuthMethod.textContent = "Google";
+    else els.userAuthMethod.textContent = "Email + Password";
+  }
+  if (els.userAuthHint) {
+    if (!hasClient) els.userAuthHint.textContent = "Supabase is not configured.";
+    else if (!user) els.userAuthHint.textContent = "Use Log Off to open the login screen.";
+    else if (isGoogleAuth) els.userAuthHint.textContent = "Google account manages your sign-in identity.";
+    else els.userAuthHint.textContent = "This account uses email and password login.";
   }
   if (els.changePasswordBtn) {
-    els.changePasswordBtn.textContent = isGoogleAuth ? "Set Password" : "Reset/Change";
+    els.changePasswordBtn.textContent = "Change";
+    els.changePasswordBtn.disabled = !(hasClient && user);
+  }
+  if (els.userPasswordHint) {
+    if (!hasClient) els.userPasswordHint.textContent = "Supabase is not configured.";
+    else if (!user) els.userPasswordHint.textContent = "Log in first to change password.";
+    else if (isGoogleAuth) els.userPasswordHint.textContent = "Change sends an email to create/reset app password.";
+    else els.userPasswordHint.textContent = "Change sends a secure reset email to your account.";
   }
   if (els.authUserInfo) {
     els.authUserInfo.textContent = user?.email

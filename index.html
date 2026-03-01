@@ -19,7 +19,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.93</span></p>
+        <p class="eyebrow">Daily Cantonese <span class="version-tag">v19.4.94</span></p>
         <h1 id="appTitle">Cantonese Coach</h1>
       </div>
       <div class="topbar-right">
@@ -367,7 +367,7 @@
         <div id="authGateSignedIn" class="hidden">
           <p id="authGateUserInfo" class="side-v">Signed in.</p>
         </div>
-        <p id="authGateVersion" class="auth-gate-version">v19.4.93</p>
+        <p id="authGateVersion" class="auth-gate-version">v19.4.94</p>
       </div>
     </div>
     <div class="modal hidden" id="resetPasswordModal">
@@ -447,6 +447,29 @@
           <button id="closeInfoModal" class="ghost-btn" type="button">✕</button>
         </div>
         <div id="infoModalBody" class="grammar-modal-body"></div>
+      </div>
+    </div>
+
+    <div class="modal hidden" id="avatarPickerModal">
+      <div class="modal-card info-modal-card avatar-picker-card">
+        <div class="card-head">
+          <h2>Choose Avatar</h2>
+          <button id="closeAvatarPicker" class="ghost-btn" type="button">✕</button>
+        </div>
+        <div id="avatarChoices" class="avatar-grid">
+          <button class="avatar-choice-btn" type="button" data-avatar-id="smile"><span class="avatar-choice-glyph">🙂</span><span class="avatar-choice-label">Smile</span></button>
+          <button class="avatar-choice-btn" type="button" data-avatar-id="cool"><span class="avatar-choice-glyph">😎</span><span class="avatar-choice-label">Cool</span></button>
+          <button class="avatar-choice-btn" type="button" data-avatar-id="fox"><span class="avatar-choice-glyph">🦊</span><span class="avatar-choice-label">Fox</span></button>
+          <button class="avatar-choice-btn" type="button" data-avatar-id="rabbit"><span class="avatar-choice-glyph">🐰</span><span class="avatar-choice-label">Rabbit</span></button>
+          <button class="avatar-choice-btn" type="button" data-avatar-id="cat"><span class="avatar-choice-glyph">🐱</span><span class="avatar-choice-label">Cat</span></button>
+          <button class="avatar-choice-btn" type="button" data-avatar-id="panda"><span class="avatar-choice-glyph">🐼</span><span class="avatar-choice-label">Panda</span></button>
+          <button class="avatar-choice-btn" type="button" data-avatar-id="dragon"><span class="avatar-choice-glyph">🐲</span><span class="avatar-choice-label">Dragon</span></button>
+          <button class="avatar-choice-btn" type="button" data-avatar-id="lion"><span class="avatar-choice-glyph">🦁</span><span class="avatar-choice-label">Lion</span></button>
+          <button class="avatar-choice-btn" type="button" data-avatar-id="tea"><span class="avatar-choice-glyph">🍵</span><span class="avatar-choice-label">Tea</span></button>
+          <button class="avatar-choice-btn" type="button" data-avatar-id="taxi"><span class="avatar-choice-glyph">🚕</span><span class="avatar-choice-label">Taxi</span></button>
+          <button class="avatar-choice-btn" type="button" data-avatar-id="book"><span class="avatar-choice-glyph">📘</span><span class="avatar-choice-label">Book</span></button>
+          <button class="avatar-choice-btn" type="button" data-avatar-id="star"><span class="avatar-choice-glyph">🌟</span><span class="avatar-choice-label">Star</span></button>
+        </div>
       </div>
     </div>
 
@@ -1285,17 +1308,13 @@
           <h2>Your Space</h2>
         </div>
         <div class="side-profile-head">
-          <div class="side-avatar-circle" aria-hidden="true">
-            <svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true">
-              <circle cx="12" cy="12" r="9"></circle>
-              <circle cx="9" cy="10" r="1.1"></circle>
-              <circle cx="15" cy="10" r="1.1"></circle>
-              <path d="M8.5 14.2c1 .9 2.2 1.3 3.5 1.3s2.5-.4 3.5-1.3"></path>
-            </svg>
-          </div>
+          <button id="userAvatarBtn" class="side-avatar-circle side-avatar-btn" type="button" aria-label="Choose avatar">
+            <span id="userAvatarGlyph" class="side-avatar-glyph">🙂</span>
+          </button>
           <div class="side-name-block">
             <span class="side-k">User name</span>
             <strong class="side-v">Adria Salvado</strong>
+            <p class="example side-avatar-help">Tap avatar to change</p>
           </div>
         </div>
         <div class="side-simple-list">
@@ -1308,10 +1327,10 @@
           </div>
           <div class="side-kv">
             <span class="side-k">Password</span>
-            <div class="side-inline">
-              <strong id="userPasswordValue" class="side-v">••••••••</strong>
-              <button id="changePasswordBtn" class="side-action-btn side-action-soft side-inline-btn" type="button">Reset/Change</button>
+            <div class="side-inline side-inline-single">
+              <button id="changePasswordBtn" class="side-action-btn side-action-soft side-inline-btn" type="button">Change</button>
             </div>
+            <p id="userPasswordHint" class="example side-auth-status">Use Change to reset/update your password.</p>
           </div>
           <div class="side-kv">
             <span class="side-k">Account type</span>
@@ -1329,55 +1348,9 @@
             </select>
           </div>
           <div class="side-kv">
-            <span class="side-k">Supabase Login</span>
-            <p id="authStatus" class="example side-auth-status">Checking connection...</p>
-            <p id="authMessage" class="example side-auth-message"></p>
-            <p id="authPanelTitleLogin" class="auth-mode-title">Log in by Email</p>
-            <p id="authPanelTitleSignup" class="auth-mode-title hidden">Create Account</p>
-            <p id="authPanelTitleConfirm" class="auth-mode-title hidden">Check Your Email</p>
-            <div id="authSignedOut" class="side-auth-form">
-              <input id="authEmailInput" class="side-auth-input" type="email" placeholder="Email" autocomplete="email">
-              <input id="authPasswordInput" class="side-auth-input" type="password" placeholder="Password" autocomplete="current-password">
-              <ul id="authPanelPasswordRule" class="reset-rule-list hidden">
-                <li id="authPanelRuleLen" class="reset-rule-item is-missing">At least 6 characters</li>
-                <li id="authPanelRuleUpper" class="reset-rule-item is-missing">At least 1 uppercase letter</li>
-                <li id="authPanelRuleNum" class="reset-rule-item is-missing">At least 1 number</li>
-              </ul>
-              <div id="authPanelLoginHelp" class="auth-login-help">
-                <p class="example side-auth-hint">Forgot password? Tap Reset.</p>
-                <button id="authForgotBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Reset Password</button>
-              </div>
-              <div id="authPanelLoginView" class="auth-mode-view">
-                <button id="authSignInBtn" class="side-action-btn side-inline-btn auth-alt-btn" type="button">Log In</button>
-                <p class="auth-or-sep" aria-label="or">OR</p>
-                <button id="authGoogleBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-google-btn" type="button"><span class="google-g">G</span> Log In with Google</button>
-                <p class="auth-flow-cta auth-flow-cta-strong">If you don't have an account yet:</p>
-                <button id="authPanelShowSignupBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-switch-btn auth-create-cta" type="button">Create Account</button>
-              </div>
-              <div id="authPanelSignupView" class="auth-mode-view hidden">
-                <div id="authPanelCaptchaWrap" class="auth-captcha-wrap hidden">
-                  <div id="authPanelCaptcha"></div>
-                </div>
-                <button id="authSignUpBtn" class="side-action-btn side-inline-btn auth-alt-btn" type="button">Create Account</button>
-                <p class="auth-flow-cta">Already have an account?</p>
-                <button id="authPanelShowLoginBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-switch-btn" type="button">Back to Log In</button>
-              </div>
-              <div id="authPanelConfirmView" class="auth-mode-view hidden">
-                <p class="example auth-confirm-note">Account created. Confirm your email from inbox/spam before logging in.</p>
-                <p id="authPanelConfirmEmail" class="example side-auth-hint auth-confirm-email"></p>
-                <p class="example side-auth-hint">After confirming your email, tap Log In Now.</p>
-                <p class="example side-auth-hint">If you did not receive the email, tap Resend Confirmation Email.</p>
-                <button id="authResendBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn" type="button">Resend Confirmation Email</button>
-                <p id="authPanelResendTimer" class="example side-auth-hint auth-resend-timer"></p>
-                <button id="authPanelLoginNowBtn" class="side-action-btn side-inline-btn auth-alt-btn" type="button">Log In Now</button>
-                <button id="authPanelShowLoginFromConfirmBtn" class="side-action-btn side-action-soft side-inline-btn auth-alt-btn auth-switch-btn" type="button">Back to Log In</button>
-              </div>
-            </div>
-            <div id="authSignedIn" class="hidden">
-              <p id="authUserInfo" class="side-v">Signed in.</p>
-              <button id="authSignOutBtn" class="side-action-btn side-action-soft side-inline-btn" type="button">Sign Out</button>
-            </div>
-            <p id="authConfigHint" class="example side-auth-hint">Set project URL and anon key in <code>supabase-config.js</code>.</p>
+            <span class="side-k">Sign-in method</span>
+            <strong id="userAuthMethod" class="side-v">Checking...</strong>
+            <p id="userAuthHint" class="example side-auth-status">Login is managed from the main login screen.</p>
           </div>
         </div>
         <div class="side-actions-stack">
