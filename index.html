@@ -1188,14 +1188,14 @@
               <button id="match3Shuffle" type="button">Shuffle</button>
             </div>
             <p class="formula match3-live-word" id="match3LiveWord">Match Hanzi to reveal meaning.</p>
-            <div class="match3-quiz hidden" id="match3Quiz">
-              <p class="match3-quiz-title">Meaning Check</p>
-              <p class="match3-quiz-hanzi" id="match3QuizHanzi">我</p>
-              <p class="example">Pick the correct meaning.</p>
-              <div class="choices" id="match3QuizChoices"></div>
-              <p class="example" id="match3QuizFeedback"></p>
+            <div class="match3-board-wrap">
+              <div class="match3-quiz hidden" id="match3Quiz">
+                <p class="match3-quiz-hanzi" id="match3QuizHanzi">我</p>
+                <div class="choices" id="match3QuizChoices"></div>
+                <p class="match3-quiz-feedback" id="match3QuizFeedback"></p>
+              </div>
+              <div id="match3Board" class="match3-board" aria-live="polite"></div>
             </div>
-            <div id="match3Board" class="match3-board" aria-live="polite"></div>
             <p class="example" id="match3Status">Press New Board to start.</p>
           </section>
 

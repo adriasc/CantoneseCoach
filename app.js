@@ -2184,6 +2184,7 @@ const match3Runtime = {
   score: 0,
   moves: 0,
   matchedSinceQuiz: 0,
+  recentQuizKeys: [],
   best: Number(loadJson(STORAGE_KEYS.match3Best, 0)) || 0,
   locked: false,
   ended: false,
@@ -3961,8 +3962,12 @@ function buildMatch3MeaningQuiz() {
     }
   }
   if (!symbolsOnBoard.length) return null;
-  const target = symbolsOnBoard[randomInt(symbolsOnBoard.length)];
+  const recentSet = new Set(match3Runtime.recentQuizKeys || []);
+  const freshSymbols = symbolsOnBoard.filter((item) => !recentSet.has(item.key));
+  const sourcePool = freshSymbols.length ? freshSymbols : symbolsOnBoard;
+  const target = sourcePool[randomInt(sourcePool.length)];
   if (!target || !target.meaning) return null;
+  match3Runtime.recentQuizKeys = [...(match3Runtime.recentQuizKeys || []), target.key].slice(-4);
 
   const distractorPool = getMiniGameWordPool({ maxChars: 6, minEnglish: true })
     .map((w) => String(w.english || "").trim())
@@ -4000,6 +4005,7 @@ function startMatch3Game() {
   match3Runtime.score = 0;
   match3Runtime.moves = 0;
   match3Runtime.matchedSinceQuiz = 0;
+  match3Runtime.recentQuizKeys = [];
   match3Runtime.locked = false;
   match3Runtime.ended = false;
   match3Runtime.quizActive = false;
